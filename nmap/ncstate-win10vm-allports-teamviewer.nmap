@@ -1,0 +1,84 @@
+# Nmap 7.70 scan initiated Wed Jul 31 11:07:37 2019 as: nmap -n -A -p0-65535 -oA ncstate-win10vm-allports-teamviewer 192.168.1.50
+Nmap scan report for 192.168.1.50
+Host is up (0.00080s latency).
+Not shown: 65523 closed ports
+PORT      STATE SERVICE       VERSION
+80/tcp    open  http
+| fingerprint-strings: 
+|   FourOhFourRequest, GetRequest, HTTPOptions, RTSPRequest, SIPOptions: 
+|     HTTP/1.0 200 OK
+|     Connection: close
+|     Content-Length: 100Content-Type: text/html
+|_    <html><body>This site is running <a href='http://www.TeamViewer.com'>TeamViewer</a>.</body></html>
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+445/tcp   open  microsoft-ds?
+5040/tcp  open  unknown
+5938/tcp  open  teamviewer?
+49664/tcp open  msrpc         Microsoft Windows RPC
+49665/tcp open  msrpc         Microsoft Windows RPC
+49666/tcp open  msrpc         Microsoft Windows RPC
+49667/tcp open  msrpc         Microsoft Windows RPC
+49668/tcp open  msrpc         Microsoft Windows RPC
+49669/tcp open  msrpc         Microsoft Windows RPC
+49670/tcp open  msrpc         Microsoft Windows RPC
+2 services unrecognized despite returning data. If you know the service/version, please submit the following fingerprints at https://nmap.org/cgi-bin/submit.cgi?new-service :
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port80-TCP:V=7.70%I=7%D=7/31%Time=5D41AEE4%P=x86_64-pc-linux-gnu%r(GetR
+SF:equest,B8,"HTTP/1\.0\x20200\x20OK\r\nConnection:\x20close\r\nContent-Le
+SF:ngth:\x20100Content-Type:\x20text/html\r\n\r\n\r\n<html><body>This\x20s
+SF:ite\x20is\x20running\x20<a\x20href='http://www\.TeamViewer\.com'>TeamVi
+SF:ewer</a>\.</body></html>\r\n")%r(HTTPOptions,B8,"HTTP/1\.0\x20200\x20OK
+SF:\r\nConnection:\x20close\r\nContent-Length:\x20100Content-Type:\x20text
+SF:/html\r\n\r\n\r\n<html><body>This\x20site\x20is\x20running\x20<a\x20hre
+SF:f='http://www\.TeamViewer\.com'>TeamViewer</a>\.</body></html>\r\n")%r(
+SF:RTSPRequest,B8,"HTTP/1\.0\x20200\x20OK\r\nConnection:\x20close\r\nConte
+SF:nt-Length:\x20100Content-Type:\x20text/html\r\n\r\n\r\n<html><body>This
+SF:\x20site\x20is\x20running\x20<a\x20href='http://www\.TeamViewer\.com'>T
+SF:eamViewer</a>\.</body></html>\r\n")%r(FourOhFourRequest,B8,"HTTP/1\.0\x
+SF:20200\x20OK\r\nConnection:\x20close\r\nContent-Length:\x20100Content-Ty
+SF:pe:\x20text/html\r\n\r\n\r\n<html><body>This\x20site\x20is\x20running\x
+SF:20<a\x20href='http://www\.TeamViewer\.com'>TeamViewer</a>\.</body></htm
+SF:l>\r\n")%r(SIPOptions,B8,"HTTP/1\.0\x20200\x20OK\r\nConnection:\x20clos
+SF:e\r\nContent-Length:\x20100Content-Type:\x20text/html\r\n\r\n\r\n<html>
+SF:<body>This\x20site\x20is\x20running\x20<a\x20href='http://www\.TeamView
+SF:er\.com'>TeamViewer</a>\.</body></html>\r\n");
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port5938-TCP:V=7.70%I=7%D=7/31%Time=5D41AEE4%P=x86_64-pc-linux-gnu%r(NU
+SF:LL,25,"\x17\$\n\x20\0\0\0\0\0\0\0\0\0\0\0\0\0\x01\0\0\0\x10\x80\0\0\0\0
+SF:\0\0\0\0\0\0\0\0\0\0")%r(GenericLines,25,"\x17\$\n\x20\0\0\0\0\0\0\0\0\
+SF:0\0\0\0\0\x01\0\0\0\x10\x80\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+MAC Address: 00:0C:29:39:7B:58 (VMware)
+No exact OS matches for host (If you know what OS is running on it, see https://nmap.org/submit/ ).
+TCP/IP fingerprint:
+OS:SCAN(V=7.70%E=4%D=7/31%OT=80%CT=1%CU=35019%PV=Y%DS=1%DC=D%G=Y%M=000C29%T
+OS:M=5D41AF87%P=x86_64-pc-linux-gnu)SEQ(SP=106%GCD=1%ISR=107%TI=I%CI=I%II=I
+OS:%SS=S%TS=U)OPS(O1=M5B4NW8NNS%O2=M5B4NW8NNS%O3=M5B4NW8%O4=M5B4NW8NNS%O5=M
+OS:5B4NW8NNS%O6=M5B4NNS)WIN(W1=FFFF%W2=FFFF%W3=FFFF%W4=FFFF%W5=FFFF%W6=FF70
+OS:)ECN(R=Y%DF=Y%T=80%W=FFFF%O=M5B4NW8NNS%CC=N%Q=)T1(R=Y%DF=Y%T=80%S=O%A=S+
+OS:%F=AS%RD=0%Q=)T2(R=Y%DF=Y%T=80%W=0%S=Z%A=S%F=AR%O=%RD=0%Q=)T3(R=Y%DF=Y%T
+OS:=80%W=0%S=Z%A=O%F=AR%O=%RD=0%Q=)T4(R=Y%DF=Y%T=80%W=0%S=A%A=O%F=R%O=%RD=0
+OS:%Q=)T5(R=Y%DF=Y%T=80%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)T6(R=Y%DF=Y%T=80%W=0%S
+OS:=A%A=O%F=R%O=%RD=0%Q=)T7(R=Y%DF=Y%T=80%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)U1(R
+OS:=Y%DF=N%T=80%IPL=164%UN=0%RIPL=G%RID=G%RIPCK=G%RUCK=G%RUD=G)IE(R=Y%DFI=N
+OS:%T=80%CD=Z)
+
+Network Distance: 1 hop
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+|_clock-skew: mean: 2h59m59s, deviation: 0s, median: 2h59m59s
+|_nbstat: NetBIOS name: DESKTOP-852UNFC, NetBIOS user: <unknown>, NetBIOS MAC: 00:0c:29:39:7b:58 (VMware)
+| smb2-security-mode: 
+|   2.02: 
+|_    Message signing enabled but not required
+| smb2-time: 
+|   date: 2019-07-31 14:10:56
+|_  start_date: N/A
+
+TRACEROUTE
+HOP RTT     ADDRESS
+1   0.80 ms 192.168.1.50
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Wed Jul 31 11:11:03 2019 -- 1 IP address (1 host up) scanned in 206.93 seconds
