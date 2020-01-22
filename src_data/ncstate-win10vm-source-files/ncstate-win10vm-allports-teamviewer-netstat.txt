@@ -1,0 +1,23 @@
+netstat -nat | findstr LISTEN
+  TCP    0.0.0.0:80             0.0.0.0:0              LISTENING       InHost
+  TCP    0.0.0.0:135            0.0.0.0:0              LISTENING       InHost
+  TCP    0.0.0.0:445            0.0.0.0:0              LISTENING       InHost
+  TCP    0.0.0.0:5040           0.0.0.0:0              LISTENING       InHost
+  TCP    0.0.0.0:5938           0.0.0.0:0              LISTENING       InHost
+  TCP    0.0.0.0:49664          0.0.0.0:0              LISTENING       InHost
+  TCP    0.0.0.0:49665          0.0.0.0:0              LISTENING       InHost
+  TCP    0.0.0.0:49666          0.0.0.0:0              LISTENING       InHost
+  TCP    0.0.0.0:49667          0.0.0.0:0              LISTENING       InHost
+  TCP    0.0.0.0:49668          0.0.0.0:0              LISTENING       InHost
+  TCP    0.0.0.0:49669          0.0.0.0:0              LISTENING       InHost
+  TCP    0.0.0.0:49670          0.0.0.0:0              LISTENING       InHost
+  TCP    192.168.1.50:139       0.0.0.0:0              LISTENING       InHost
+  TCP    [::]:135               [::]:0                 LISTENING       InHost
+  TCP    [::]:445               [::]:0                 LISTENING       InHost
+  TCP    [::]:49664             [::]:0                 LISTENING       InHost
+  TCP    [::]:49665             [::]:0                 LISTENING       InHost
+  TCP    [::]:49666             [::]:0                 LISTENING       InHost
+  TCP    [::]:49667             [::]:0                 LISTENING       InHost
+  TCP    [::]:49668             [::]:0                 LISTENING       InHost
+  TCP    [::]:49669             [::]:0                 LISTENING       InHost
+  TCP    [::]:49670             [::]:0                 LISTENING       InHost

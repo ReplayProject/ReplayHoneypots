@@ -1,0 +1,4 @@
+PORT      STATE SERVICE       VERSION
+111/tcp   open  unknown         v3
+333/tcp   open  serv2   v1
+555/udp   open  serv4

@@ -1,0 +1,4 @@
+# Nmap 7.70 scan initiated Wed Jul 31 11:02:56 2019 as: nmap -n -A -p0-65535 -oA ncstate-win10vm-allports-default 192.168.1.50
+Host: 192.168.1.50 ()	Status: Up
+Host: 192.168.1.50 ()	Ports: 135/open/tcp//msrpc//Microsoft Windows RPC/, 139/open/tcp//netbios-ssn//Microsoft Windows netbios-ssn/, 445/open/tcp//microsoft-ds?///, 5040/open/tcp//unknown///, 49664/open/tcp//msrpc//Microsoft Windows RPC/, 49665/open/tcp//msrpc//Microsoft Windows RPC/, 49666/open/tcp//msrpc//Microsoft Windows RPC/, 49667/open/tcp//msrpc//Microsoft Windows RPC/, 49668/open/tcp//msrpc//Microsoft Windows RPC/, 49669/open/tcp//msrpc//Microsoft Windows RPC/, 49670/open/tcp//msrpc//Microsoft Windows RPC/	Ignored State: closed (65525)	Seq Index: 261	IP ID Seq: Incremental
+# Nmap done at Wed Jul 31 11:06:18 2019 -- 1 IP address (1 host up) scanned in 202.21 seconds
