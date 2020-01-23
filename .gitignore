@@ -34,6 +34,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Directory File
+.DS_Store
+
 *.pyc
 __pycache__/
 .coverage
