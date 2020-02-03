@@ -22,15 +22,18 @@ dataFile = config.get('Attributes', 'pcap_data_file')
 """
 Handles the port threads to run the honeypot
 """
+
+
 class PortThreadManager:
     """
     Initialize the response data and port list
-    
+
     Args:
         portList: a list of int port numbers
     """
+
     def __init__(self, portList):
-        with open(dataFile,"r") as responseDataFile:
+        with open(dataFile, "r") as responseDataFile:
             responseData = json.load(responseDataFile)
         self.portList = []
         for port in portList:
@@ -46,14 +49,15 @@ class PortThreadManager:
         self.delay = config.get('Attributes', 'delay')
         self.whitelist = json.loads(config.get("Whitelist", "addresses"))
         self.keepRunning = True
-        
+
     """
     Send a response on a port
-    
+
     Args:
       portObj: port object with communication info
       conn: connection object to communicate on
     """
+
     def portResponse(self, portObj, conn):
         byteData = bytes.fromhex(portObj.response())
         time.sleep(float(self.delay))
@@ -64,10 +68,11 @@ class PortThreadManager:
 
     """
     Listen and respond on the given port
-    
+
     Args:
       portObj: port object with communication info
     """
+
     def portListener(self, portObj):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.bind(("", portObj.port))
@@ -77,21 +82,25 @@ class PortThreadManager:
             conn, addr = sock.accept()
             print(conn)
             print(addr)
-            responseThread = Thread(target=self.portResponse, args=[portObj, conn])
+            responseThread = Thread(
+                target=self.portResponse, args=[portObj, conn])
             responseThread.daemon = True
             responseThread.start()
             if addr[0] not in self.whitelist:
-              log = LogEntry(addr[1],addr[0], portObj.port, socket.gethostbyname(socket.gethostname()), datetime.datetime.now())
-              self.datalog.logs.append(log)
-              self.datalog.writeLogs('../logs/' + str(date.today()).replace('-', '') + '.txt')
+                log = LogEntry(addr[1], addr[0], portObj.port, socket.gethostbyname(
+                    socket.gethostname()), datetime.datetime.now())
+                self.datalog.logs.append(log)
+                self.datalog.writeLogs(
+                    '../logs/' + str(date.today()).replace('-', '') + '.txt')
 
             if not self.keepRunning:
                 break
         conn.close()
-    
+
     """
     Start a thread for each port in the config file
     """
+
     def deploy(self):
         for port in self.portList:
             portThread = Thread(target=self.portListener, args=[port])
@@ -102,6 +111,7 @@ class PortThreadManager:
         for thread in self.processList:
             thread.join()
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Deploy the honeypot')
     parser.add_argument('-c', '--config', help='config file')
@@ -110,7 +120,7 @@ if __name__ == '__main__':
 
     portList = []
     if args.config:
-        with open(args.config,"r") as configFile:
+        with open(args.config, "r") as configFile:
             portList = json.load(configFile)
     elif args.nmap:
         parser = NmapParser(args.nmap)
