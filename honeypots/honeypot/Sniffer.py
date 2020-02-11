@@ -3,46 +3,54 @@ Uses Scapy library to examine all incoming traffic
 """
 
 from scapy.all import sniff
+from threading import Thread
 
-#list of saved packets
-RECORD = []
+class Sniffer(Thread):
+    def __init__(self, config = "base"):
+        #list of saved packets
+        self.RECORD = []
 
-#Filtered lists of saved packets (TODO: make saving more comprehensive later)
-ICMP_RECORD = dict()
-TCP_RECORD = dict()
-UDP_RECORD = dict()
+        #Filtered lists of saved packets (TODO: make saving more comprehensive later)
+        self.ICMP_RECORD = dict()
+        self.TCP_RECORD = dict()
+        self.UDP_RECORD = dict()
 
-def save_packet(packet):
-    RECORD.append(packet)
+        print("Sniffing")
+        if (config == "testing"):
+            #this ignores the ssh spam you get when sending packets between two ssh terminals
+            sniff(filter="ip and not (src port ssh or dst port ssh)", prn = self.save_packet)
+        elif (config == "base"):
+            sniff(filter="ip", prn = self.save_packet)
 
-    #TODO: make this work with layer 2, for now just skip filtering those packets
-    if (packet.haslayer("IP") == False):
-        return
+    def save_packet(self, packet):
+        self.RECORD.append(packet)
 
-    ipLayer = packet.getlayer("IP")
+        #TODO: make this work with layer 2, for now just skip filtering those packets
+        if (packet.haslayer("IP") == False):
+            return
 
-    #IP where this came from
-    srcIP = ipLayer.src
+        ipLayer = packet.getlayer("IP")
 
-    if (ipLayer.haslayer("ICMP")):
-        if srcIP in ICMP_RECORD:
-            ICMP_RECORD[srcIP].append(packet)
-        else:
-            ICMP_RECORD[srcIP] = [packet]
-        return
+        #IP where this came from
+        srcIP = ipLayer.src
 
-    destPort = ipLayer.dport
-    pair = (srcIP, destPort)
+        if (ipLayer.haslayer("ICMP")):
+            if srcIP in self.ICMP_RECORD:
+                self.ICMP_RECORD[srcIP].append(packet)
+            else:
+                self.ICMP_RECORD[srcIP] = [packet]
+            return
 
-    if (ipLayer.haslayer("UDP")):
-        if pair in UDP_RECORD:
-            UDP_RECORD[pair].append(packet)
-        else:
-            UDP_RECORD[pair] = [packet]
-    elif (ipLayer.haslayer("TCP")):
-        if pair in TCP_RECORD:
-            TCP_RECORD[pair].append(packet)
-        else:
-            TCP_RECORD[pair] = [packet]
+        destPort = ipLayer.dport
+        pair = (srcIP, destPort)
 
-sniff(filter="ip", prn = save_packet)
+        if (ipLayer.haslayer("UDP")):
+            if pair in self.UDP_RECORD:
+                self.UDP_RECORD[pair].append(packet)
+            else:
+                self.UDP_RECORD[pair] = [packet]
+        elif (ipLayer.haslayer("TCP")):
+            if pair in self.TCP_RECORD:
+                self.TCP_RECORD[pair].append(packet)
+            else:
+                self.TCP_RECORD[pair] = [packet]
