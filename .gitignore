@@ -42,3 +42,6 @@ __pycache__/
 .coverage
 */htmlcov
 */.coverage
+honeypots/.vscode/settings.json
+honeypots/database/log.txt
+honeypots/config/dbconfig.json
