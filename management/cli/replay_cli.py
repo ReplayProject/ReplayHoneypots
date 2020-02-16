@@ -289,7 +289,8 @@ def start(ctx, debug):
     """
     global config
     log("RePlay CLI", color="blue", figlet=True)
-    log("Welcome to the RePlay CLI" + (" (DEBUGGING MODE)" if debug else ""), "green")
+    log("Welcome to the RePlay CLI" +
+        (" (DEBUGGING MODE)" if debug else ""), "green")
 
     # Main Loop to run the interactive menu
     while True:

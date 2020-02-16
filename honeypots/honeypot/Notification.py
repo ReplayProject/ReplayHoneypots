@@ -4,6 +4,8 @@ from datetime import datetime
 """
 Stores information to be propagated to the management system
 """
+
+
 class Notification:
     """
     Initializes the notification with basic info
@@ -15,7 +17,8 @@ class Notification:
     timestamp - epoch time of notification
     references - a list of related Traffic IDs, if applicable
     """
-    def __init__(self, variant, alertType = None, adminType = None, metaType = None, message = "", references = None):
+
+    def __init__(self, variant, alertType=None, adminType=None, metaType=None, message="", references=None):
         self.variant = variant
         self.alertType = alertType
         self.adminType = adminType
@@ -25,4 +28,4 @@ class Notification:
         self.references = references
 
     def json(self):
-      return json.dumps(self.__dict__)
+        return json.dumps(self.__dict__)

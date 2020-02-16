@@ -1,7 +1,10 @@
+from LogEntry import LogEntry
+from requests import post
 from scapy.all import sniff
 from threading import Thread
-from requests import get, post
-from LogEntry import LogEntry
+import requests
+requests.adapters.DEFAULT_RETRIES = 0
+
 
 """
 Uses Scapy library to examine all incoming traffic
@@ -96,6 +99,10 @@ class Sniffer(Thread):
         # TODO: automatically setup the replication settings
         API_ENDPOINT = "http://127.0.0.1:1437/test_logs"
         header = {"content-type": "application/json"}
-        r = post(url=API_ENDPOINT, data=payload.json(),
-                 headers=header, verify=False)
-        print("The DB response was:\n%s" % r.json())
+        # TODO: make behaivor more predictable when the datbase is not ready
+        try:
+            r = post(url=API_ENDPOINT, data=payload.json(),
+                     headers=header, verify=False)
+            print("The DB response was:\n%s" % r.json())
+        except Exception:
+            print("DB-Failed: ", payload.json())
