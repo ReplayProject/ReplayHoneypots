@@ -9,10 +9,10 @@ from Port import Port
 import configparser
 import time
 import datetime
-from DataLog import DataLog
-from LogEntry import LogEntry
 import argparse
 from NmapParser import NmapParser
+from Sniffer import Sniffer
+from Databaser import Databaser
 
 config = configparser.RawConfigParser()
 configFilePath = r'../config/properties.cfg'
@@ -45,7 +45,10 @@ class PortThreadManager:
             self.portList.append(Port(port, portData))
         self.ip = str(get('https://api.ipify.org').text)
         self.processList = []
-        self.datalog = DataLog()
+        # where the sniffer thread will be located
+        self.snifferThread = None
+        # where the db thread will be located
+        self.databaserThread = None
         self.delay = config.get('Attributes', 'delay')
         self.whitelist = json.loads(config.get("Whitelist", "addresses"))
         self.keepRunning = True
@@ -86,13 +89,6 @@ class PortThreadManager:
                 target=self.portResponse, args=[portObj, conn])
             responseThread.daemon = True
             responseThread.start()
-            if addr[0] not in self.whitelist:
-                log = LogEntry(addr[1], addr[0], portObj.port, socket.gethostbyname(
-                    socket.gethostname()), datetime.datetime.now())
-                self.datalog.logs.append(log)
-                self.datalog.writeLogs(
-                    '../logs/' + str(date.today()).replace('-', '') + '.txt')
-
             if not self.keepRunning:
                 break
         conn.close()
@@ -102,6 +98,17 @@ class PortThreadManager:
     """
 
     def deploy(self):
+        # Normal run
+        #self.snifferThread = Sniffer()
+        # Testing configuration
+        self.snifferThread = Sniffer(config="testing", openPorts=self.portList, whitelist=self.whitelist)
+        self.snifferThread.daemon = True
+        self.snifferThread.start()
+
+        self.databaserThread = Databaser()
+        self.databaserThread.daemon = True
+        self.databaserThread.start()
+
         for port in self.portList:
             portThread = Thread(target=self.portListener, args=[port])
             portThread.daemon = True
@@ -111,6 +118,8 @@ class PortThreadManager:
         for thread in self.processList:
             thread.join()
 
+        self.snifferThread.join()
+        self.databaserThread.join()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Deploy the honeypot')

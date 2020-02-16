@@ -6,7 +6,7 @@ from Port import Port
 from NmapParser import NmapParser
 from PortThreadManager import PortThreadManager
 from LogEntry import LogEntry
-from DataLog import DataLog
+# from DataLog import DataLog
 from ConfigTunnel import ConfigTunnel
 import os
 import time
@@ -65,28 +65,27 @@ class TestLogs(unittest.TestCase):
         self.assertEqual("80", entry.sourcePortNumber)
         self.assertEqual("Www Mmm dd hh:mm:ss yyyy", entry.timestamp)
 
-    def test_data_log(self):
-        # remove test file if it exists
-        try:
-            os.remove('../logs/test.txt')
-        except:
-            pass
-        datalog = DataLog()
-        entry1 = LogEntry("1", "1.1.1.1", "81", "192.1.1.2",
-                          "Www Mmm dd hh:mm:ss yyyy")
-        entry2 = LogEntry("2", "2.2.2.2", "81", "192.1.1.2",
-                          "Www Mmm dd hh:mm:ss yyyy")
-        datalog.logs.append(entry1)
-        datalog.logs.append(entry2)
-        datalog.writeLogs('../logs/test.txt')
-        f = open('../logs/test.txt', 'r')
-        self.assertEqual(
-            f.readline(), "Www Mmm dd hh:mm:ss yyyy 1.1.1.1 1 192.1.1.2 81\n")
-        self.assertEqual(
-            f.readline(), "Www Mmm dd hh:mm:ss yyyy 2.2.2.2 2 192.1.1.2 81\n")
-        os.remove('../logs/test.txt')
-        f.close()
-
+    # def test_data_log(self):
+    #     # remove test file if it exists
+    #     try:
+    #         os.remove('../logs/test.txt')
+    #     except:
+    #         pass
+    #     datalog = DataLog()
+    #     entry1 = LogEntry("1", "1.1.1.1", "81", "192.1.1.2",
+    #                       "Www Mmm dd hh:mm:ss yyyy")
+    #     entry2 = LogEntry("2", "2.2.2.2", "81", "192.1.1.2",
+    #                       "Www Mmm dd hh:mm:ss yyyy")
+    #     datalog.logs.append(entry1)
+    #     datalog.logs.append(entry2)
+    #     datalog.writeLogs('../logs/test.txt')
+    #     f = open('../logs/test.txt', 'r')
+    #     self.assertEqual(
+    #         f.readline(), "Www Mmm dd hh:mm:ss yyyy 1.1.1.1 1 192.1.1.2 81\n")
+    #     self.assertEqual(
+    #         f.readline(), "Www Mmm dd hh:mm:ss yyyy 2.2.2.2 2 192.1.1.2 81\n")
+    #     os.remove('../logs/test.txt')
+    #     f.close()
 
 class TestConfigTunnel(unittest.TestCase):
     """
@@ -163,6 +162,7 @@ class TestConfigTunnel(unittest.TestCase):
         # Client received response and payload
         self.assertTrue(handle_client_done.called)
         handle_client_done.assert_called_once_with(["echo", "value"])
+
 
 
 if __name__ == '__main__':
