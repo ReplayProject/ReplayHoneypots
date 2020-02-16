@@ -1,0 +1,6 @@
+#Ansible playbook
+
+- hosts: all
+  gather_facts: False
+  tasks:
+          - action: ping
