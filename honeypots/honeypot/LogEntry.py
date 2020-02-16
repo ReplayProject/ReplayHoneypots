@@ -10,6 +10,7 @@ class LogEntry:
     """
     Initializes the log entry with the basic info
     """
+
     def __init__(self, sourcePortNumber, sourceIPAddress, destPortNumber, destIPAddress, trafficType, isPortOpen):
         self.sourcePortNumber = sourcePortNumber
         self.sourceIPAddress = sourceIPAddress
@@ -20,4 +21,4 @@ class LogEntry:
         self.isPortOpen = isPortOpen
 
     def json(self):
-      return json.dumps(self.__dict__)
+        return json.dumps(self.__dict__)

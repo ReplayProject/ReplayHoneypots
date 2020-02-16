@@ -101,7 +101,8 @@ class PortThreadManager:
         # Normal run
         #self.snifferThread = Sniffer()
         # Testing configuration
-        self.snifferThread = Sniffer(config="testing", openPorts=self.portList, whitelist=self.whitelist)
+        self.snifferThread = Sniffer(
+            config="testing", openPorts=self.portList, whitelist=self.whitelist)
         self.snifferThread.daemon = True
         self.snifferThread.start()
 
@@ -120,6 +121,7 @@ class PortThreadManager:
 
         self.snifferThread.join()
         self.databaserThread.join()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Deploy the honeypot')
