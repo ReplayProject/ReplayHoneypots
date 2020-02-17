@@ -17,7 +17,7 @@ class Sniffer(Thread):
     'testing' ignores ssh spam you get
     """
 
-    def __init__(self, config="base",  count=0, openPorts=[], whitelist=[]):
+    def __init__(self, config="base",  count=0, openPorts=[], whitelist=[], db_url=None):
         Thread.__init__(self)
         # list of saved packets
         self.RECORD = []
@@ -25,6 +25,7 @@ class Sniffer(Thread):
         self.count = count
         self.openPorts = openPorts
         self.whitelist = whitelist
+        self.db_url = db_url
 
         # Filtered lists of saved packets (TODO: make saving more comprehensive later)
         self.ICMP_RECORD = dict()
@@ -94,15 +95,11 @@ class Sniffer(Thread):
             self.post(log)
 
     def post(self, payload):
-        # TODO: extract this to a config option
-        # TODO: make DB create itself if not exists
-        # TODO: automatically setup the replication settings
-        API_ENDPOINT = "http://127.0.0.1:1437/test_logs"
         header = {"content-type": "application/json"}
-        # TODO: make behaivor more predictable when the datbase is not ready
         try:
-            r = post(url=API_ENDPOINT, data=payload.json(),
+            r = post(url=self.db_url, data=payload.json(),
                      headers=header, verify=False)
-            print("The DB response was:\n%s" % r.json())
+            log_id = r.json()["id"]
+            print("Log created: %s" % log_id)
         except Exception:
             print("DB-Failed: ", payload.json())
