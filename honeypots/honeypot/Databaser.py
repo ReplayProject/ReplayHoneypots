@@ -1,31 +1,68 @@
 import os
+import subprocess
+import socket
+import time
 from threading import Thread
-
-"""
-Use pouch db to run the database for loggins
-"""
+from requests import put
 
 
 class Databaser(Thread):
     """
-    Constructor; takes a config keyword to see what mode to run it in
-    'testing' ignores ssh spam you get
+    Use pouch db to run the database for logging
     """
 
     def __init__(self):
+        """
+        Constructor; takes a config keyword to see what mode to run it in
+        'testing' ignores ssh spam you get
+        """
         Thread.__init__(self)
+        self.process = None
+        # Config Cariables
+        self.port = "1437"
+        self.conf = "../config/dbconfig.json"
+        self.dbfolder = "../database"
+        self.bindaddress = "127.0.0.1"
+        self.url = 'http://{}:{}/'.format(self.bindaddress, self.port)
+        self.db_name = socket.gethostname() + "_logs"
+        self.db_url = self.url + self.db_name
 
-    """
-    Runs the thread, begins sniffing
-    """
+        self.ready = False
+
+    def createDatabase(self):
+        """
+        Create this device's log daatbase
+        """
+        # TODO: automatically setup the replication settings
+        header = {"content-type": "application/json"}
+        r = put(url=self.url + self.db_name, headers=header, verify=False)
+        if (r.status_code != 201):
+            Exception("Database could not be created")
+        return r
 
     def run(self):
-        print("Handling DB: http://127.0.0.1:1437/_utils")
-        PORT = 1437
-        conf = "../config/dbconfig.json"
-        dbfolder = "../database"
-        bindaddress = "127.0.0.1"
+        """
+        Runs the thread, begins sniffing
+        """
         # toggle --in-memory to save data
-        template = "pouchdb-server --in-memory -n --dir {} --port {} --host {} --config {}"
-        cmd = template.format(dbfolder, PORT, bindaddress, conf)
-        os.system(cmd)
+        cmd = ["pouchdb-server", "--in-memory", "-n", "--dir", self.dbfolder,
+               "--port", self.port, "--host", self.bindaddress, "--config", self.conf]
+        self.process = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.dbfolder)
+
+        time.sleep(.5)
+
+        status = self.createDatabase()
+        print("Handling DB: " + self.url + "_utils")
+        print("Logging DB is: %s" % status.json())
+
+        self.ready = True
+
+        while True:
+            output = self.process.stdout.readline()
+            if output == '' and self.process.poll() is not None:
+                break
+            if output:
+                print(output.decode("utf-8"))
+        rc = self.process.poll()
+        return rc
