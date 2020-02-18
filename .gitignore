@@ -47,3 +47,8 @@ honeypots/.vscode/settings.json
 honeypots/database/log.txt
 honeypots/config/dbconfig.json
 management/cli/honeycli.cfg
+
+# Frontend Stuff
+node_modules
+dist
+.cache
