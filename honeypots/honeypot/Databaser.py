@@ -22,7 +22,7 @@ class Databaser(Thread):
         self.port = "1437"
         self.conf = "../config/dbconfig.json"
         self.dbfolder = "../database"
-        self.bindaddress = "127.0.0.1"
+        self.bindaddress = "192.168.23.51"
         self.url = 'http://{}:{}/'.format(self.bindaddress, self.port)
         self.db_name = socket.gethostname() + "_logs"
         self.db_url = self.url + self.db_name
@@ -35,7 +35,8 @@ class Databaser(Thread):
         """
         # TODO: automatically setup the replication settings
         header = {"content-type": "application/json"}
-        r = put(url=self.url + self.db_name, headers=header, verify=False)
+        r = put(url=self.url + self.db_name,
+                headers=header, verify=False, timeout=2)
         if (r.status_code != 201):
             Exception("Database could not be created")
         return r
@@ -45,7 +46,7 @@ class Databaser(Thread):
         Runs the thread, begins sniffing
         """
         # toggle --in-memory to save data
-        cmd = ["pouchdb-server", "--in-memory", "-n", "--dir", self.dbfolder,
+        cmd = ["pouchdb-server", "--in-memory", "--dir", self.dbfolder,
                "--port", self.port, "--host", self.bindaddress, "--config", self.conf]
         self.process = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.dbfolder)
