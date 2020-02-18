@@ -16,8 +16,7 @@ class Sniffer(Thread):
     Constructor; takes a config keyword to see what mode to run it in
     'testing' ignores ssh spam you get
     """
-
-    def __init__(self, config="base",  count=0, openPorts=[], whitelist=[], db_url=None):
+    def __init__(self, config="base",  count=0, openPorts=[], whitelist=[], db_url=None, honeypotIP=None, managementIP=None):
         Thread.__init__(self)
         # list of saved packets
         self.RECORD = []
@@ -26,6 +25,8 @@ class Sniffer(Thread):
         self.openPorts = openPorts
         self.whitelist = whitelist
         self.db_url = db_url
+        self.honeypotIP = honeypotIP
+        self.managementIP = managementIP
 
         # Filtered lists of saved packets (TODO: make saving more comprehensive later)
         self.ICMP_RECORD = dict()
@@ -37,12 +38,13 @@ class Sniffer(Thread):
 
     def run(self):
         print("Sniffing")
+        fltr = "not src host {0} and not dst host {1}".format(self.honeypotIP, self.managementIP)
         if (self.config == "testing"):
+            fltr = fltr + "and not (src port ssh or dst port ssh)"
             # this ignores the ssh spam you get when sending packets between two ssh terminals
-            sniff(filter="ip and not (src port ssh or dst port ssh)",
-                  prn=self.save_packet, count=self.count)
+            sniff(filter=fltr, prn=self.save_packet, count=self.count)
         elif (self.config == "base"):
-            sniff(filter="ip", prn=self.save_packet, count=self.count)
+            sniff(filter=fltr, prn=self.save_packet, count=self.count)
 
     """
     Function for recording a packet during sniff runtime
