@@ -52,3 +52,4 @@ management/cli/honeycli.cfg
 node_modules
 dist
 .cache
+.nyc_output
