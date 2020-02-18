@@ -1,6 +1,7 @@
 # python3 PortThreadManager.py
 import json
 import sys
+import os
 from threading import Thread
 import socket
 from datetime import date
@@ -13,6 +14,7 @@ import argparse
 from NmapParser import NmapParser
 from Sniffer import Sniffer
 from Databaser import Databaser
+from CronInstaller import CronInstaller
 
 config = configparser.RawConfigParser()
 configFilePath = r'../config/properties.cfg'
@@ -133,6 +135,7 @@ if __name__ == '__main__':
     if args.config:
         with open(args.config, "r") as configFile:
             portList = json.load(configFile)
+            CronInstaller.install(os.path.abspath(__file__), '-c', os.path.abspath(configFile.name))
     elif args.nmap:
         parser = NmapParser(args.nmap)
         portList = parser.getPorts()
