@@ -47,10 +47,10 @@ class PortThreadManager:
             self.portList.append(Port(port, portData))
         self.ip = str(get('https://api.ipify.org').text)
         self.processList = []
-        # where the sniffer thread will be located
-        self.snifferThread = None
         # where the db thread will be located
         self.databaserThread = None
+        # where the sniffer thread will be located
+        self.snifferThread = None
         self.delay = config.get('Attributes', 'delay')
         self.whitelist = json.loads(config.get("Whitelist", "addresses"))
         self.keepRunning = True
@@ -100,17 +100,21 @@ class PortThreadManager:
     """
 
     def deploy(self):
-        # Normal run
-        #self.snifferThread = Sniffer()
-        # Testing configuration
-        self.snifferThread = Sniffer(
-            config="testing", openPorts=self.portList, whitelist=self.whitelist)
-        self.snifferThread.daemon = True
-        self.snifferThread.start()
-
+        # Setup the DB
         self.databaserThread = Databaser()
         self.databaserThread.daemon = True
         self.databaserThread.start()
+
+        # Wait for the DB to be ready
+        while not self.databaserThread.ready:
+          pass
+
+        # Normal run
+        #self.snifferThread = Sniffer()
+        # Testing configuration
+        self.snifferThread = Sniffer(config="testing", openPorts=self.portList, whitelist=self.whitelist, db_url=self.databaserThread.db_url)
+        self.snifferThread.daemon = True
+        self.snifferThread.start()
 
         for port in self.portList:
             portThread = Thread(target=self.portListener, args=[port])
