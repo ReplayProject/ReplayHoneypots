@@ -23,7 +23,7 @@ class Databaser(Thread):
         self.port = "1437"
         self.conf = "../config/dbconfig.json"
         self.dbfolder = "../database"
-        self.bindaddress = "127.0.0.1"
+        self.bindaddress = "localhost"
         self.url = 'http://{}:{}/'.format(self.bindaddress, self.port)
         self.db_name = socket.gethostname() + "_logs"
         self.db_url = self.url + self.db_name
@@ -32,7 +32,7 @@ class Databaser(Thread):
 
     def createDatabase(self):
         """
-        Create this device's log daatbase
+        Create this device's log database
         """
         # TODO: automatically setup the replication settings
         header = {"content-type": "application/json"}
@@ -61,13 +61,17 @@ class Databaser(Thread):
         """
         Runs the thread, begins sniffing
         """
+        # TODO: check database is not running before starting (especially replicating)
+
         # toggle --in-memory to save data
         cmd = ["pouchdb-server", "--in-memory", "-n", "--dir", self.dbfolder,
                "--port", self.port, "--host", self.bindaddress, "--config", self.conf]
         self.process = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.dbfolder)
 
-        time.sleep(.5)
+        # TODO: make this not a timing issue.
+        print("Waiting 5 seconds for DB to start")
+        time.sleep(5)
 
         status = self.createDatabase()
         print("Handling DB: " + self.url + "_utils")
