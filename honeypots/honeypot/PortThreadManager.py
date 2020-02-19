@@ -112,7 +112,8 @@ class PortThreadManager:
         # Normal run
         #self.snifferThread = Sniffer()
         # Testing configuration
-        self.snifferThread = Sniffer(config="testing", openPorts=self.portList, whitelist=self.whitelist, db_url=self.databaserThread.db_url)
+        self.snifferThread = Sniffer(config="testing", openPorts=self.portList, whitelist=self.whitelist,
+                                     db_url=self.databaserThread.db_url, honeypotIP="192.168.42.51", managementIPs=("52.87.97.77", "54.80.228.0"))
         self.snifferThread.daemon = True
         self.snifferThread.start()
 
