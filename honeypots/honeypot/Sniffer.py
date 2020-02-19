@@ -16,7 +16,7 @@ class Sniffer(Thread):
     Constructor; takes a config keyword to see what mode to run it in
     'testing' ignores ssh spam you get
     """
-    def __init__(self, config="base",  count=0, openPorts=[], whitelist=[], db_url=None, honeypotIP=None, managementIP=None):
+    def __init__(self, config="base",  count=0, openPorts=[], whitelist=[], db_url=None, honeypotIP=None, managementIPs=None):
         Thread.__init__(self)
         # list of saved packets
         self.RECORD = []
@@ -26,7 +26,7 @@ class Sniffer(Thread):
         self.whitelist = whitelist
         self.db_url = db_url
         self.honeypotIP = honeypotIP
-        self.managementIP = managementIP
+        self.managementIPs = managementIPs
 
         # Filtered lists of saved packets (TODO: make saving more comprehensive later)
         self.ICMP_RECORD = dict()
@@ -38,7 +38,7 @@ class Sniffer(Thread):
 
     def run(self):
         print("Sniffing")
-        fltr = "not src host {0} and not dst host {1}".format(self.honeypotIP, self.managementIP)
+        fltr = "not src host {0} and not host {1} and not host {2}".format(self.honeypotIP, self.managementIPs[1], self.managementIPs[0])
         if (self.config == "testing"):
             fltr = fltr + " and not (src port ssh or dst port ssh)"
             # this ignores the ssh spam you get when sending packets between two ssh terminals
@@ -92,6 +92,7 @@ class Sniffer(Thread):
         if srcIP not in self.whitelist:
             # TODO: make this more sensible
             trafficType = "TCP" if ipLayer.haslayer("TCP") else "UDP"
+            # TODO: IS PORT OPEN NOT WORKING
             log = LogEntry(srcPort, srcIP, destPort, dstIP,
                            trafficType, destPort in self.openPorts)
             self.post(log)
