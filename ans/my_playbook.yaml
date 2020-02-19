@@ -4,3 +4,8 @@
   gather_facts: False
   tasks:
     - action: ping
+    - shell: uname -a
+      ignore_errors: yes
+      register: uname_result
+
+    - debug: msg="{{ uname_result.stdout }}"
