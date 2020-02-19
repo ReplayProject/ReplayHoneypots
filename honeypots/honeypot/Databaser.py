@@ -2,8 +2,9 @@ import os
 import subprocess
 import socket
 import time
+import json
 from threading import Thread
-from requests import put
+from requests import put, post
 
 
 class Databaser(Thread):
@@ -22,7 +23,7 @@ class Databaser(Thread):
         self.port = "1437"
         self.conf = "../config/dbconfig.json"
         self.dbfolder = "../database"
-        self.bindaddress = "127.0.0.1"
+        self.bindaddress = "localhost"
         self.url = 'http://{}:{}/'.format(self.bindaddress, self.port)
         self.db_name = socket.gethostname() + "_logs"
         self.db_url = self.url + self.db_name
@@ -31,26 +32,46 @@ class Databaser(Thread):
 
     def createDatabase(self):
         """
-        Create this device's log daatbase
+        Create this device's log database
         """
         # TODO: automatically setup the replication settings
         header = {"content-type": "application/json"}
-        r = put(url=self.url + self.db_name, headers=header, verify=False)
+        r = put(url=self.url + self.db_name,
+                headers=header, verify=False, timeout=3)
         if (r.status_code != 201):
             Exception("Database could not be created")
+
+        # Optional step for continuous
+        header = {"content-type": "application/json"}
+
+        payload = {
+            "continuous": True,
+            "create_target": True,
+            "source": self.db_name,
+            "target": "https://sd-db.glitch.me/" + self.db_name
+        }
+
+        res = post(url=self.url + '_replicate',
+                   data=json.dumps(payload), headers=header, verify=False)
+        print("Replication Status: \n%s" % res.json())
+
         return r
 
     def run(self):
         """
         Runs the thread, begins sniffing
         """
+        # TODO: check database is not running before starting (especially replicating)
+
         # toggle --in-memory to save data
         cmd = ["pouchdb-server", "--in-memory", "-n", "--dir", self.dbfolder,
                "--port", self.port, "--host", self.bindaddress, "--config", self.conf]
         self.process = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.dbfolder)
 
-        time.sleep(.5)
+        # TODO: make this not a timing issue.
+        print("Waiting 5 seconds for DB to start")
+        time.sleep(5)
 
         status = self.createDatabase()
         print("Handling DB: " + self.url + "_utils")
