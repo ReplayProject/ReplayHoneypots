@@ -40,7 +40,7 @@ class Sniffer(Thread):
         print("Sniffing")
         fltr = "not src host {0} and not dst host {1}".format(self.honeypotIP, self.managementIP)
         if (self.config == "testing"):
-            fltr = fltr + "and not (src port ssh or dst port ssh)"
+            fltr = fltr + " and not (src port ssh or dst port ssh)"
             # this ignores the ssh spam you get when sending packets between two ssh terminals
             sniff(filter=fltr, prn=self.save_packet, count=self.count)
         elif (self.config == "base"):

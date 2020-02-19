@@ -101,16 +101,24 @@ class PortThreadManager:
         # Setup the DB
         self.databaserThread = Databaser()
         self.databaserThread.daemon = True
-        # self.databaserThread.start()
+        self.databaserThread.start()
 
         # Wait for the DB to be ready
-        # while not self.databaserThread.ready:
-        #   pass
+        while not self.databaserThread.ready:
+          pass
+
+        # Get IP and hostname
+        try :
+            host_name = socket.gethostname()
+            host_ip = socket.gethostbyname(host_name)
+        except Exception:
+          host_ip = "127.0.0.1"
 
         # Normal run
         #self.snifferThread = Sniffer()
         # Testing configuration
-        self.snifferThread = Sniffer(config="testing", openPorts=self.portList, whitelist=self.whitelist, db_url=self.databaserThread.db_url, honeypotIP="192.168.42.51", managementIP="152.14.85.156")
+        self.snifferThread = Sniffer(config="testing", openPorts=self.portList, whitelist=self.whitelist,
+                                     db_url=self.databaserThread.db_url, honeypotIP=host_ip, managementIP="54.80.228.0")  # 52.87.97.77
         self.snifferThread.daemon = True
         self.snifferThread.start()
 
@@ -124,7 +132,7 @@ class PortThreadManager:
             thread.join()
 
         self.snifferThread.join()
-        # self.databaserThread.join()
+        self.databaserThread.join()
 
 
 if __name__ == '__main__':
