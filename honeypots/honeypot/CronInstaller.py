@@ -2,7 +2,11 @@ import subprocess
 import os
 
 """
-This file creates/edits the system's crontab file to run the restart script.
+This file generates restart.sh, which checks if PortThreadManager.py is running
+and restarts it if not. 
+
+Additionally, this file edits the user's crontab file to run restart.sh based
+on the given interval. 
 """
 
 class CronInstaller:
@@ -11,7 +15,16 @@ class CronInstaller:
         restart_file = open("restart.sh", 'w')
 
         # Write the restart script using input 
-        restart_file.write("#!/bin/bash\n\nvar=$(pgrep -af python | grep PortThreadManager.py | wc -l)\n\nif [ $var -gt 0 ]\nthen\n\techo $(date) 'PortThreadManager.py is running.' >> /home/winnie/check.log\nelse\n\techo $(date) 'Running: python3 " + script_file + " " + mode + " " + config_file + ".' >> /home/winnie/check.log\n\tcd " + os.path.dirname(script_file) + " && /usr/bin/python3 " + script_file + " " + mode + " " + config_file + "\nfi") 
+        restart_file.write("#!/bin/bash\n\n" + 
+                "var=$(pgrep -af python | grep PortThreadManager.py | wc -l)\n\n" + 
+                "if [ $var -gt 0 ]\n" + 
+                "then\n" + 
+                "\techo $(date) 'PortThreadManager.py is running.' >> /home/winnie/check.log\n" +
+                "else\n" + 
+                "\techo $(date) 'Running: python3 " + script_file + " " + mode + " " + config_file + ".' >> /home/winnie/check.log\n" +
+                "\tcd " + os.path.dirname(os.path.dirname(script_file)) + " && pip3 install -r requirements.txt\n" + 
+                "\tcd " + os.path.dirname(script_file) + " && python3 " + script_file + " " + mode + " " + config_file + "\n" + 
+                "fi") 
         # Obtain the absolute path of the current directory and generate crontab job 
         process = subprocess.Popen(['pwd'], 
                 stdout=subprocess.PIPE, 

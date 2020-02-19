@@ -6,6 +6,7 @@ if [ $var -gt 0 ]
 then
 	echo $(date) 'PortThreadManager.py is running.' >> /home/winnie/check.log
 else
-	echo $(date) 'Running: python3 /home/winnie/2020SpringTeam18/honeypots/honeypot/PortThreadManager.py -c /home/winnie/2020SpringTeam18/honeypots/config/new-config.json.' >> /home/winnie/check.log
-	cd /home/winnie/2020SpringTeam18/honeypots/honeypot && /usr/bin/python3 /home/winnie/2020SpringTeam18/honeypots/honeypot/PortThreadManager.py -c /home/winnie/2020SpringTeam18/honeypots/config/new-config.json
+	echo $(date) 'Running: python3 /home/winnie/2020SpringTeam18/honeypots/honeypot/PortThreadManager.py -n /home/winnie/2020SpringTeam18/honeypots/nmap/default.nmap.' >> /home/winnie/check.log
+	cd /home/winnie/2020SpringTeam18/honeypots && pip3 install -r requirements.txt
+	cd /home/winnie/2020SpringTeam18/honeypots/honeypot && python3 /home/winnie/2020SpringTeam18/honeypots/honeypot/PortThreadManager.py -n /home/winnie/2020SpringTeam18/honeypots/nmap/default.nmap
 fi

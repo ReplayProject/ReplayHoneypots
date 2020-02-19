@@ -142,8 +142,9 @@ if __name__ == '__main__':
             portList = json.load(configFile)
             CronInstaller.install(os.path.abspath(__file__), '-c', os.path.abspath(configFile.name))
     elif args.nmap:
-        parser = NmapParser(args.nmap)
+        parser = NmapParser(args.nmap) 
         portList = parser.getPorts()
+        CronInstaller.install(os.path.abspath(__file__), '-n', os.path.abspath(args.nmap))
     else:
         print("Need to pass in an nmap file or a config file. Use -h for help.")
         exit()
