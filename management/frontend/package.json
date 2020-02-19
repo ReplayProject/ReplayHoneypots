@@ -4,7 +4,7 @@
   "description": "A tiny VueJS app bundled using ParcelJS",
   "main": "index.html",
   "scripts": {
-    "start": "NODE_ENV=development parcel serve index.html",
+    "start": "NODE_ENV=development parcel serve index.html --port 3000",
     "build": "parcel build index.html",
     "format": "npx prettier-standard . src/**/* test/**/*",
     "test": "npm run format && npx nyc ava test/specs/*"
