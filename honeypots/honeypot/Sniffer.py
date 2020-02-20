@@ -16,6 +16,7 @@ class Sniffer(Thread):
     Constructor; takes a config keyword to see what mode to run it in
     'testing' ignores ssh spam you get
     """
+
     def __init__(self, config="base",  count=0, openPorts=[], whitelist=[], db_url=None, honeypotIP=None, managementIPs=None):
         Thread.__init__(self)
         # list of saved packets
@@ -38,12 +39,16 @@ class Sniffer(Thread):
 
     def run(self):
         print("Sniffing")
-        fltr = "not src host {0} and not host {1} and not host {2}".format(self.honeypotIP, self.managementIPs[1], self.managementIPs[0])
+        fltr = "not src host {0} and not host {1} and not host {2}".format(
+            self.honeypotIP, self.managementIPs[1], self.managementIPs[0])
         if (self.config == "testing"):
             fltr = fltr + " and not (src port ssh or dst port ssh)"
             # this ignores the ssh spam you get when sending packets between two ssh terminals
             sniff(filter=fltr, prn=self.save_packet, count=self.count)
         elif (self.config == "base"):
+            sniff(filter=fltr, prn=self.save_packet, count=self.count)
+        elif (self.config == "onlyUDP"):
+            fltr = "udp and host {}".format(self.honeypotIP)
             sniff(filter=fltr, prn=self.save_packet, count=self.count)
 
     """
@@ -105,4 +110,4 @@ class Sniffer(Thread):
             log_id = r.json()["id"]
             print("Log created: %s" % log_id)
         except Exception:
-            print("DB-Failed: ", payload.json())
+            print("DB-Inactive: ", payload.json())
