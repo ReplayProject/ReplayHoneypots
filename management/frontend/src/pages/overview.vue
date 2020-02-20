@@ -1,5 +1,5 @@
 <template>
-  <section>
+  <section style="width:100%">
     <index> </index>
     <about> </about>
   </section>
