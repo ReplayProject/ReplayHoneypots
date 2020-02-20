@@ -10,13 +10,18 @@
     "test": "npm run format && npx nyc ava test/specs/*"
   },
   "dependencies": {
+    "@babel/runtime": "^7.8.4",
+    "axios": "^0.19.2",
+    "babel-polyfill": "^6.26.0",
     "chart.js": "^2.9.3",
     "tachyons": "^4.11.1",
     "vue": "latest",
+    "vue-progressbar": "^0.7.5",
     "vue-router": "latest"
   },
   "devDependencies": {
     "@babel/core": "7.8.4",
+    "@babel/plugin-transform-runtime": "^7.8.3",
     "@vue/component-compiler-utils": "^3.1.1",
     "ava": "^3.3.0",
     "jsdom": "^16.2.0",
@@ -39,5 +44,8 @@
       ".js",
       ".vue"
     ]
-  }
+  },
+  "browserslist": [
+    "last 1 Chrome version"
+  ]
 }

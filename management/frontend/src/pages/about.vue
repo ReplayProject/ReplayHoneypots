@@ -79,13 +79,14 @@
 <script>
 import componentTitle from '../components/title'
 import metricListItem from '../components/metric-list-item'
+import { getAllLogs } from '../api'
+
 export default {
   name: 'about',
   components: {
     componentTitle,
     metricListItem
   },
-
   data () {
     return {
       countryData: [
@@ -228,7 +229,29 @@ export default {
           value: '93,382',
           showBar: false
         }
-      ]
+      ],
+      logs: null,
+      error: null
+    }
+  },
+  async beforeRouteEnter (to, from, next) {
+    let [res, err] = await getAllLogs('lenny_logs')
+    next(async vm => vm.setData(err, res.data.rows))
+  },
+  // when route changes and this component is already rendered,
+  // the logic will be slightly different.
+  async beforeRouteUpdate (to, from, next) {
+    let [res, err] = await getAllLogs('lenny_logs')
+    this.setData(err, res.data.rows)
+    next()
+  },
+  methods: {
+    setData (err, logs) {
+      if (err) {
+        this.error = err.toString()
+      } else {
+        this.logs = logs
+      }
     }
   }
 }
