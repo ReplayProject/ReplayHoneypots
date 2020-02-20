@@ -8,37 +8,37 @@ import PageOverview from './pages/overview.vue'
 
 Vue.use(Router)
 
-let routes =  [
-    {
-      path: '/',
-      name: 'index',
-      component: PageIndex
-    },
-    {
-      path: '/about',
-      name: 'about',
-      component: PageAbout
-    },
-    {
-      path: '/edit',
-      name: 'edit',
-      component: PageEdit
-    },
-    {
-      path: '/overview',
-      name: 'overview',
-      component: PageOverview
-    },
-    {
-      path: '*',
-      redirect: '/'
-    }
-  ]
+let routes = [
+  {
+    path: '/',
+    name: 'index',
+    component: PageIndex
+  },
+  {
+    path: '/about',
+    name: 'about',
+    component: PageAbout
+  },
+  {
+    path: '/edit',
+    name: 'edit',
+    component: PageEdit
+  },
+  {
+    path: '/overview',
+    name: 'overview',
+    component: PageOverview
+  },
+  {
+    path: '*',
+    redirect: '/'
+  }
+]
 
 const router = new Router({
-  mode: "history",
-  base: "/",
+  mode: 'history',
+  base: '/',
   routes
-});
+})
 
 export default router

@@ -17,9 +17,29 @@ export default {
   components: {
     componentNav
   },
-  mounted () {
+  data () {
+    return {
+      dbInfo: []
+    }
+  },
+  async mounted () {
+    console.log('Setting up DB')
+    let res = await this.$pouch.info()
+    let db_list = res.filter(x => x[0] != '_')
+
+    db_list.forEach(async db => {
+      let info = await this.$pouch.info(this.$db_url + '/' + db)
+      this.dbInfo.push(info)
+      console.log(info)
+    })
+
     //  [App.vue specific] When App.vue is finish loading finish the progress bar
     this.$Progress.finish()
+  },
+  computed: {
+    totalLogs () {
+      return this.dbInfo.reduce((a, x) => (a += x.doc_count), 0)
+    }
   },
   created () {
     Chart.defaults.global.legend.display = false
