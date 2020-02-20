@@ -8,10 +8,7 @@ import PageOverview from './pages/overview.vue'
 
 Vue.use(Router)
 
-export default new Router({
-  mode: 'history',
-  base: '/',
-  routes: [
+let routes =  [
     {
       path: '/',
       name: 'index',
@@ -37,4 +34,11 @@ export default new Router({
       redirect: '/'
     }
   ]
-})
+
+const router = new Router({
+  mode: "history",
+  base: "/",
+  routes
+});
+
+export default router
