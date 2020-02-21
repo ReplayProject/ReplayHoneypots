@@ -5,6 +5,7 @@ import PageIndex from './pages/index.vue'
 import PageAbout from './pages/about.vue'
 import PageEdit from './pages/edit.vue'
 import PageOverview from './pages/overview.vue'
+import PageDetails from './pages/details.vue'
 
 Vue.use(Router)
 
@@ -20,14 +21,19 @@ let routes = [
     component: PageAbout
   },
   {
-    path: '/edit',
-    name: 'edit',
-    component: PageEdit
+    path: '/details/:device',
+    name: 'details',
+    component: PageDetails
   },
   {
     path: '/overview',
     name: 'overview',
     component: PageOverview
+  },
+  {
+    path: '/edit',
+    name: 'edit',
+    component: PageEdit
   },
   {
     path: '*',

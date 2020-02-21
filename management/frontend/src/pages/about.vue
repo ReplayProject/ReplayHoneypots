@@ -6,8 +6,11 @@
       'w-75-l': $route.name != 'overview'
     }"
   >
-    <component-title>General Stats</component-title>
+    <component-title>Different Stats</component-title>
     <hr class="o-20" />
+    <div class="divide tc relative mv4">
+      <h5 class="fw4 ttu mv0 dib bg-white ph3">Fake Data</h5>
+    </div>
     <hr class="o-20 mt4" />
     <div class="flex flex-wrap pt3 nl3 nr3">
       <div class="w-100 w-50-l ph3 mb3 mb0-l">

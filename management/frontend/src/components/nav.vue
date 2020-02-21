@@ -31,44 +31,59 @@
           >Overview</router-link
         >
       </li>
-      <li class="mb2">
-        <router-link to="/history" class="block link dim blue"
-          >Order History</router-link
-        >
-      </li>
-      <li class="mb2">
-        <router-link to="/fluidLayout" class="block link dim blue"
-          >Fluid Layout</router-link
-        >
-      </li>
-      <li>
-        <router-link to="/iconNav" class="block link dim blue"
-          >Icon Nav</router-link
+      <li v-for="db in $parent.dbInfo" :key="db.db_name" class="mb2">
+        <router-link
+          :to="'/details/' + db.db_name"
+          class="block link dim blue"
+          >{{ db.db_name | formatDBName }}</router-link
         >
       </li>
     </ul>
     <h2 class="ttu mt0 mb2 f6 fw5 silver">More</h2>
     <ul class="list pl0 mt0 mb2">
-      <li class="mb2">
+      <!-- <li class="mb2">
         <router-link to="/toolkitDocs" class="block link dim blue"
           >Toolkit Docs</router-link
         >
+      </li> -->
+      <li class="mb2">
+        <a
+          :href="managementDBUrl + '/_utils'"
+          target="_blank"
+          class="block link dim blue"
+        >
+          Management Database
+        </a>
       </li>
       <li class="mb2">
-        <router-link to="/bootstrapDocs" class="block link dim blue"
-          >Bootstrap Docs</router-link
+        <a
+          href="https://github.com/MDSLKTR/pouch-vue"
+          target="_blank"
+          class="block link dim blue"
         >
-      </li>
-      <li class="mb2">
-        <router-link to="/darkUI" class="block link dim blue"
-          >Dark UI</router-link
-        >
+          PouchDB API
+        </a>
       </li>
       <li>
-        <router-link to="/exampleModal" class="block link dim blue"
-          >Example Modal</router-link
+        <a
+          href="https://docs.couchdb.org/en/stable/api/index.html"
+          target="_blank"
+          class="block link dim blue"
         >
+          Database API
+        </a>
       </li>
     </ul>
   </nav>
 </template>
+
+<script>
+export default {
+  name: 'Nav',
+  data () {
+    return {
+      managementDBUrl: process.env.DB_URL
+    }
+  }
+}
+</script>
