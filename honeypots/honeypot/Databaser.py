@@ -5,6 +5,7 @@ import time
 import json
 from threading import Thread
 from requests import put, post
+from pathlib import Path
 
 
 class Databaser(Thread):
@@ -12,13 +13,14 @@ class Databaser(Thread):
     Use pouch db to run the database for logging
     """
 
-    def __init__(self):
+    def __init__(self, replication=False):
         """
         Constructor; takes a config keyword to see what mode to run it in
         'testing' ignores ssh spam you get
         """
         Thread.__init__(self)
         self.process = None
+        self.running = True
         # Config Cariables
         self.port = "1437"
         self.conf = "../config/dbconfig.json"
@@ -27,6 +29,7 @@ class Databaser(Thread):
         self.url = 'http://{}:{}/'.format(self.bindaddress, self.port)
         self.db_name = socket.gethostname() + "_logs"
         self.db_url = self.url + self.db_name
+        self.replication = replication
 
         self.ready = False
 
@@ -51,9 +54,10 @@ class Databaser(Thread):
             "target": "https://sd-db.glitch.me/" + self.db_name
         }
 
-        res = post(url=self.url + '_replicate',
-                   data=json.dumps(payload), headers=header, verify=False)
-        print("Replication Status: \n%s" % res.json())
+        if self.replication:
+            res = post(url=self.url + '_replicate',
+                       data=json.dumps(payload), headers=header, verify=False)
+            print("Replication Status: \n%s" % res.json())
 
         return r
 
@@ -62,6 +66,11 @@ class Databaser(Thread):
         Runs the thread, begins sniffing
         """
         # TODO: check database is not running before starting (especially replicating)
+
+        # Setup files needed to run db
+        # Path(self.dbfolder + '/log.txt').touch(mode=0o777, exist_ok=True)
+        Path(self.dbfolder + '/log.txt').touch(mode=0o777, exist_ok=True)
+        os.chmod(self.dbfolder + '/log.txt', 0o777)
 
         # toggle --in-memory to save data
         cmd = ["pouchdb-server", "--in-memory", "-n", "--dir", self.dbfolder,
@@ -79,7 +88,7 @@ class Databaser(Thread):
 
         self.ready = True
 
-        while True:
+        while self.running:
             output = self.process.stdout.readline()
             if output == '' and self.process.poll() is not None:
                 break
@@ -87,3 +96,10 @@ class Databaser(Thread):
                 print(output.decode("utf-8"))
         rc = self.process.poll()
         return rc
+
+    def stop(self):
+        """
+        Toggles the running flag on the main loop
+        """
+        self.running = False
+        self.process.kill()

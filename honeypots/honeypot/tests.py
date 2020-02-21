@@ -7,9 +7,13 @@ from NmapParser import NmapParser
 from PortThreadManager import PortThreadManager
 from LogEntry import LogEntry
 from ConfigTunnel import ConfigTunnel
+from Databaser import Databaser
+from Sniffer import Sniffer
+from scapy.all import send, UDP, Raw, IP
 import os
 import time
 from threading import Thread
+import socket
 
 """
 This file contains test cases for the honeypot code
@@ -60,11 +64,65 @@ class TestLogs(unittest.TestCase):
 
     def test_entry(self):
         entry = LogEntry("80", "192.1.1.1", "81", "192.1.1.2",
-                         "Www Mmm dd hh:mm:ss yyyy")
+                         "Www Mmm dd hh:mm:ss yyyy", True)
         self.assertEqual("80", entry.sourcePortNumber)
-        self.assertEqual("Www Mmm dd hh:mm:ss yyyy", entry.timestamp)
+        self.assertTrue(type(entry.timestamp) is int)
 
 
+class TestDatabaser(unittest.TestCase):
+    def test_init(self):
+        """
+        Test that the database successfully sets itself up
+        """
+        db = Databaser()
+        db.daemon = True
+        db.start()
+
+        # Wait for the DB to be ready
+        time.sleep(7)
+
+        self.assertTrue(db.ready)
+
+        db.stop()
+        db.join()
+
+
+class TestSniffer(unittest.TestCase):
+    def test_init(self):
+        """
+        Test that the sniffer successfully sets itself up
+        """
+        # Get my IP
+        host_name = socket.gethostname()
+        host_ip = socket.gethostbyname(host_name)
+        # Start the sniffer
+        sniff = Sniffer(
+            count=10,
+            config="onlyUDP",
+            openPorts=[],
+            whitelist=[],
+            db_url="fakeURL",
+            honeypotIP=host_ip,
+            managementIPs=("52.87.97.77", "54.80.228.0")
+        )
+        sniff.daemon = True
+        sniff.start()
+
+        # Make some UDP traffic
+        send(IP(dst=host_ip)/UDP(dport=1337)/Raw(load="whatever"), count=10)
+
+        # Let the logger handle whats up
+        time.sleep(2)
+
+        print(list(sniff.UDP_RECORD.keys()))
+
+        localhost_in_udp_record = any(
+            host_ip in i for i in list(sniff.UDP_RECORD.keys()))
+        self.assertTrue(localhost_in_udp_record)
+
+        sniff.join()
+
+# TODO: track down the unclosed socket
 class TestConfigTunnel(unittest.TestCase):
     """
     Handles testing for the ConfigTunnel module
@@ -83,6 +141,7 @@ class TestConfigTunnel(unittest.TestCase):
         """
         self.ctunnel.stop()
         self.stunnel.stop()
+        time.sleep(2)
         self.ctunnel.join()
         self.stunnel.join()
 

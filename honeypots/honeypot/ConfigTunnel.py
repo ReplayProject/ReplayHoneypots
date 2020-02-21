@@ -191,8 +191,6 @@ class ConfigTunnel(Thread):
                 sys.exit()
             self.mainloop(s)
 
-    # TODO: fix shutdown of tunnel (be more graceful)
-
     def run(self):
         """
         Decide on how to start the tunnel
