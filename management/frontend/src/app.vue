@@ -28,9 +28,9 @@ export default {
     let db_list = res.filter(x => x[0] != '_')
 
     db_list.forEach(async db => {
-      let info = await this.$pouch.info(this.$db_url + '/' + db)
+      let info = await this.$pouch.info(process.env.DB_URL + '/' + db)
       this.dbInfo.push(info)
-      console.log(info)
+      this.dbInfo.sort((a, b) => a.db_name.localeCompare(b.db_name))
     })
 
     //  [App.vue specific] When App.vue is finish loading finish the progress bar

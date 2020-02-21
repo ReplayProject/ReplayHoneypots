@@ -82,8 +82,6 @@ export default {
       return i == 0 ? 'bg-green' : i == 1 ? 'bg-red' : 'bg-purple'
     }
   },
-  mounted () {
-    console.log(this.appRef.dbInfo)
-  }
+  mounted () {}
 }
 </script>

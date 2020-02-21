@@ -11,12 +11,10 @@ PouchDB.plugin(require('pouchdb-live-find'))
 // PouchDB.plugin(require('pouchdb-authentication'));
 // TODO: when we add auth
 
-Vue.prototype.$db_url = 'https://sd-db.glitch.me'
-
 // https://github.com/MDSLKTR/pouch-vue
 Vue.use(PouchVue, {
   pouch: PouchDB, // optional if `PouchDB` is available on the global object
-  defaultDB: Vue.prototype.$db_url + '/_all_dbs', // this is used as a default connect/disconnect database
+  defaultDB: process.env.DB_URL + '/_all_dbs', // this is used as a default connect/disconnect database
   optionsDB: {
     // this is used to include a custom fetch() method (see TypeScript example)
     fetch: function (url, opts) {
@@ -35,6 +33,31 @@ Vue.use(VueProgressBar, {
   failedColor: 'red',
   thickness: '5px'
 })
+
+Vue.filter('formatDBName', value => {
+  if (!value) return ''
+  value = value.toString()
+  return value
+    .split('_')
+    .map(x => x.replace(/^\w/, c => c.toUpperCase()))
+    .join(' ')
+})
+
+// Setup for how dates work on the app
+let dateType = x =>
+  new Date(x).toLocaleString().replace('/' + new Date().getFullYear(), '')
+// Get date value
+Vue.prototype.$date = () => Date.now()
+// Parse regular date to string
+Vue.prototype.$parseDate = x => {
+  let s = dateType(x)
+  return s.slice(0, s.indexOf(':', 9)) + ' ' + s.split(' ')[2]
+}
+// Parse regular date to string with time too
+Vue.prototype.$parseDateWithTime = x => {
+  let s = dateType(x)
+  return s.slice(0, s.indexOf(':', 9) + 3) + ' ' + s.split(' ')[2]
+}
 
 window.v = new Vue({
   el: '#app',
