@@ -6,7 +6,8 @@ import router from './router'
 
 import PouchVue from 'pouch-vue'
 import PouchDB from 'pouchdb-browser'
-PouchDB.plugin(require('pouchdb-find'))
+import PouchdbFind from 'pouchdb-find'
+PouchDB.plugin(PouchdbFind)
 PouchDB.plugin(require('pouchdb-live-find'))
 // PouchDB.plugin(require('pouchdb-authentication'));
 // TODO: when we add auth
@@ -31,7 +32,7 @@ Vue.use(PouchVue, {
 Vue.use(VueProgressBar, {
   color: 'rgb(143, 255, 199)',
   failedColor: 'red',
-  thickness: '5px'
+  thickness: '8px'
 })
 
 Vue.filter('formatDBName', value => {
@@ -44,8 +45,11 @@ Vue.filter('formatDBName', value => {
 })
 
 // Setup for how dates work on the app
+// TODO: test this
 let dateType = x =>
-  new Date(x).toLocaleString().replace('/' + new Date().getFullYear(), '')
+  new Date(x * 1000)
+    .toLocaleString()
+    .replace('/' + new Date().getFullYear(), '')
 // Get date value
 Vue.prototype.$date = () => Date.now()
 // Parse regular date to string

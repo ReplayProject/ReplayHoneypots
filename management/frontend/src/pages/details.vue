@@ -9,31 +9,35 @@
     <component-title>{{ $route.params.device | formatDBName }}</component-title>
     <hr class="o-20" />
     <div class="mt4">
-      <div class="w-100 mb3 mb0-l">
-        <div class="bt bl br b--black-10 br2">
-          <div class="pa3 bb b--black-10">
-            <h4 class="mv0">First {{ logs.length }} Logs</h4>
-          </div>
-          <metric-list-item
-            v-for="(log, index) in logs"
-            :key="index"
-            :show-bar="false"
-            :name="log.doc.sourceIPAddress + ':' + log.doc.sourcePortNumber"
-            :value="
-              log.doc.destIPAddress +
-                ':' +
-                log.doc.destPortNumber +
-                '  -  ' +
-                log.doc.timestamp
-            "
-          >
-          </metric-list-item>
-        </div>
-        <a
-          href="#"
+      <div class="overflow-auto">
+        <table class="f6 w-100 mw8 center" cellspacing="0">
+          <thead>
+            <tr class="stripe-dark">
+              <th class="fw6 tl pa3 bg-pink">timestamp</th>
+              <th class="fw6 tl pa3 bg-pink">traffictype</th>
+              <th class="fw6 tl pa3 bg-pink">sourcePort</th>
+              <th class="fw6 tl pa3 bg-pink">sourceIP</th>
+              <th class="fw6 tl pa3 bg-pink">destPort</th>
+              <th class="fw6 tl pa3 bg-pink">destIP</th>
+            </tr>
+          </thead>
+          <tbody class="lh-copy">
+            <tr v-for="entry in logs" :key="entry.id" class="stripe-dark">
+              <td class="pa3">{{ $parseDateWithTime(entry.timestamp) }}</td>
+              <td class="pa3">{{ entry.trafficType }}</td>
+              <td class="pa3">{{ entry.sourcePortNumber }}</td>
+              <td class="pa3">{{ entry.sourceIPAddress }}</td>
+              <td class="pa3">{{ entry.destPortNumber }}</td>
+              <td class="pa3">{{ entry.destIPAddress }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <button
+          @click="loadMore"
           class="no-underline fw5 mt3 br2 ph3 pv2 dib ba b--blue blue bg-white hover-bg-blue hover-white"
-          >Load More</a
         >
+          Load More
+        </button>
       </div>
     </div>
   </main>
@@ -41,48 +45,89 @@
 
 <script>
 import componentTitle from '../components/title'
-import metricListItem from '../components/metric-list-item'
+import logEntry from '../components/log-entry'
+import Vue from 'vue'
 
 export default {
   name: 'deviceDetails',
   components: {
     componentTitle,
-    metricListItem
+    logEntry
   },
   data () {
     return {
       logs: [],
       error: null,
-      lastKey: ''
+      lastKey: '',
+      limit: 25
     }
   },
-  async beforeRouteEnter (to, from, next) {
-    next(async vm => {
-      let url = process.env.DB_URL + '/' + vm.$route.params.device
-      let res = await vm.$pouch.allDocs(
-        { include_docs: true, conflicts: true, limit: 10 },
-        url
-      )
-      vm.setData(undefined, res.rows)
-    })
-  },
-  // // when route changes and this component is already rendered,
-  // // the logic will be slightly different.
+  //TODO: THIS IS FOR PRE_Navigation data loading (not required)
+  // async beforeRouteEnter (to, from, next) {
+  //   next( vm => {
+  //     vm.setData(undefined, results.docs)
+  //   })
+
+  // next(async vm => {
+  //   let url = process.env.DB_URL + '/' + vm.$route.params.device
+  //   let res = await vm.$pouch.allDocs(
+  //     { include_docs: true, conflicts: true, limit: vm.limit },
+  //     url
+  //   )
+  //   vm.setData(undefined, res.rows)
+  // })
+  // },
+  // // // when route changes and this component is already rendered,
+  // // // the logic will be slightly different.
   async beforeRouteUpdate (to, from, next) {
-    let url = process.env.DB_URL + '/' + this.$route.params.device
-    let res = await this.$pouch.allDocs(
-      { include_docs: true, conflicts: true, limit: 10 },
-      url
-    )
-    this.setData(undefined, res.rows)
+    // let url = process.env.DB_URL + '/' + this.$route.params.device
+    // let res = await this.logs.$pouch.allDocs(
+    //   { include_docs: true, conflicts: true, limit: this.limit },
+    //   url
+    // )
+    // this.setData(undefined, res.rows)
+    this.logs = []
+    this.loadMore()
     next()
   },
+  created () {
+    this.loadMore()
+  },
   methods: {
-    setData (err, logs) {
+    async loadMore () {
+      this.$Progress.start()
+      let idx = await this.$pouch.createIndex(
+        {
+          index: {
+            fields: ['timestamp']
+          }
+        },
+        process.env.DB_URL + '/' + this.$route.params.device
+      )
+
+      // Only log index creation if it was new
+      if (idx.result != 'exists') console.log(idx)
+
+      // Actually do a query
+      let results = await this.$pouch.find(
+        {
+          selector: { timestamp: { $exists: true } },
+          sort: [{ timestamp: 'desc' }],
+          limit: this.limit,
+          skip: this.logs.length
+        },
+        process.env.DB_URL + '/' + this.$route.params.device
+      )
+
+      this.logs.push.apply(this.logs, results.docs)
+
+      this.$Progress.finish()
+    },
+    setData (err, results) {
       if (err) {
         this.error = err.toString()
       } else {
-        this.logs = logs
+        this.logs.push.apply(this.logs, results.docs)
       }
     }
   }
