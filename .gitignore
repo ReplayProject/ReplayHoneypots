@@ -53,3 +53,6 @@ node_modules
 dist
 .cache
 .nyc_output
+
+#Configuration files
+properties.cfg

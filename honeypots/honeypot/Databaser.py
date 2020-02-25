@@ -13,7 +13,7 @@ class Databaser(Thread):
     Use pouch db to run the database for logging
     """
 
-    def __init__(self, replication=False):
+    def __init__(self, replication=False, options=[]):
         """
         Constructor; takes a config keyword to see what mode to run it in
         'testing' ignores ssh spam you get
@@ -22,10 +22,10 @@ class Databaser(Thread):
         self.process = None
         self.running = True
         # Config Cariables
-        self.port = "1437"
-        self.conf = "../config/dbconfig.json"
-        self.dbfolder = "../database"
-        self.bindaddress = "localhost"
+        self.port = options[0]
+        self.conf = options[1]
+        self.dbfolder = options[2]
+        self.bindaddress = options[3]
         self.url = 'http://{}:{}/'.format(self.bindaddress, self.port)
         self.db_name = socket.gethostname() + "_logs"
         self.db_url = self.url + self.db_name
