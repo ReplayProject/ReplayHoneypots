@@ -19,8 +19,7 @@ class Sniffer(Thread):
 
     def __init__(self, config="base",  count=0, openPorts=[], whitelist=[], db_url=None, honeypotIP=None, managementIPs=None):
         Thread.__init__(self)
-        # list of saved packets
-        self.RECORD = []
+
         self.config = config
         self.count = count
         self.openPorts = openPorts
@@ -29,18 +28,19 @@ class Sniffer(Thread):
         self.honeypotIP = honeypotIP
         self.managementIPs = managementIPs
 
-        # Filtered lists of saved packets (TODO: make saving more comprehensive later)
-        self.ICMP_RECORD = dict()
-        self.TCP_RECORD = dict()
-        self.UDP_RECORD = dict()
     """
     Runs the thread, begins sniffing
     """
 
     def run(self):
         print("Sniffing")
-        fltr = "not src host {0} and not host {1} and not host {2}".format(
-            self.honeypotIP, self.managementIPs[1], self.managementIPs[0])
+
+        #building the base filter
+        fltr = "not src host {} ".format(self.honeypotIP)
+        #adding a variable number of management ips
+        for ip in managementIPs:
+            fltr += "and not host {}".format(ip)
+        
         if (self.config == "testing"):
             fltr = fltr + " and not (src port ssh or dst port ssh)"
             # this ignores the ssh spam you get when sending packets between two ssh terminals
@@ -63,42 +63,28 @@ class Sniffer(Thread):
         if (packet.haslayer("IP") == False):
             return
 
+        sourceMAC = packet.src
+        destMAC = packet.dst
+
         ipLayer = packet.getlayer("IP")
 
         # IP where this came from
         srcIP = ipLayer.src
         dstIP = ipLayer.dst
 
-        if (ipLayer.haslayer("ICMP")):
-            # print("ICMP packet sent from IP {0}".format(srcIP))
-            if srcIP in self.ICMP_RECORD:
-                self.ICMP_RECORD[srcIP].append(packet)
-            else:
-                self.ICMP_RECORD[srcIP] = [packet]
+        #TODO: add other types of packets
+        if (not ipLayer.haslayer("TCP") and not ip.haslayer("UDP")):
             return
 
         destPort = ipLayer.dport
         srcPort = ipLayer.sport
         pair = (srcIP, destPort)
 
-        if (ipLayer.haslayer("UDP")):
-            # print("UDP packet sent from IP {0} to port {1}".format(srcIP, destPort))
-            if pair in self.UDP_RECORD:
-                self.UDP_RECORD[pair].append(packet)
-            else:
-                self.UDP_RECORD[pair] = [packet]
-        elif (ipLayer.haslayer("TCP")):
-            # print("TCP packet sent from IP {0} to port {1}".format(srcIP, destPort))
-            if pair in self.TCP_RECORD:
-                self.TCP_RECORD[pair].append(packet)
-            else:
-                self.TCP_RECORD[pair] = [packet]
-
         if srcIP not in self.whitelist:
             # TODO: make this more sensible
             trafficType = "TCP" if ipLayer.haslayer("TCP") else "UDP"
             # TODO: IS PORT OPEN NOT WORKING
-            log = LogEntry(srcPort, srcIP, destPort, dstIP,
+            log = LogEntry(srcPort, srcIP, sourceMAC, destPort, dstIP, destMAC,
                            trafficType, destPort in self.openPorts)
             self.post(log)
 
