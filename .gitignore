@@ -56,3 +56,4 @@ dist
 
 #Configuration files
 properties.cfg
+restart.sh
