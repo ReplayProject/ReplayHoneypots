@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const DB_BASEURL = 'https://sd-db.glitch.me/'
+const DB_BASEURL = process.env.DB_URL
 
 function to (promise) {
   return promise
