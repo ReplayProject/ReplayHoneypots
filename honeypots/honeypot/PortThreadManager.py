@@ -14,7 +14,6 @@ import argparse
 from NmapParser import NmapParser
 from Sniffer import Sniffer
 from Databaser import Databaser
-from CronInstaller import CronInstaller
 
 config = configparser.RawConfigParser()
 configFilePath = r'../config/properties.cfg'
@@ -152,11 +151,9 @@ if __name__ == '__main__':
     if args.config:
         with open(args.config, "r") as configFile:
             portList = json.load(configFile)
-            CronInstaller.install(os.path.abspath(__file__), '-c', os.path.abspath(configFile.name))
     elif args.nmap:
         parser = NmapParser(args.nmap) 
         portList = parser.getPorts()
-        CronInstaller.install(os.path.abspath(__file__), '-n', os.path.abspath(args.nmap))
     else:
         print("Need to pass in an nmap file or a config file. Use -h for help.")
         exit()
