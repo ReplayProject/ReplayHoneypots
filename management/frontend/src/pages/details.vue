@@ -46,7 +46,6 @@
 <script>
 import componentTitle from '../components/title'
 import logEntry from '../components/log-entry'
-import Vue from 'vue'
 
 export default {
   name: 'deviceDetails',
@@ -63,20 +62,24 @@ export default {
     }
   },
   //TODO: THIS IS FOR PRE_Navigation data loading (not required)
-  // async beforeRouteEnter (to, from, next) {
-  //   next( vm => {
-  //     vm.setData(undefined, results.docs)
-  //   })
+  beforeRouteEnter (to, from, next) {
 
-  // next(async vm => {
-  //   let url = process.env.DB_URL + '/' + vm.$route.params.device
-  //   let res = await vm.$pouch.allDocs(
-  //     { include_docs: true, conflicts: true, limit: vm.limit },
-  //     url
-  //   )
-  //   vm.setData(undefined, res.rows)
-  // })
-  // },
+    // debugger
+    next()
+
+    // next(vm => {
+    //   vm.setData(undefined, results.docs)
+    // })
+
+    // next(async vm => {
+    //   let url = process.env.DB_URL + '/' + vm.$route.params.device
+    //   let res = await vm.$pouch.allDocs(
+    //     { include_docs: true, conflicts: true, limit: vm.limit },
+    //     url
+    //   )
+    //   vm.setData(undefined, res.rows)
+    // })
+  },
   // // // when route changes and this component is already rendered,
   // // // the logic will be slightly different.
   async beforeRouteUpdate (to, from, next) {
