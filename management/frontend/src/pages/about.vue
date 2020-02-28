@@ -6,8 +6,11 @@
       'w-75-l': $route.name != 'overview'
     }"
   >
-    <component-title>General Stats</component-title>
+    <component-title>Different Stats</component-title>
     <hr class="o-20" />
+    <div class="divide tc relative mv4">
+      <h5 class="fw4 ttu mv0 dib bg-white ph3">Fake Data</h5>
+    </div>
     <hr class="o-20 mt4" />
     <div class="flex flex-wrap pt3 nl3 nr3">
       <div class="w-100 w-50-l ph3 mb3 mb0-l">
@@ -79,13 +82,14 @@
 <script>
 import componentTitle from '../components/title'
 import metricListItem from '../components/metric-list-item'
+import { getAllLogs } from '../api'
+
 export default {
   name: 'about',
   components: {
     componentTitle,
     metricListItem
   },
-
   data () {
     return {
       countryData: [
@@ -228,7 +232,29 @@ export default {
           value: '93,382',
           showBar: false
         }
-      ]
+      ],
+      logs: null,
+      error: null
+    }
+  },
+  async beforeRouteEnter (to, from, next) {
+    let [res, err] = await getAllLogs('lenny_logs')
+    next(async vm => vm.setData(err, res.data.rows))
+  },
+  // when route changes and this component is already rendered,
+  // the logic will be slightly different.
+  async beforeRouteUpdate (to, from, next) {
+    let [res, err] = await getAllLogs('lenny_logs')
+    this.setData(err, res.data.rows)
+    next()
+  },
+  methods: {
+    setData (err, logs) {
+      if (err) {
+        this.error = err.toString()
+      } else {
+        this.logs = logs
+      }
     }
   }
 }
