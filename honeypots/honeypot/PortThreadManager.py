@@ -99,13 +99,13 @@ class PortThreadManager:
 
     def deploy(self):
         # Setup the DB
-        self.databaserThread = Databaser()
+        self.databaserThread = Databaser(replication=True)
         self.databaserThread.daemon = True
         self.databaserThread.start()
 
         # Wait for the DB to be ready
         while not self.databaserThread.ready:
-          pass
+            pass
 
         # Normal run
         #self.snifferThread = Sniffer()

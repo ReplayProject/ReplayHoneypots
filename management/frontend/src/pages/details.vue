@@ -10,31 +10,77 @@
     <hr class="o-20" />
     <div class="mt4">
       <div class="overflow-auto">
-        <table class="f6 w-100 mw8 center" cellspacing="0">
+        <table class="f6 w-100 mw8 center mb3" cellspacing="0">
           <thead>
-            <tr class="stripe-dark">
-              <th class="fw6 tl pa3 bg-pink">timestamp</th>
-              <th class="fw6 tl pa3 bg-pink">traffictype</th>
-              <th class="fw6 tl pa3 bg-pink">sourcePort</th>
-              <th class="fw6 tl pa3 bg-pink">sourceIP</th>
-              <th class="fw6 tl pa3 bg-pink">destPort</th>
-              <th class="fw6 tl pa3 bg-pink">destIP</th>
+            <tr class="stripe-dark tc">
+              <th
+                class="fw6 tl pa3 tc bg-pink dim pointer"
+                @click="sort('timestamp')"
+              >
+                timestamp
+              </th>
+              <th
+                class="fw6 tl pa3 tc bg-pink dim pointer"
+                @click="sort('trafficType')"
+              >
+                traffictype
+              </th>
+              <th
+                class="fw6 tl pa3 tc bg-pink dim pointer"
+                @click="sort('sourcePortNumber')"
+              >
+                sourcePort
+              </th>
+              <th
+                class="fw6 tl pa3 tc bg-pink dim pointer"
+                @click="sort('sourceIPAddress')"
+              >
+                sourceIP
+              </th>
+              <th
+                class="fw6 tl pa3 tc bg-pink dim pointer"
+                @click="sort('destPortNumber')"
+              >
+                destPort
+              </th>
+              <th
+                class="fw6 tl pa3 tc bg-pink dim pointer"
+                @click="sort('destIPAddress')"
+              >
+                destIP
+              </th>
             </tr>
           </thead>
           <tbody class="lh-copy">
-            <tr v-for="entry in logs" :key="entry.id" class="stripe-dark">
-              <td class="pa3">{{ $parseDateWithTime(entry.timestamp) }}</td>
-              <td class="pa3">{{ entry.trafficType }}</td>
-              <td class="pa3">{{ entry.sourcePortNumber }}</td>
-              <td class="pa3">{{ entry.sourceIPAddress }}</td>
-              <td class="pa3">{{ entry.destPortNumber }}</td>
-              <td class="pa3">{{ entry.destIPAddress }}</td>
+            <tr v-for="entry in sortedLogs" :key="entry.id" class="stripe-dark">
+              <td class="pa3 tc">{{ $parseDateWithTime(entry.timestamp) }}</td>
+              <td class="pa3 tc">{{ entry.trafficType }}</td>
+              <td class="pa3 tc">{{ entry.sourcePortNumber }}</td>
+              <td class="pa3 tc">{{ entry.sourceIPAddress }}</td>
+              <td class="pa3 tc">{{ entry.destPortNumber }}</td>
+              <td class="pa3 tc">{{ entry.destIPAddress }}</td>
             </tr>
           </tbody>
         </table>
+        <div class="cf tc">
+          <button
+            @click="prevPage"
+            class="no-underline fw5 br2 ph3 pv2 dib ba b--blue blue bg-white hover-bg-blue hover-white fl"
+          >
+            Previous Page
+          </button>
+          <span class="f3">{{ currentPage }}</span>
+          <button
+            @click="nextPage"
+            class="no-underline fw5 br2 ph3 pv2 dib ba b--blue blue bg-white hover-bg-blue hover-white fr"
+          >
+            Next Page
+          </button>
+        </div>
+        <br />
         <button
           @click="loadMore"
-          class="no-underline fw5 mt3 br2 ph3 pv2 dib ba b--blue blue bg-white hover-bg-blue hover-white"
+          class="no-underline fw5 br2 ph3 pv2 dib ba b--blue blue bg-white hover-bg-blue hover-white"
         >
           Load More
         </button>
@@ -58,12 +104,33 @@ export default {
       logs: [],
       error: null,
       lastKey: '',
-      limit: 25
+      limit: 25,
+      pageSize: 5,
+      currentPage: 1,
+      // Used for sorting on the frontend
+      currentSort: 'name',
+      currentSortDir: 'asc'
+    }
+  },
+  computed: {
+    sortedLogs () {
+      return this.logs
+        .sort((a, b) => {
+          let modifier = 1
+          if (this.currentSortDir === 'desc') modifier = -1
+          if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier
+          if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier
+          return 0
+        })
+        .filter((row, index) => {
+          let start = (this.currentPage - 1) * this.pageSize
+          let end = this.currentPage * this.pageSize
+          if (index >= start && index < end) return true
+        })
     }
   },
   //TODO: THIS IS FOR PRE_Navigation data loading (not required)
   beforeRouteEnter (to, from, next) {
-
     // debugger
     next()
 
@@ -97,6 +164,20 @@ export default {
     this.loadMore()
   },
   methods: {
+    sort (s) {
+      //if s == current sort, reverse
+      if (s === this.currentSort) {
+        this.currentSortDir = this.currentSortDir === 'asc' ? 'desc' : 'asc'
+      }
+      this.currentSort = s
+    },
+    nextPage () {
+      if (this.currentPage * this.pageSize < this.logs.length)
+        this.currentPage++
+    },
+    prevPage () {
+      if (this.currentPage > 1) this.currentPage--
+    },
     async loadMore () {
       this.$Progress.start()
       let idx = await this.$pouch.createIndex(
