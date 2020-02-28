@@ -38,9 +38,9 @@ class Sniffer(Thread):
         #building the base filter
         fltr = "not src host {} ".format(self.honeypotIP)
         #adding a variable number of management ips
-        for ip in managementIPs:
-            fltr += "and not host {}".format(ip)
-        
+        for ip in self.managementIPs:
+            fltr += "and not host {} ".format(ip)
+
         if (self.config == "testing"):
             fltr = fltr + " and not (src port ssh or dst port ssh)"
             # this ignores the ssh spam you get when sending packets between two ssh terminals
@@ -57,8 +57,6 @@ class Sniffer(Thread):
     """
 
     def save_packet(self, packet):
-        self.RECORD.append(packet)
-
         # TODO: make this work with layer 2, for now just skip filtering those packets
         if (packet.haslayer("IP") == False):
             return
@@ -73,7 +71,7 @@ class Sniffer(Thread):
         dstIP = ipLayer.dst
 
         #TODO: add other types of packets
-        if (not ipLayer.haslayer("TCP") and not ip.haslayer("UDP")):
+        if (not ipLayer.haslayer("TCP") and not ipLayer.haslayer("UDP")):
             return
 
         destPort = ipLayer.dport
