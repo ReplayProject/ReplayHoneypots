@@ -37,10 +37,8 @@ restart_file = open("restart.sh", 'w')
 # Write the restart script using input
 restart_file.write("#!/bin/bash\n\n" +
                    "var=$(pgrep -af PortThreadManager.py | wc -l)\n\n" +
-                   "if [ $var -gt 0 ]\n" +
+                   "if [ $var -le 0 ]\n" +
                    "then\n" +
-                   "\techo $(date) 'PortThreadManager.py is running.' >> " + os.path.dirname(os.path.dirname(script_file)) + "/logs/cron.txt\n" +
-                   "else\n" +
                    "\techo $(date) 'Running: python3 " + script_file + " " + mode + " " + config_file + ".' >> " + os.path.dirname(os.path.dirname(script_file)) + "/logs/cron.txt\n" +
                    "\tcd " + os.path.dirname(os.path.dirname(script_file)) + " && pip3 install -r requirements.txt\n" +
                    "\tcd " + os.path.dirname(script_file) + " && python3 " + script_file + " " + mode + " " + config_file + "\n" +
