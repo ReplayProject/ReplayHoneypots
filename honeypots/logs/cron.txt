@@ -1,3 +1,0 @@
-Thu Feb 27 05:18:01 UTC 2020 Running: python3 /home/winnie/2020SpringTeam18/honeypots/honeypot/PortThreadManager.py -c /home/winnie/2020SpringTeam18/honeypots/config/new-config.json.
-Thu Feb 27 05:19:01 UTC 2020 PortThreadManager.py is running.
-Thu Feb 27 05:20:01 UTC 2020 PortThreadManager.py is running.
