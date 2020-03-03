@@ -22,6 +22,11 @@
       <li class="mb2">
         <router-link to="/edit" class="block link dim blue">Edit</router-link>
       </li>
+      <li class="mb2">
+        <router-link to="/terminal" class="block link dim blue"
+          >Terminal</router-link
+        >
+      </li>
     </ul>
     <!-- More Realistic Options -->
     <h2 class="ttu mt0 mb2 f6 fw5 silver">Dashboards</h2>

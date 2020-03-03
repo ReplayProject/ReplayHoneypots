@@ -26,6 +26,20 @@
         <dd class="f4 f3-ns b ml0">{{ dbInfo.host }}</dd>
       </dl>
     </article>
+    <article v-if="dbInfo.db_name == 'aggregate'">
+      <dl class="dib mr5">
+        <dd class="f6 f5-ns b ml0">Adapter</dd>
+        <dd class="f3 f2-ns b ml0">{{ dbInfo.adapter }}</dd>
+      </dl>
+      <dl class="dib mr5">
+        <dd class="f6 f5-ns b ml0">Total Logs</dd>
+        <dd class="f3 f2-ns b ml0">{{ dbInfo.doc_count }}</dd>
+      </dl>
+      <dl class="dib mr5">
+        <dd class="f6 f5-ns b ml0">Document Updates</dd>
+        <dd class="f3 f2-ns b ml0">{{ dbInfo.update_seq }}</dd>
+      </dl>
+    </article>
     <hr class="o-20" />
     <div class="mt4">
       <div class="overflow-auto">
@@ -180,6 +194,7 @@ export default {
       this.startKey = ''
       this.loadDocs()
       this.dbInfo = await this.$databases[this.dbURI].info()
+      console.log(await this.$databases[this.dbURI].info())
     },
     sort (s) {
       //if s == current sort, reverse
