@@ -38,6 +38,11 @@
           >{{ db.db_name | formatDBName }}</router-link
         >
       </li>
+      <li v-if="$parent.dbInfo.length != 0" class="mb2">
+        <router-link to="/details/aggregate" class="block link dim blue">{{
+          'aggregate' | formatDBName
+        }}</router-link>
+      </li>
     </ul>
     <h2 class="ttu mt0 mb2 f6 fw5 silver">More</h2>
     <ul class="list pl0 mt0 mb2">

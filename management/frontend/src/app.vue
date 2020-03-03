@@ -31,6 +31,9 @@ export default {
       let info = await this.$pouch.info(process.env.DB_URL + '/' + db)
       this.dbInfo.push(info)
       this.dbInfo.sort((a, b) => a.db_name.localeCompare(b.db_name))
+
+      // Add to group DB
+      this.$pouch.pull('aggregate', process.env.DB_URL + '/' + db)
     })
 
     //  [App.vue specific] When App.vue is finish loading finish the progress bar
