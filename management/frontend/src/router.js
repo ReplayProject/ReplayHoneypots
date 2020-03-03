@@ -6,6 +6,7 @@ import PageAbout from './pages/about.vue'
 import PageEdit from './pages/edit.vue'
 import PageOverview from './pages/overview.vue'
 import PageDetails from './pages/details.vue'
+import PageTerminal from './pages/terminal.vue'
 
 Vue.use(Router)
 
@@ -24,6 +25,11 @@ let routes = [
     path: '/details/:device',
     name: 'details',
     component: PageDetails
+  },
+  {
+    path: '/terminal',
+    name: 'terminal',
+    component: PageTerminal
   },
   {
     path: '/overview',
