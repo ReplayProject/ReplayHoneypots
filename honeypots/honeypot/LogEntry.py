@@ -11,6 +11,8 @@ class LogEntry:
     Initializes the log entry with the basic info
     """
 
+    __name__ = "LogEntry"
+
     def __init__(self, sourcePortNumber, sourceIPAddress, sourceMAC, destPortNumber, destIPAddress, destMAC, trafficType, isPortOpen):
         self.sourcePortNumber = sourcePortNumber
         self.sourceIPAddress = sourceIPAddress
