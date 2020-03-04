@@ -2,6 +2,8 @@ from LogEntry import LogEntry
 from requests import post
 from scapy.all import sniff
 from threading import Thread
+from datetime import datetime
+from Notification import Notification
 import requests
 requests.adapters.DEFAULT_RETRIES = 0
 
@@ -28,6 +30,10 @@ class Sniffer(Thread):
         self.honeypotIP = honeypotIP
         self.managementIPs = managementIPs
 
+        #Used to keep track of potential port scans
+        self.RECORD = None
+        #used to tell save_packet when to clear RECORD
+        self.portScanTimeout = None
     """
     Runs the thread, begins sniffing
     """
@@ -60,6 +66,17 @@ class Sniffer(Thread):
         # TODO: make this work with layer 2, for now just skip filtering those packets
         if (packet.haslayer("IP") == False):
             return
+        
+        currentTime = int(datetime.now().timestamp())
+        if (self.RECORD == None and self.portScanTimeout == None):
+            self.RECORD = dict()
+            self.portScanTimeout = int(datetime.now().timestamp())
+        
+        #how to tell if we need to reset our port scan record
+        if (currentTime > self.portScanTimeout + 60):
+            self.portScanTimeout = currentTime
+            self.RECORD = dict()
+        
 
         sourceMAC = packet.src
         destMAC = packet.dst
@@ -85,6 +102,18 @@ class Sniffer(Thread):
             log = LogEntry(srcPort, srcIP, sourceMAC, destPort, dstIP, destMAC,
                            trafficType, destPort in self.openPorts)
             self.post(log)
+            
+            #Port scan detection
+            if (trafficType == "TCP"):
+                if (srcIP in self.RECORD.keys()):
+                    if (len(self.RECORD[srcIP]) > 10000):
+                        msg = "Port scan detected from {}".format(srcIP)
+                        self.post(Notification(variant = "alert", message = msg))
+                    
+                    if (destPort not in self.RECORD[srcIP]):
+                        self.RECORD[srcIP].append(destPort)
+                else:
+                    self.RECORD[srcIP] = [destPort]
 
     def post(self, payload):
         header = {"content-type": "application/json"}
@@ -92,6 +121,10 @@ class Sniffer(Thread):
             r = post(url=self.db_url, data=payload.json(),
                      headers=header, verify=False)
             log_id = r.json()["id"]
-            print("Log created: %s" % log_id)
+            #differentiates between different object types
+            if (payload.__name__ == "LogEntry"):
+                print("Log created: %s" % log_id)
+            elif (payload.__name__ == "Notification"):
+                print("Notification created: %s" % log_id)
         except Exception:
             print("DB-Inactive: ", payload.json())
