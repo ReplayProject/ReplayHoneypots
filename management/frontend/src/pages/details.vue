@@ -105,24 +105,43 @@
             </tr>
           </tbody>
         </table>
-        <div class="cf tc">
-          <button
-            @click="prevPage"
-            class="no-underline fw5 br2 ph3 pv2 dib ba b--blue blue bg-white hover-bg-blue hover-white fl"
-          >
-            Previous Page
-          </button>
-          <span class="f3">{{ currentPage }}</span>
-          <button
-            @click="nextPage"
-            class="no-underline fw5 br2 ph3 pv2 dib ba b--blue blue bg-white hover-bg-blue hover-white fr"
-          >
-            Next Page
-          </button>
+        <div class="tc mw8 center">
+          <p class="w-100 f4 tc">Showing logs {{ lower }} - {{ upper }}</p>
+          <div class="dib overflow-hidden ba br2 b--light-silver">
+            <nav class="cf" data-name="pagination-numbers-bordered">
+              <div
+                @click="prevPage"
+                class=" unselectable fl dib link dim black f6 f5-ns b pa3 br b--light-silver pointer"
+              >
+                &larr; Previous
+              </div>
+              <div
+                @click="nextPage"
+                class=" unselectable fr dib link dim black f6 f5-ns b pa3 pointer"
+              >
+                Next &rarr;
+              </div>
+
+              <!-- TODO: fix wierdness with 0 index -->
+              <div class="overflow-hidden center dt tc">
+                <div
+                  v-for="idx in Array(5)
+                    .fill()
+                    .map((x, i) => i + Math.floor(currentPage / 5) * 5)"
+                  :key="idx"
+                  class=" unselectable dtc link dim black f6 f5-ns b pa3 br b--light-silver pointer"
+                  :class="{
+                    'bg-blue': currentPage == idx,
+                    white: currentPage == idx
+                  }"
+                  @click="currentPage = idx"
+                >
+                  {{ idx }}
+                </div>
+              </div>
+            </nav>
+          </div>
         </div>
-        <br />
-        <p class="w-100 f4 tc">Showing logs {{ lower }} - {{ upper }}</p>
-        <br />
       </div>
     </div>
   </main>
