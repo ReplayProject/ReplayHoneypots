@@ -230,7 +230,10 @@ class TestCron(unittest.TestCase):
             crontab_file = open("previous", 'w')
             crontab_file.write(stdout.decode())
             crontab_file.close()
-            CronUninstaller.uninstall()
+            process = subprocess.Popen(['crontab', '-r'],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            stdout, stderr = process.communicate()
 
         """
         Test CronInstaller's argparser
