@@ -41,226 +41,289 @@
       </dl>
     </article>
     <hr class="o-20" />
-    <div class="mt4">
-      <div class="overflow-auto">
-        <table class="f6 w-100 mw8 center mb3" cellspacing="0">
-          <thead>
-            <tr class="stripe-dark tc">
-              <th class="fw6 tl pa3 tc bg-pink dim pointer">
-                index
-              </th>
 
-              <th
-                class="fw6 tl pa3 tc bg-pink dim pointer"
-                @click="sort('timestamp')"
-              >
-                timestamp
-              </th>
-              <th
-                class="fw6 tl pa3 tc bg-pink dim pointer"
-                @click="sort('trafficType')"
-              >
-                traffictype
-              </th>
-              <th
-                class="fw6 tl pa3 tc bg-pink dim pointer"
-                @click="sort('sourcePortNumber')"
-              >
-                sourcePort
-              </th>
-              <th
-                class="fw6 tl pa3 tc bg-pink dim pointer"
-                @click="sort('sourceIPAddress')"
-              >
-                sourceIP
-              </th>
-              <th
-                class="fw6 tl pa3 tc bg-pink dim pointer"
-                @click="sort('destPortNumber')"
-              >
-                destPort
-              </th>
-              <th
-                class="fw6 tl pa3 tc bg-pink dim pointer"
-                @click="sort('destIPAddress')"
-              >
-                destIP
-              </th>
-            </tr>
-          </thead>
-          <tbody class="lh-copy">
-            <tr
-              v-for="(entry, idx) in sortedLogs"
-              :key="entry.id"
-              class="stripe-dark"
-            >
-              <!-- TODO: make this index be bound to the entry or some other unique identifier -->
-              <td class="pa3 tc">{{ idx }}</td>
-              <td class="pa3 tc">{{ $parseDateWithTime(entry.timestamp) }}</td>
-              <td class="pa3 tc">{{ entry.trafficType }}</td>
-              <td class="pa3 tc">{{ entry.sourcePortNumber }}</td>
-              <td class="pa3 tc">{{ entry.sourceIPAddress }}</td>
-              <td class="pa3 tc">{{ entry.destPortNumber }}</td>
-              <td class="pa3 tc">{{ entry.destIPAddress }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="tc mw8 center">
-          <p class="w-100 f4 tc">Showing logs {{ lower }} - {{ upper }}</p>
-          <div class="dib overflow-hidden ba br2 b--light-silver">
-            <nav class="cf" data-name="pagination-numbers-bordered">
-              <div
-                @click="prevPage"
-                class=" unselectable fl dib link dim black f6 f5-ns b pa3 br b--light-silver pointer"
-              >
-                &larr; Previous
-              </div>
-              <div
-                @click="nextPage"
-                class=" unselectable fr dib link dim black f6 f5-ns b pa3 pointer"
-              >
-                Next &rarr;
-              </div>
-
-              <!-- TODO: fix wierdness with 0 index -->
-              <div class="overflow-hidden center dt tc">
-                <div
-                  v-for="idx in Array(5)
-                    .fill()
-                    .map((x, i) => i + Math.floor(currentPage / 5) * 5)"
-                  :key="idx"
-                  class=" unselectable dtc link dim black f6 f5-ns b pa3 br b--light-silver pointer"
-                  :class="{
-                    'bg-blue': currentPage == idx,
-                    white: currentPage == idx
-                  }"
-                  @click="currentPage = idx"
-                >
-                  {{ idx }}
-                </div>
-              </div>
-            </nav>
-          </div>
+    <div class="mt4 w-100">
+      <vue-good-table
+        mode="remote"
+        @on-page-change="onPageChange"
+        @on-sort-change="onSortChange"
+        @on-column-filter="onColumnFilter"
+        @on-per-page-change="onPerPageChange"
+        @on-search="onSearch"
+        :isLoading.sync="isLoading"
+        :columns="columns"
+        :totalRows="totalRecords"
+        :rows="rows"
+        :fixed-header="true"
+        :line-numbers="false"
+        theme="default"
+        :pagination-options="{
+          enabled: true
+        }"
+        :search-options="{
+          enabled: true,
+          trigger: 'enter',
+          skipDiacritics: true,
+          placeholder: 'Search this table'
+        }"
+      >
+        <div slot="emptystate">
+          No Logs have been loaded or recorded yet.
         </div>
-      </div>
+      </vue-good-table>
     </div>
   </main>
 </template>
 
 <script>
 import componentTitle from '../components/title'
-import logEntry from '../components/log-entry'
 
 export default {
   name: 'deviceDetails',
   components: {
-    componentTitle,
-    logEntry
+    componentTitle
   },
   data () {
     return {
       dbInfo: {},
-      logs: [],
-      error: null,
-      // Used for sorting on the frontend
-      limit: 10,
-      currentPage: 1,
-      currentSort: 'name',
-      currentSortDir: 'asc',
-      startKey: ''
+      isLoading: false,
+      totalRecords: 0,
+      serverParams: {
+        search: '',
+        // a map of column filters example: {name: 'john', age: '20'}
+        columnFilters: {},
+        sort: [
+          {
+            field: 'timestamp', // example: 'name'
+            type: 'desc' // 'asc' or 'desc'
+          }
+        ],
+        page: 1, // what page I want to show
+        perPage: 10 // how many items I'm showing per page
+      },
+      columns: [
+        {
+          label: 'Unique ID',
+          field: '_id',
+          type: 'text'
+        },
+        {
+          // TODO: https://xaksis.github.io/vue-good-table/guide/configuration/column-options.html#dateinputformat
+          label: 'time',
+          field: 'timestamp',
+          formatFn: x => {
+            let s = new Date(x * 1000)
+              .toLocaleString()
+              .replace('/' + new Date().getFullYear(), '')
+            return s.slice(0, s.indexOf(':', 9) + 3) + ' ' + s.split(' ')[2]
+          },
+          type: 'text'
+        },
+        {
+          label: 'proto',
+          field: 'trafficType',
+          type: 'text'
+          // TODO: decide if needed
+          // filterOptions: {
+          //   enabled: true, // enable filter for this column
+          //   placeholder: 'Filter', // placeholder for filter input
+          //   // filterValue: 'UDP', // initial populated value for this filter
+          //   filterDropdownItems: ['UDP', 'TCP'], // dropdown (with selected values) instead of text input
+          //   // filterFn: this.columnFilterFn, //custom filter function that
+          //   // trigger: 'enter' //only trigger on enter not on keyup
+          // }
+        },
+        {
+          label: 'sPort',
+          field: 'sourcePortNumber',
+          type: 'text'
+        },
+        {
+          label: 'sIP',
+          field: 'sourceIPAddress',
+          type: 'text'
+        },
+        {
+          label: 'dPort',
+          field: 'destPortNumber',
+          type: 'text'
+        },
+        {
+          label: 'dIP',
+          field: 'destIPAddress',
+          type: 'text'
+        }
+      ],
+      rows: []
     }
   },
   computed: {
-    upper () {
-      return (this.currentPage - 1) * this.limit + this.limit - 1
-    },
-    lower () {
-      return (this.currentPage - 1) * this.limit
-    },
     dbURI () {
       return (
         (this.$route.params.device == 'aggregate'
           ? ''
           : process.env.DB_URL + '/') + this.$route.params.device
       )
-    },
-    sortedLogs () {
-      return this.logs.sort((a, b) => {
-        let modifier = 1
-        if (this.currentSortDir === 'desc') modifier = -1
-        if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier
-        if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier
-        return 0
-      })
     }
   },
   async created () {
-    this.init()
+    this.loadItems()
+    this.dbInfo = await this.$databases[this.dbURI].info()
   },
   watch: {
-    '$route.params.device': function (device) {
-      this.init()
+    '$route.params.device': async function (device) {
+      this.loadItems()
+      this.dbInfo = await this.$databases[this.dbURI].info()
+      this.resetParams()
     },
     currentPage () {
-      this.loadDocs()
+      this.loadItems()
+      this.resetParams()
     }
   },
   methods: {
-    async init () {
-      this.dbInfo = {}
-      this.logs = []
-      this.error = null
-      this.startKey = ''
-      this.loadDocs()
-      this.dbInfo = await this.$databases[this.dbURI].info()
-      console.log(await this.$databases[this.dbURI].info())
+    // Format Datetime
+    formatDate (x) {
+      return $this.parseDateWithTime(x)
     },
-    sort (s) {
-      //if s == current sort, reverse
-      if (s === this.currentSort) {
-        this.currentSortDir = this.currentSortDir === 'asc' ? 'desc' : 'asc'
-      }
-      this.currentSort = s
+    // DOCS: https://xaksis.github.io/vue-good-table/guide/advanced/remote-workflow.html#provide-handlers-for-user-events
+    // Handlers for DB TABLE
+    updateParams (newProps) {
+      this.serverParams = Object.assign({}, this.serverParams, newProps)
     },
-    async nextPage () {
-      this.currentPage++
-    },
-    async prevPage () {
-      if (this.currentPage > 1) this.currentPage--
-    },
-    async loadDocs () {
-      this.$Progress.start()
-      let idx = await this.$pouch.createIndex(
-        {
-          index: {
-            fields: ['timestamp']
+    resetParams () {
+      this.updateParams({
+        search: '',
+        // a map of column filters example: {name: 'john', age: '20'}
+        columnFilters: {},
+        sort: [
+          {
+            field: 'timestamp', // example: 'name'
+            type: 'desc' // 'asc' or 'desc'
           }
-        },
-        this.dbURI
-      )
+        ],
 
-      // Only log index creation if it was new
-      if (idx.result != 'exists') console.log('New Index created: ', idx)
+        page: 1, // what page I want to show
+        perPage: 10 // how many items I'm showing per page
+      })
+    },
+    onPageChange (params) {
+      this.updateParams({ page: params.currentPage })
+      this.loadItems()
+    },
+    onPerPageChange (params) {
+      this.updateParams({ perPage: params.currentPerPage })
+      this.loadItems()
+    },
+    onSortChange (params) {
+      this.updateParams({
+        sort: params
+      })
+      this.loadItems()
+    },
+    onColumnFilter (params) {
+      this.updateParams(params)
+      this.loadItems()
+    },
+    onSearch (params) {
+      this.updateParams({ search: params.searchTerm, page: 1 })
+      this.loadItems()
+    },
+    // load items is what brings back the rows from server
+    async loadItems () {
+      this.$Progress.start()
+      this.isLoading = true
+
+      let fields = [
+        ...Object.keys(this.serverParams.columnFilters),
+        ...this.serverParams.sort.map(x => x.field)
+        // TODO: columnFilters
+      ]
+      fields.sort()
+
+      if (fields.length != 0) {
+        let idx = await this.$pouch.createIndex(
+          {
+            index: { fields }
+          },
+          this.dbURI
+        )
+        // Only log index creation if it was new
+        if (idx.result != 'exists') console.log('New Index created: ', idx)
+      }
+
+      let selector = {}
+
+      // Column filters not working
+      // Object.keys(this.serverParams.columnFilters).forEach(x => {
+      //   selector[x] = { $eq: this.serverParams.columnFilters[x] }
+      // })
+
+      let sort = this.serverParams.sort.map(x => {
+        let s = {}
+        s[x.field] = x.type
+        return s
+      })
+
+      // See if we are searching or filtering & setup params
+      let searchTerm = this.serverParams.search.trim()
+      let skip = (this.serverParams.page - 1) * this.serverParams.perPage
+      let limit = this.serverParams.perPage
 
       // Actually do a query
-      let results = await this.$pouch.find(
-        {
-          selector: { timestamp: { $exists: true } },
-          sort: [{ timestamp: 'desc' }],
-          skip: this.lower,
-          limit: this.limit
-        },
-        this.dbURI
-      )
-      this.logs = results.docs
+      let results =
+        searchTerm === ''
+          ? await this.$pouch.find(
+              {
+                selector,
+                sort,
+                skip,
+                limit,
+                execution_stats: true
+              },
+              this.dbURI
+            )
+          : await this.$pouch.query(
+              {
+                map: new Function(
+                  'doc',
+                  `
+                  let s = JSON.stringify(doc)
+                    .toLocaleLowerCase()
+                    .includes('${searchTerm}'.toLocaleLowerCase())
+                  if (s) {
+                    emit(doc._id, doc)
+                  }
+                `
+                )
+              },
+              {
+                skip,
+                limit
+              },
+              this.dbURI
+            )
+      // TODO: Get total count of matching documents when not "searching"
+
+      // Access responses from data
+      this.rows =
+        searchTerm === ''
+          ? results.docs
+          : results.total_rows != 0
+          ? results.rows.map(x => x.value)
+          : []
+      this.totalRecords =
+        searchTerm === '' ? this.dbInfo.doc_count : results.total_rows
+
+      // Mark everything as done loading
       this.$Progress.finish()
-    },
-    setData (err, results) {
-      if (err) {
-        this.error = err.toString()
-      } else {
-        this.logs.push.apply(this.logs, results.docs)
-      }
+      this.isLoading = false
+
+      // TODO: refactor using better async things if using multiple awaits:
+      // Promise.allSettled([
+      //     Promise.resolve('a'),
+      //     Promise.reject('b')
+      // ]).then(console.log)
     }
   }
 }
