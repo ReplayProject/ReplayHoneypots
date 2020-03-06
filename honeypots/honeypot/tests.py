@@ -103,7 +103,7 @@ class TestSniffer(unittest.TestCase):
         """
         # Get my IP
         host_name = socket.gethostname()
-        host_ip = socket.gethostbyname(host_name)
+        host_ip = "192.168.42.51"
 
         sniff = Sniffer(
                 count=10,
@@ -140,7 +140,7 @@ class TestSniffer(unittest.TestCase):
         # print(list(sniff.UDP_RECORD.keys()))
 
         localhost_in_udp_record = any(
-            host_ip in i for i in list(sniff.UDP_RECORD.keys()))
+            host_ip in i for i in list(sniff.RECORD.keys()))
         self.assertTrue(localhost_in_udp_record)
 
         sniff.join()
