@@ -120,6 +120,7 @@ export default {
       const attachAddon = new AttachAddon(this.socket)
       this.terminal.loadAddon(attachAddon)
     } catch (error) {
+      // TODO: professionalism
       console.log('ooops ', error)
     }
   }
