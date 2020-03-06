@@ -31,7 +31,7 @@ class Sniffer(Thread):
         self.managementIPs = managementIPs
 
         #Used to keep track of potential port scans
-        self.RECORD = None
+        self.RECORD = dict()
         #used to tell save_packet when to clear RECORD
         self.portScanTimeout = None
     """
@@ -42,6 +42,7 @@ class Sniffer(Thread):
         print("Sniffing")
 
         #building the base filter
+        
         fltr = "not src host {} ".format(self.honeypotIP)
         #adding a variable number of management ips
         for ip in self.managementIPs:
@@ -54,8 +55,8 @@ class Sniffer(Thread):
         elif (self.config == "base"):
             sniff(filter=fltr, prn=self.save_packet, count=self.count)
         elif (self.config == "onlyUDP"):
-            fltr = "udp and host {}".format(self.honeypotIP)
-            sniff(filter=fltr, prn=self.save_packet, count=self.count)
+            fltr = "udp"
+            sniff(prn=self.save_packet, count=self.count)
 
     """
     Function for recording a packet during sniff runtime
@@ -68,8 +69,7 @@ class Sniffer(Thread):
             return
 
         currentTime = int(datetime.now().timestamp())
-        if (self.RECORD == None and self.portScanTimeout == None):
-            self.RECORD = dict()
+        if (self.portScanTimeout is None):
             self.portScanTimeout = int(datetime.now().timestamp())
 
         #how to tell if we need to reset our port scan record
@@ -101,13 +101,14 @@ class Sniffer(Thread):
             # TODO: IS PORT OPEN NOT WORKING
             log = LogEntry(srcPort, srcIP, sourceMAC, destPort, dstIP, destMAC,
                            trafficType, destPort in self.openPorts)
-            self.post(log)
-
+            if (not self.config == "onlyUDP"):
+                self.post(log)
             #Port scan detection
             if (trafficType == "TCP" or self.config == "onlyUDP"):
-                print("YONK")
                 if (srcIP in self.RECORD.keys()):
-                    if (len(self.RECORD[srcIP]) > 10000):
+                    if (len(self.RECORD[srcIP]) > 100):
+                        #reset this specific entry; don't want repeats
+                        self.RECORD[srcIP] = []
                         msg = "Port scan detected from {}".format(srcIP)
                         self.post(Notification(variant = "alert", message = msg))
 
