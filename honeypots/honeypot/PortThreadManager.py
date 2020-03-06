@@ -1,6 +1,7 @@
 # python3 PortThreadManager.py
 import json
 import sys
+import os
 from threading import Thread
 import socket
 from datetime import date
@@ -19,6 +20,15 @@ configFilePath = r'../config/properties.cfg'
 config.read(configFilePath)
 dataFile = config.get('Attributes', 'pcap_data_file')
 
+HONEY_IP = config.get('IPs', 'honeypotIP')
+MGMT_IPs = json.loads(config.get("IPs", "managementIPs"))
+
+DATABASE_OPTIONS = [
+    config.get("Databaser", "port"),
+    config.get("Databaser", "dbconf"),
+    config.get("Databaser", "dbfolder"),
+    config.get("Databaser", "bindaddress"),
+    ]
 """
 Handles the port threads to run the honeypot
 """
@@ -33,6 +43,7 @@ class PortThreadManager:
     """
 
     def __init__(self, portList):
+        global config
         with open(dataFile, "r") as responseDataFile:
             responseData = json.load(responseDataFile)
         self.portList = []
@@ -50,6 +61,7 @@ class PortThreadManager:
         # where the sniffer thread will be located
         self.snifferThread = None
         self.delay = config.get('Attributes', 'delay')
+
         self.whitelist = json.loads(config.get("Whitelist", "addresses"))
         self.keepRunning = True
 
@@ -99,7 +111,7 @@ class PortThreadManager:
 
     def deploy(self):
         # Setup the DB
-        self.databaserThread = Databaser(replication=True)
+        self.databaserThread = Databaser(options=DATABASE_OPTIONS)
         self.databaserThread.daemon = True
         self.databaserThread.start()
 
@@ -109,8 +121,10 @@ class PortThreadManager:
 
         # Normal run
         #self.snifferThread = Sniffer()
+
         # Testing configuration
-        self.snifferThread = Sniffer(config="testing", openPorts=self.portList, whitelist=self.whitelist, db_url=self.databaserThread.db_url)
+        self.snifferThread = Sniffer(config="testing", openPorts=self.portList, whitelist=self.whitelist,
+                                     db_url=self.databaserThread.db_url, honeypotIP=HONEY_IP, managementIPs=MGMT_IPs)
         self.snifferThread.daemon = True
         self.snifferThread.start()
 
