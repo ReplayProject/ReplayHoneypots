@@ -1,4 +1,5 @@
 ### Code ###
+.vscode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -42,3 +43,7 @@ __pycache__/
 .coverage
 */htmlcov
 */.coverage
+honeypots/.vscode/settings.json
+honeypots/database/log.txt
+honeypots/config/dbconfig.json
+management/cli/honeycli.cfg

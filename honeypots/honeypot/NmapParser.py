@@ -6,6 +6,8 @@ import json
 This file is used for parsing an nmap
 scan for configuration information.
 """
+
+
 class NmapParser:
     def __init__(self, filename):
         self.ports = self.parseScan(filename)
@@ -23,6 +25,7 @@ class NmapParser:
         Raise:
             FileNotFound if file doesn't exist
     """
+
     def parseScan(self, filename):
         found_port = False
         ports = []
@@ -42,8 +45,10 @@ class NmapParser:
     Returns:
         the list of ports from the nmap file
     """
+
     def getPorts(self):
         return self.ports
+
 
 if __name__ == '__main__':
     filename = sys.argv[1]
@@ -54,4 +59,4 @@ if __name__ == '__main__':
     endnum = filename.find(".nmap")
     newfilename = filename[startnum:endnum] + ".json"
     with open("../config/" + newfilename, "w") as newfile:
-        json.dump(ports,newfile)
+        json.dump(ports, newfile)
