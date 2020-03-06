@@ -66,17 +66,17 @@ class Sniffer(Thread):
         # TODO: make this work with layer 2, for now just skip filtering those packets
         if (packet.haslayer("IP") == False):
             return
-        
+
         currentTime = int(datetime.now().timestamp())
         if (self.RECORD == None and self.portScanTimeout == None):
             self.RECORD = dict()
             self.portScanTimeout = int(datetime.now().timestamp())
-        
+
         #how to tell if we need to reset our port scan record
         if (currentTime > self.portScanTimeout + 60):
             self.portScanTimeout = currentTime
             self.RECORD = dict()
-        
+
 
         sourceMAC = packet.src
         destMAC = packet.dst
@@ -102,14 +102,15 @@ class Sniffer(Thread):
             log = LogEntry(srcPort, srcIP, sourceMAC, destPort, dstIP, destMAC,
                            trafficType, destPort in self.openPorts)
             self.post(log)
-            
+
             #Port scan detection
-            if (trafficType == "TCP"):
+            if (trafficType == "TCP" or self.config == "onlyUDP"):
+                print("YONK")
                 if (srcIP in self.RECORD.keys()):
                     if (len(self.RECORD[srcIP]) > 10000):
                         msg = "Port scan detected from {}".format(srcIP)
                         self.post(Notification(variant = "alert", message = msg))
-                    
+
                     if (destPort not in self.RECORD[srcIP]):
                         self.RECORD[srcIP].append(destPort)
                 else:
