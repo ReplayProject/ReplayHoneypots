@@ -44,6 +44,7 @@
 
     <div class="mt4 w-100">
       <vue-good-table
+        ref="datatable"
         mode="remote"
         @on-page-change="onPageChange"
         @on-sort-change="onSortChange"
@@ -178,7 +179,6 @@ export default {
     },
     currentPage () {
       this.loadItems()
-      this.resetParams()
     }
   },
   methods: {
@@ -206,6 +206,8 @@ export default {
         page: 1, // what page I want to show
         perPage: 10 // how many items I'm showing per page
       })
+      // Clear search
+      this.$refs['datatable'].globalSearchTerm = ''
     },
     onPageChange (params) {
       this.updateParams({ page: params.currentPage })
