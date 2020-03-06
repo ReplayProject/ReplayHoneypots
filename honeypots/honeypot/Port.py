@@ -3,15 +3,18 @@ import json
 """
 This object contains information about a port
 """
+
+
 class Port():
     """
     This object contains information about each
-    open port 
+    open port
 
     Args:
         portNumber : port number 1-65535
         service : service identifier string
     """
+
     def __init__(self, port, defaultData):
         self.port = port
         self.defaultData = defaultData
@@ -23,19 +26,21 @@ class Port():
     Returns:
         a data string
     """
+
     def response(self):
         return self.defaultData
 
     """
     Return the object in json format
-    
+
     Returns:
         json format of port object
     """
+
     def get_json(self):
         return {
-            "port":self.port,
-            "defaultData":self.defaultData
+            "port": self.port,
+            "defaultData": self.defaultData
         }
 
     def __str__(self):
