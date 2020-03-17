@@ -7,7 +7,6 @@ import PageEdit from './pages/edit.vue'
 import PageOverview from './pages/overview.vue'
 import PageDetails from './pages/details.vue'
 import PageTerminal from './pages/terminal.vue'
-import PageQuery from './pages/query.vue'
 
 Vue.use(Router)
 
@@ -31,11 +30,6 @@ let routes = [
     path: '/terminal',
     name: 'terminal',
     component: PageTerminal
-  },
-  {
-    path: '/query',
-    name: 'query',
-    component: PageQuery
   },
   {
     path: '/overview',
