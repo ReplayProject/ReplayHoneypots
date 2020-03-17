@@ -27,11 +27,6 @@
           >Terminal</router-link
         >
       </li>
-      <li class="mb2">
-        <router-link to="/query" class="block link dim blue"
-          >Query Panel</router-link
-        >
-      </li>
     </ul>
     <!-- More Realistic Options -->
     <h2 class="ttu mt0 mb2 f6 fw5 silver">Dashboards</h2>

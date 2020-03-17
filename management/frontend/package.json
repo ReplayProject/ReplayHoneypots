@@ -4,10 +4,24 @@
   "description": "A tiny VueJS app bundled using ParcelJS",
   "main": "index.html",
   "scripts": {
-    "start": "NODE_ENV=development parcel serve index.html --port 3000",
     "build": "parcel build index.html",
     "format": "npx prettier-standard ./* ./src/* src/**/* test/**/*",
+    "start": "NODE_ENV=development parcel serve index.html --port 3000",
     "test": "npm run format && npx nyc ava test/specs/*"
+  },
+  "browserslist": [
+    "last 1 Chrome version"
+  ],
+  "ava": {
+    "require": [
+      "./test/_setup.js"
+    ]
+  },
+  "nyc": {
+    "extension": [
+      ".js",
+      ".vue"
+    ]
   },
   "dependencies": {
     "@babel/runtime": "^7.8.4",
@@ -45,19 +59,5 @@
     "vue-hot-reload-api": "^2.3.4",
     "vue-template-compiler": "^2.6.11",
     "vue-test-utils": "^1.0.0-beta.11"
-  },
-  "ava": {
-    "require": [
-      "./test/_setup.js"
-    ]
-  },
-  "nyc": {
-    "extension": [
-      ".js",
-      ".vue"
-    ]
-  },
-  "browserslist": [
-    "last 1 Chrome version"
-  ]
+  }
 }
