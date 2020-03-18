@@ -7,6 +7,7 @@ import PageEdit from './pages/edit.vue'
 import PageOverview from './pages/overview.vue'
 import PageDetails from './pages/details.vue'
 import PageTerminal from './pages/terminal.vue'
+import PageLogin from './pages/login.vue'
 
 Vue.use(Router)
 
@@ -15,6 +16,11 @@ let routes = [
     path: '/',
     name: 'index',
     component: PageIndex
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: PageLogin
   },
   {
     path: '/about',

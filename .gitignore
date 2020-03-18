@@ -52,6 +52,7 @@ node_modules
 dist
 .cache
 .nyc_output
+.data
 
 #Configuration files
 properties.cfg
