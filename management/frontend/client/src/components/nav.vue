@@ -90,6 +90,18 @@
 <script>
 export default {
   name: 'Nav',
+  computed: {
+    navLinks () {
+      // let l = this.$parent.dbInfo.map(x => )
+      // <li v-for="db in $parent.dbInfo" :key="db.db_name" class="mb2">
+      //   <router-link
+      //     :to="'/details/' + db.db_name"
+      //     class="block link dim blue"
+      //     >{{ db.db_name | formatDBName }}</router-link
+      //   >
+      // </li>
+    }
+  },
   data () {
     return {
       managementDBUrl: process.env.DB_URL
