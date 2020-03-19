@@ -26,6 +26,7 @@ class Databaser(Thread):
         self.conf = options[1]
         self.dbfolder = options[2]
         self.bindaddress = options[3]
+        self.targetaddress = options[4]
         self.url = 'http://{}:{}/'.format(self.bindaddress, self.port)
         self.db_name = socket.gethostname() + "_logs"
         self.db_url = self.url + self.db_name
@@ -51,7 +52,7 @@ class Databaser(Thread):
             "continuous": True,
             "create_target": True,
             "source": self.db_name,
-            "target": "https://sd-db.glitch.me/" + self.db_name
+            "target": self.targetaddress + self.db_name
         }
 
         if self.replication:

@@ -17,18 +17,10 @@ from Databaser import Databaser
 
 config = configparser.RawConfigParser()
 configFilePath = r'../config/properties.cfg'
-config.read(configFilePath)
-dataFile = config.get('Attributes', 'pcap_data_file')
+HONEY_IP = None
+MGMT_IPs = None
+DATABASE_OPTIONS = None
 
-HONEY_IP = config.get('IPs', 'honeypotIP')
-MGMT_IPs = json.loads(config.get("IPs", "managementIPs"))
-
-DATABASE_OPTIONS = [
-    config.get("Databaser", "port"),
-    config.get("Databaser", "dbconf"),
-    config.get("Databaser", "dbfolder"),
-    config.get("Databaser", "bindaddress"),
-    ]
 """
 Handles the port threads to run the honeypot
 """
@@ -43,10 +35,45 @@ class PortThreadManager:
     """
 
     def __init__(self, portList):
+        self.portList = []
+        self.ip = str(get('https://api.ipify.org').text)
+        self.processList = []
+        # where the db thread will be located
+        self.databaserThread = None
+        # where the sniffer thread will be located
+        self.snifferThread = None
+        self.delay = None
+        self.whitelist = None
+        self.keepRunning = True
+
+        #Gets the info from config file initially
+        self.getConfigData()
+
+    """
+    Gets config information; ran when PortThreadManager configuration changes      
+    """
+    def getConfigData(self):
         global config
+        global HONEY_IP
+        global MGMT_IPs
+        global DATABASE_OPTIONS
+
+        config.read(configFilePath)
+        dataFile = config.get('Attributes', 'pcap_data_file')
+
+        HONEY_IP = config.get('IPs', 'honeypotIP')
+        MGMT_IPs = json.loads(config.get("IPs", "managementIPs"))
+
+        DATABASE_OPTIONS = [
+            config.get("Databaser", "port"),
+            config.get("Databaser", "dbconf"),
+            config.get("Databaser", "dbfolder"),
+            config.get("Databaser", "bindaddress"),
+            config.get("Databaser", "targetaddress")
+        ]
+
         with open(dataFile, "r") as responseDataFile:
             responseData = json.load(responseDataFile)
-        self.portList = []
         for port in portList:
             try:
                 portData = responseData[str(port)]
@@ -54,16 +81,9 @@ class PortThreadManager:
                 print("Couldn't find data for port " + str(port))
                 continue
             self.portList.append(Port(port, portData))
-        self.ip = str(get('https://api.ipify.org').text)
-        self.processList = []
-        # where the db thread will be located
-        self.databaserThread = None
-        # where the sniffer thread will be located
-        self.snifferThread = None
+
         self.delay = config.get('Attributes', 'delay')
-        
         self.whitelist = json.loads(config.get("Whitelist", "addresses"))
-        self.keepRunning = True
 
     """
     Send a response on a port
@@ -110,6 +130,10 @@ class PortThreadManager:
     """
 
     def deploy(self):
+        #--- Databaser Thread ---#
+        #If this is a refresh deploy, clear out old threads
+        if (not self.databaserThread == None):
+            self.databaserThread.stop()
         # Setup the DB
         self.databaserThread = Databaser(options=DATABASE_OPTIONS)
         self.databaserThread.daemon = True
@@ -119,15 +143,18 @@ class PortThreadManager:
         while not self.databaserThread.ready:
           pass
 
-        # Normal run
-        #self.snifferThread = Sniffer()
+        #--- Sniffer Thread ---#
+        if (self.databaserThread == None):
+            #TODO: Switch config="testing" to "base" when in production
+            self.snifferThread = Sniffer(config="testing", openPorts=self.portList, whitelist=self.whitelist,
+                                         db_url=self.databaserThread.db_url, honeypotIP=HONEY_IP, managementIPs=MGMT_IPs)
+            self.snifferThread.daemon = True
+            self.snifferThread.start()
+        else:
+            self.snifferThread.configUpdate(openPorts=self.portList, whitelist=self.whitelist, db_url=self.databaserThread.db_url, honeypotIP=HONEY_IP, managementIPs=MGMT_IPs)
 
-        # Testing configuration
-        self.snifferThread = Sniffer(config="testing", openPorts=self.portList, whitelist=self.whitelist,
-                                     db_url=self.databaserThread.db_url, honeypotIP=HONEY_IP, managementIPs=MGMT_IPs)
-        self.snifferThread.daemon = True
-        self.snifferThread.start()
-
+        #--- Open Sockets ---#
+        #TODO: adjust sockets to respond to dybamic configuration
         for port in self.portList:
             portThread = Thread(target=self.portListener, args=[port])
             portThread.daemon = True
@@ -160,3 +187,7 @@ if __name__ == '__main__':
 
     manager = PortThreadManager(portList)
     manager.deploy()
+
+    #keep main thread alive
+    while True:
+        time.sleep(0.5)
