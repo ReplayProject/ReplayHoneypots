@@ -14,6 +14,9 @@
     <h2 class="ttu mt0 mb2 f6 fw5 silver">Test Links</h2>
     <ul class="list pl0 mt0 mb4">
       <li class="mb2">
+        <router-link to="/login" class="block link dim blue">Login</router-link>
+      </li>
+      <li class="mb2">
         <router-link to="/" class="block link dim blue">Home</router-link>
       </li>
       <li class="mb2">

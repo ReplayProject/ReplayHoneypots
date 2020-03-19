@@ -9,6 +9,8 @@ import PageDetails from './pages/details.vue'
 import PageTerminal from './pages/terminal.vue'
 import PageLogin from './pages/login.vue'
 
+import axios from 'axios'
+
 Vue.use(Router)
 
 let routes = [
@@ -57,6 +59,25 @@ const router = new Router({
   mode: 'history',
   base: '/',
   routes
+})
+
+/**
+ * Perform an authentication check on all routes except 'login'
+ */
+router.beforeEach(async (to, from, next) => {
+  let shouldBeAuthed = to.name !== 'login'
+
+  if (shouldBeAuthed) {
+    try {
+      let res = await axios.get('/user')
+      // console.log(res.data) // TODO: maybe save this in app internals
+      next()
+    } catch (err) {
+      next({ name: 'login' })
+      return
+    }
+  }
+  next()
 })
 
 export default router

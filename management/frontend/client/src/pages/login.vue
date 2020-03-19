@@ -9,18 +9,14 @@
     <component-title>Sign In</component-title>
     <hr class="o-20" />
     <main class="black-80">
-      <form
-        class="measure"
-        action="https://sd-db.glitch.me/login/"
-        method="post"
-        autocomplete="off"
-      >
+      <form class="measure" @submit="login" autocomplete="off">
         <fieldset id="sign_up" class="ba b--transparent ph0 mh0">
           <div class="mt3">
             <label class="db fw6 lh-copy f6" for="username">Username</label>
             <input
               class="pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100"
               type="username"
+              v-model="username"
               name="username"
               id="username"
             />
@@ -30,6 +26,7 @@
             <input
               class="b pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100"
               type="password"
+              v-model="password"
               name="password"
               id="password"
             />
@@ -50,17 +47,55 @@
           <a href="#0" class="f6 link dim black db">Forgot your password?</a>
         </div> -->
       </form>
+      <br />
+      <input
+        class="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib mb3"
+        type="submit"
+        @click="logout"
+        value="Sign Out"
+      />
     </main>
   </main>
 </template>
 
 <script>
 import componentTitle from '../components/title'
+import axios from 'axios'
 
 export default {
-  name: 'login',
+  name: 'Login',
   components: {
     componentTitle
+  },
+  data () {
+    return {
+      username: 'admin',
+      password: 'admin'
+    }
+  },
+  methods: {
+    async login (e) {
+      e.preventDefault()
+
+      let data = {
+        username: this.username,
+        password: this.password
+      }
+
+      try {
+        let res = await axios.post('/login', data)
+
+        console.log('Logged in')
+        this.$router.push('/dashboard')
+      } catch (error) {
+        console.log('Cannot log in', errors)
+      }
+    },
+    async logout (e) {
+      let res = await axios.get('/logout')
+      console.log(res)
+      // this.$router.push('/') // TODO: redirect if logout is done on other pages
+    }
   }
 }
 </script>
