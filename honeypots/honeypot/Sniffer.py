@@ -17,39 +17,53 @@ class Sniffer(Thread):
     'testing' ignores ssh spam you get
     """
 
-    def __init__(self, config="base",  count=0, openPorts=[], whitelist=[], db_url=None, honeypotIP=None, managementIPs=None):
+    def __init__(self, config="base", openPorts=[], whitelist=[], db_url=None, honeypotIP=None, managementIPs=None):
         Thread.__init__(self)
 
         self.config = config
-        self.count = count
         self.openPorts = openPorts
         self.whitelist = whitelist
         self.db_url = db_url
         self.honeypotIP = honeypotIP
         self.managementIPs = managementIPs
 
+        self.running = True
+        #This number doesn't matter, this is used to stop the thread if a reset is necessary
+        self.count = 100
     """
     Runs the thread, begins sniffing
     """
 
     def run(self):
         print("Sniffing")
+        
+        #This loop, along with self.count allow us to effectively update values on the fly
+        while self.running:
+            #building the base filter
+            fltr = "not src host {} ".format(self.honeypotIP)
+            #adding a variable number of management ips
+            for ip in self.managementIPs:
+                fltr += "and not host {} ".format(ip)
 
-        #building the base filter
-        fltr = "not src host {} ".format(self.honeypotIP)
-        #adding a variable number of management ips
-        for ip in self.managementIPs:
-            fltr += "and not host {} ".format(ip)
+            if (self.config == "testing"):
+                fltr = fltr + " and not (src port ssh or dst port ssh)"
+                # this ignores the ssh spam you get when sending packets between two ssh terminals
+                sniff(filter=fltr, prn=self.save_packet, count=self.count)
+            elif (self.config == "base"):
+                sniff(filter=fltr, prn=self.save_packet, count=self.count)
+            elif (self.config == "onlyUDP"):
+                fltr = "udp and host {}".format(self.honeypotIP)
+                sniff(filter=fltr, prn=self.save_packet, count=self.count)
 
-        if (self.config == "testing"):
-            fltr = fltr + " and not (src port ssh or dst port ssh)"
-            # this ignores the ssh spam you get when sending packets between two ssh terminals
-            sniff(filter=fltr, prn=self.save_packet, count=self.count)
-        elif (self.config == "base"):
-            sniff(filter=fltr, prn=self.save_packet, count=self.count)
-        elif (self.config == "onlyUDP"):
-            fltr = "udp and host {}".format(self.honeypotIP)
-            sniff(filter=fltr, prn=self.save_packet, count=self.count)
+    """
+    Updates configuration options during runtime
+    """
+    def configUpdate(self, openPorts=[], whitelist=[], db_url=None, honeypotIP=None, managementIPs=None):
+        self.openPorts = openPorts
+        self.whitelist = whitelist
+        self.db_url = db_url
+        self.honeypotIP = honeypotIP
+        self.managementIPs = managementIPs
 
     """
     Function for recording a packet during sniff runtime
