@@ -1,10 +1,9 @@
 const PouchDB = require('pouchdb')
 const httpPouch = require('express-pouchdb')
 
-// db stored in .data folder
 const TempPouchDB = PouchDB.defaults({
   // db: require("memdown"),
-  prefix: './.data/'
+  prefix: './.data/' // db stored in .data folder
 })
 
 module.exports = httpPouch(TempPouchDB)

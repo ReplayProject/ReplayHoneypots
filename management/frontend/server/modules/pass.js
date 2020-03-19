@@ -12,7 +12,9 @@ const users = [
   }
 ]
 
-// Function to Check local password and stored hash
+/**
+ * Function to Check local password and stored hash
+ */
 function validPassword (attempt, hash) {
   return attempt === hash
 }
@@ -40,18 +42,27 @@ passport.deserializeUser((id, cb) => {
   cb(null, user)
 })
 
-// Auth logic
+/**
+ * Actual Authentication Logic
+ * (using post body)
+ */
 passport.use(
-  new LocalStrategy((username, password, done) => {
-    authLog('looking for user: ', username)
-    // Find user with username
-    let user = users.find(x => x.username == username)
-    if (!user) return done(null, false, { message: 'Incorrect username.' })
-    if (!validPassword(password, user.hash))
-      return done(null, false, { message: 'Incorrect password.' })
-    return done(null, user)
-  })
+  new LocalStrategy(
+    {
+      usernameField: 'username',
+      passwordField: 'password'
+    },
+    (username, password, done) => {
+      authLog('looking for user: ', username)
+      // Find user with username
+      let user = users.find(x => x.username == username)
+      if (!user) return done(null, false, { message: 'Incorrect username.' })
+      if (!validPassword(password, user.hash))
+        return done(null, false, { message: 'Incorrect password.' })
+      return done(null, user)
+    }
+  )
 )
 
 // Export middleware to check for authentication state
-module.exports = require('connect-ensure-login').ensureLoggedIn
+module.exports = users

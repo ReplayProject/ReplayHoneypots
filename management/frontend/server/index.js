@@ -9,7 +9,8 @@ historyLog.log = console.log.bind(console)
 const express = require('express')
 const port = process.env.PORT || 8080
 const passport = require('passport')
-const authGuard = require('./modules/pass')
+require('./modules/pass')
+const authGuard = require('./modules/authGuard')
 
 // Start setting up express
 var app = express()
