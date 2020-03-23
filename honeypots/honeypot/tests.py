@@ -147,6 +147,14 @@ class TestConfigTunnel(unittest.TestCase):
         self.ctunnel.join()
         self.stunnel.join()
 
+    def test_fulltest(self):
+        # Server & Client Start
+        self.stunnel.start()
+        self.ctunnel.start()
+        time.sleep(1)
+        print("yeet")
+        self.assertTrue(True)
+
     def test_init(self):
         """
         Test that server/client start and connect to eachother

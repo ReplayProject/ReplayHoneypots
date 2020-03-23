@@ -14,6 +14,7 @@ import argparse
 from NmapParser import NmapParser
 from Sniffer import Sniffer
 from Databaser import Databaser
+from PortListener import PortListener
 
 config = configparser.RawConfigParser()
 configFilePath = r'../config/properties.cfg'
@@ -37,7 +38,7 @@ class PortThreadManager:
     def __init__(self, portList):
         self.portList = []
         self.ip = str(get('https://api.ipify.org').text)
-        self.processList = []
+        self.processList = dict()
         # where the db thread will be located
         self.databaserThread = None
         # where the sniffer thread will be located
@@ -45,9 +46,7 @@ class PortThreadManager:
         self.delay = None
         self.whitelist = None
         self.keepRunning = True
-
-        #Gets the info from config file initially
-        self.getConfigData()
+        self.responseData = None
 
     """
     Gets config information; ran when PortThreadManager configuration changes      
@@ -73,117 +72,81 @@ class PortThreadManager:
         ]
 
         with open(dataFile, "r") as responseDataFile:
-            responseData = json.load(responseDataFile)
-        for port in portList:
-            try:
-                portData = responseData[str(port)]
-            except:
-                print("Couldn't find data for port " + str(port))
-                continue
-            self.portList.append(Port(port, portData))
+            self.responseData = json.load(responseDataFile)
 
         self.delay = config.get('Attributes', 'delay')
         self.whitelist = json.loads(config.get("Whitelist", "addresses"))
 
     """
-    Send a response on a port
-
-    Args:
-      portObj: port object with communication info
-      conn: connection object to communicate on
+    Start a thread for each port in the config file, connects to the database, runs sniffer class
     """
 
-    def portResponse(self, portObj, conn):
-        byteData = bytes.fromhex(portObj.response())
-        time.sleep(float(self.delay))
-        try:
-            conn.send(byteData)
-        except:
-            print("Connection reset on port " + str(portObj.port))
+    def deploy(self, updateSniffer = False, updateOpenPorts = False):
+        #TODO: add three optional parameters to tell which part is getting updated
 
-    """
-    Listen and respond on the given port
+        #Gets the info from config file initially
+        self.getConfigData()
 
-    Args:
-      portObj: port object with communication info
-    """
-
-    def portListener(self, portObj):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind(("", portObj.port))
-        sock.listen(1)
-        while True:
-            print("Listening on port " + str(portObj.port))
-            conn, addr = sock.accept()
-            print(conn)
-            print(addr)
-            responseThread = Thread(
-                target=self.portResponse, args=[portObj, conn])
-            responseThread.daemon = True
-            responseThread.start()
-            if not self.keepRunning:
-                break
-        conn.close()
-
-    """
-    Start a thread for each port in the config file
-    """
-
-    def deploy(self):
-        #--- Databaser Thread ---#
-        #If this is a refresh deploy, clear out old threads
-        if (not self.databaserThread == None):
-            self.databaserThread.stop()
+        #--- Databaser Thread (does not get updated on dynamic config change)---#
         # Setup the DB
-        self.databaserThread = Databaser(options=DATABASE_OPTIONS)
-        self.databaserThread.daemon = True
-        self.databaserThread.start()
+        if (self.databaserThread == None):
+            self.databaserThread = Databaser(options=DATABASE_OPTIONS)
+            self.databaserThread.daemon = True
+            self.databaserThread.start()
 
         # Wait for the DB to be ready
         while not self.databaserThread.ready:
           pass
 
         #--- Sniffer Thread ---#
-        if (self.databaserThread == None):
+        if (self.snifferThread == None):
             #TODO: Switch config="testing" to "base" when in production
             self.snifferThread = Sniffer(config="testing", openPorts=self.portList, whitelist=self.whitelist,
                                          db_url=self.databaserThread.db_url, honeypotIP=HONEY_IP, managementIPs=MGMT_IPs)
             self.snifferThread.daemon = True
             self.snifferThread.start()
-        else:
+        elif (updateSniffer == True):
             self.snifferThread.configUpdate(openPorts=self.portList, whitelist=self.whitelist, db_url=self.databaserThread.db_url, honeypotIP=HONEY_IP, managementIPs=MGMT_IPs)
 
         #--- Open Sockets ---#
-        #TODO: adjust sockets to respond to dybamic configuration
-        for port in self.portList:
-            portThread = Thread(target=self.portListener, args=[port])
-            portThread.daemon = True
-            portThread.start()
-            self.processList.append(portThread)
+        #On initial run
+        if (len(portList) == 0):
+            for port in self.responseData.keys():
+                portThread = PortListener(port, self.responseData[port], self.delay)
+                portThread.daemon = True
+                portThread.start()
+                self.processList[port] = portThread
+            # for thread in self.processList.values():
+            #     thread.join()
+        #Updating to new set of ports
+        elif (updateOpenPorts == True):
+            updatedPorts = self.responseData.keys()
+            currentPorts = map(lambda x: x.port(), self.processList.keys())
 
-        for thread in self.processList:
-            thread.join()
+            for p in currentPorts:
+                if (not p in updatedPorts):
+                    self.processList[p].isRunning = False
+            for p in updatedPorts:
+                if (not p in currentPorts):
+                    portThread = PortListener(port, self.responseData[port], self.delay)
+                    portThread.daemon = True
+                    portThread.start()
+                    self.processList[port] = portThread
 
-        self.snifferThread.join()
-        self.databaserThread.join()
+
+        # self.snifferThread.join()
+        # self.databaserThread.join()
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Deploy the honeypot')
-    parser.add_argument('-c', '--config', help='config file')
     parser.add_argument('-n', '--nmap', help='nmap file')
     args = parser.parse_args()
 
     portList = []
-    if args.config:
-        with open(args.config, "r") as configFile:
-            portList = json.load(configFile)
-    elif args.nmap:
+    if args.nmap:
         parser = NmapParser(args.nmap) 
         portList = parser.getPorts()
-    else:
-        print("Need to pass in an nmap file or a config file. Use -h for help.")
-        exit()
 
     manager = PortThreadManager(portList)
     manager.deploy()
