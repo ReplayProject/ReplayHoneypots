@@ -14,6 +14,9 @@
     <h2 class="ttu mt0 mb2 f6 fw5 silver">Test Links</h2>
     <ul class="list pl0 mt0 mb4">
       <li class="mb2">
+        <router-link to="/login" class="block link dim blue">Login</router-link>
+      </li>
+      <li class="mb2">
         <router-link to="/" class="block link dim blue">Home</router-link>
       </li>
       <li class="mb2">
@@ -21,6 +24,11 @@
       </li>
       <li class="mb2">
         <router-link to="/edit" class="block link dim blue">Edit</router-link>
+      </li>
+      <li class="mb2">
+        <router-link to="/terminal" class="block link dim blue"
+          >Terminal</router-link
+        >
       </li>
     </ul>
     <!-- More Realistic Options -->
@@ -37,6 +45,11 @@
           class="block link dim blue"
           >{{ db.db_name | formatDBName }}</router-link
         >
+      </li>
+      <li v-if="$parent.dbInfo.length != 0" class="mb2">
+        <router-link to="/details/aggregate" class="block link dim blue">{{
+          'aggregate' | formatDBName
+        }}</router-link>
       </li>
     </ul>
     <h2 class="ttu mt0 mb2 f6 fw5 silver">More</h2>
@@ -80,6 +93,18 @@
 <script>
 export default {
   name: 'Nav',
+  computed: {
+    navLinks () {
+      // let l = this.$parent.dbInfo.map(x => )
+      // <li v-for="db in $parent.dbInfo" :key="db.db_name" class="mb2">
+      //   <router-link
+      //     :to="'/details/' + db.db_name"
+      //     class="block link dim blue"
+      //     >{{ db.db_name | formatDBName }}</router-link
+      //   >
+      // </li>
+    }
+  },
   data () {
     return {
       managementDBUrl: process.env.DB_URL

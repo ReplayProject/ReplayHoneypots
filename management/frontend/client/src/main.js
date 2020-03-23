@@ -4,6 +4,12 @@ import app from './app.vue'
 import VueProgressBar from 'vue-progressbar'
 import router from './router'
 
+import 'tachyons/css/tachyons.min.css'
+// TODO: organize imports in the same manner
+import VueGoodTablePlugin from 'vue-good-table'
+import 'vue-good-table/dist/vue-good-table.css'
+Vue.use(VueGoodTablePlugin)
+
 import PouchVue from 'pouch-vue'
 import PouchDB from 'pouchdb-browser'
 import PouchdbFind from 'pouchdb-find'
