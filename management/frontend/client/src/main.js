@@ -5,7 +5,6 @@ import VueProgressBar from 'vue-progressbar'
 import router from './router'
 
 import 'tachyons/css/tachyons.min.css'
-// TODO: organize imports in the same manner
 import VueGoodTablePlugin from 'vue-good-table'
 import 'vue-good-table/dist/vue-good-table.css'
 Vue.use(VueGoodTablePlugin)
@@ -16,7 +15,7 @@ import PouchdbFind from 'pouchdb-find'
 PouchDB.plugin(PouchdbFind)
 PouchDB.plugin(require('pouchdb-live-find'))
 // PouchDB.plugin(require('pouchdb-authentication'));
-// TODO: when we add auth
+// TODO: when we add database auth
 
 // https://github.com/MDSLKTR/pouch-vue
 Vue.use(PouchVue, {
@@ -51,7 +50,6 @@ Vue.filter('formatDBName', value => {
 })
 
 // Setup for how dates work on the app
-// TODO: test this
 let dateType = x =>
   new Date(x * 1000)
     .toLocaleString()

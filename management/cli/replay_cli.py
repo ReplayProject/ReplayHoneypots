@@ -214,9 +214,6 @@ def checkstatus(ctx, key_file):
         cmd = 'ssh' + info[0] + "@" + info[1] + \
             " -p " + info[2] + ' "uname -a"'
 
-        # TODO: attach to debug mode
-        # log(cmd, "red")
-
         output = os.popen(cmd)
         pprint(output.read())
         print('\n\n')

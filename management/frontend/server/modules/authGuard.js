@@ -16,7 +16,7 @@ module.exports = options => {
       if (setReturnTo && req.session) {
         req.session.returnTo = req.originalUrl || req.url
       }
-      // TODO: decide if we want status codes or redirectes
+      // TODO: decide if we want status codes or redirects
       return res.status(401).send('You are not authenticated')
       // return res.redirect(url);
     }
