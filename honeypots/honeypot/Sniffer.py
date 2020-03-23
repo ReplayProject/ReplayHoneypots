@@ -29,7 +29,7 @@ class Sniffer(Thread):
 
         self.running = True
         #This number doesn't matter, this is used to stop the thread if a reset is necessary
-        self.count = 100
+        self.count = 1
     """
     Runs the thread, begins sniffing
     """
