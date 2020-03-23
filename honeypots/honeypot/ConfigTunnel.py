@@ -7,9 +7,6 @@ Author: Seth Parrish
 from threading import Thread
 import configparser
 
-# https://pypi.org/project/sshtunnel/
-from sshtunnel import SSHTunnelForwarder
-
 # Crypto Imports
 from Crypto.Hash import SHA256
 from Crypto.Cipher import AES
@@ -78,29 +75,6 @@ class ConfigTunnel(Thread):
         self.serverPort = 9998
         self.ready = False
         self.handlers = {}
-
-        # Reverse Tunnel Configuration (if connecting elsewhere)
-        # TODO: abstract this into config settings
-        if self.needsTunnel:
-            config = configparser.RawConfigParser()
-            config.read(configFilePath)
-            self.ssh_host = config.get('SSHTunnel', 'ssh_host')
-            self.ssh_port = config.get('SSHTunnel', 'ssh_port')
-            self.ssh_username = config.get('SSHTunnel', 'ssh_username')
-            self.ssh_pkey = config.get('SSHTunnel', 'ssh_pkey')
-
-        # Only the client needs to setup the SSH Tunnel
-        if self.mode is "server":
-            pass
-        elif self.mode is "client" and self.needsTunnel:
-            self.server = SSHTunnelForwarder(
-                (self.ssh_host, self.ssh_port),
-                ssh_username=self.ssh_username,
-                ssh_pkey=self.ssh_pkey,
-                ssh_private_key_password="",
-                remote_bind_address=('127.0.0.1', self.serverPort),
-                mute_exceptions=False
-            )
 
     def setHandler(self, trigger, handler):
         """
