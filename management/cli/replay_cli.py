@@ -13,6 +13,7 @@ import six
 import signal
 import itertools
 import subprocess
+import json
 
 # Interactivity
 from PyInquirer import Token, ValidationError, Validator, print_json, prompt, style_from_dict, Separator
@@ -75,7 +76,7 @@ def writeConfig(message):
 
 
 def signal_handler(sig, frame):
-    writeConfig('Goodbye, your config has been updated')
+    writeConfig('Exiting the RePlay CLI...')
     sys.exit(0)
 
 
@@ -159,12 +160,12 @@ def askSSHKEY():
 @click.pass_context
 def checkstatus(ctx, key_file):
     """
-    Command to check the status of devices
+    Check the status of devices
     """
 
     if len(config.items("HOSTS")) is 0:
-        log("No hosts setup, lets fix that :)", "red")
-        ctx.invoke(addhost)
+        log("No hosts have been added yet. To add a host, select 'Add Host' command.", "red")
+        ctx.invoke(choices)
 
     ssh_key = None
     if config.has_option("GENERAL", "ssh_key"):
@@ -224,74 +225,100 @@ def checkstatus(ctx, key_file):
 
     log("Work In Progress", color="blue")
 
+class HostnameValidator(Validator):
+    """
+    Validate a hostname
+    """
+    def validate(self, value):
+
+        if len(value.text):
+            hosts = config.items('HOSTS')
+            hostnames = []
+
+            for host in hosts: 
+                hostnames.append(host[0])
+                
+            if (value.text in hostnames):
+                raise ValidationError(
+                    message="A host with that hostname already exists. To replace it, please remove host first.",
+                    cursor_position=len(value.text))
+
+        else:
+            raise ValidationError(
+                message="You can't leave this blank",
+                cursor_position=len(value.text))
+
+
 
 class DeviceIPValidator(Validator):
     """
     Validate an IP address based on ping response
     """
-
     def validate(self, value):
+
         if len(value.text):
-
+            # TODO: verify valid ip format? 
             hosts = config.items('HOSTS')
+            ip = []
 
-            if ('value.text' in itertools.chain(*hosts)):
+            for host in hosts: 
+                data = json.loads(host[1].replace("\'", "\""))
+                ip.append(data['ip'])
+                
+            if (value.text in ip):
                 raise ValidationError(
-                    message="That host already exists",
+                    message="A host with that IP address already exists. To replace it, please remove host first.",
                     cursor_position=len(value.text))
+        else:
+            raise ValidationError(
+                message="You can't leave this blank",
+                cursor_position=len(value.text))
 
 
 @main.command()
 def addhost():
     """
-    Command to check the status of devices
+    Add a device
     """
 
     new_device = prompt([
         {
             'type': 'input',
-            'name': 'name',
-            'message': 'What should we call this device:',
-            'validate': EmptyValidator
+            'name': 'hostname',
+            'message': 'Hostname:',
+            'validate': HostnameValidator
         },
         {
             'type': 'input',
             'name': 'user',
-            'message': 'What user:',
+            'message': 'Username:',
             'validate': EmptyValidator
         },
         {
             'type': 'input',
             'name': 'ip',
-            'message': 'Which IP:',
+            'message': 'IP Address:',
             'validate': DeviceIPValidator
-            # TODO: ping on port
         },
         {
             'type': 'input',
             'name': 'port',
-            'message': 'Which Port:',
+            'message': 'Port:',
             'validate': EmptyValidator
         }
     ], style=style)
 
-    host_value = ':'.join(list(new_device.values())[1:])
-    config.set('HOSTS', new_device["name"], host_value)
-    writeConfig("New host " + new_device["name"] + " saved!")
+    # TODO: ping on port
+    
+    hostname = new_device.pop("hostname")
+    new_device["status"] = "inactive"
+    host_value = str(new_device)
+    config.set('HOSTS', hostname, host_value)
+    writeConfig("New host " + hostname + " saved!")
 
 
-@main.command()
-@click.option('--debug/--no-debug', default=False)
 @click.pass_context
-def start(ctx, debug):
-    """
-    Run this tool in interactive mode
-    """
-    global config
-    log("RePlay CLI", color="blue", figlet=True)
-    log("Welcome to the RePlay CLI" +
-        (" (DEBUGGING MODE)" if debug else ""), "green")
-
+def choices(ctx): 
     # Main Loop to run the interactive menu
     while True:
         try:
@@ -301,10 +328,11 @@ def start(ctx, debug):
                     'name': 'choice',
                     'message': 'What do you need to do?',
                     'choices':
-                    ['Check Status',
-                     'Deploy',
-                     'Teardown',
-                     'Add Host',
+                    ['Add Host',
+                     'Remove Host',
+                     'Start Honeypot',
+                     'Stop Honeypot', 
+                     'Check Status',
                      'Open Config',
                      'Exit'],
                     'filter': lambda val: val.lower()
@@ -318,8 +346,17 @@ def start(ctx, debug):
         if choice == 'add host':
             ctx.invoke(addhost)
 
-        elif choice == 'exit':
-            os.kill(os.getpid(), signal.SIGINT)
+        elif choice == 'remove host':
+            # TODO
+            ctx.invoke(choices)
+
+        elif choice == 'start honeypot': 
+            # TODO
+            ctx.invoke(choices)
+
+        elif choice == 'stop honeypot':
+            # TODO
+            ctx.invoke(choices)
 
         elif choice == 'check status':
             ctx.invoke(checkstatus)
@@ -331,13 +368,31 @@ def start(ctx, debug):
             config = configparser.ConfigParser()
             setupConfig()
 
+        elif choice == 'exit':
+            os.kill(os.getpid(), signal.SIGINT)
+
+
+@main.command()
+@click.option('--debug/--no-debug', default=False)
+@click.pass_context
+def start(ctx, debug):
+    """
+    Run this CLI in interactive mode
+    """
+    global config
+    log("RePlay CLI", color="blue", figlet=True)
+    log("Welcome to the RePlay CLI" +
+        (" (DEBUGGING MODE)" if debug else ""), "green")
+
+    ctx.invoke(choices)
+
+
+if __name__ == '__main__':
+    main()
+
 
 # New Command Template
 # @main.command()
 # @click.argument('option')
 # def test(debug, option=""):
 #     pass
-
-
-if __name__ == '__main__':
-    main()
