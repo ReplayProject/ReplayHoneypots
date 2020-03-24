@@ -1,0 +1,6 @@
+KEY="/shared/manager_rsa"
+REPO="repo.tar.gz"
+REPOPATH="/shared/git_zips/repo.tar.gz"
+REMOTE="yogi@192.168.42.52"
+REMOTEPATH="/home/yogi"
+CRONPATH="/home/yogi/helloworld/2020SpringTeam18/honeypots/honeypot"
