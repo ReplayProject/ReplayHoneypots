@@ -86,13 +86,16 @@ export default {
         let res = await axios.post('/login', data)
 
         console.log('Logged in')
+        this.$toasted.show('Authenticated')
         this.$router.push('/dashboard')
       } catch (error) {
-        console.log('Cannot log in', errors)
+        this.$toasted.show('Failed to Login. Error: ' + error.message)
+        console.log('Cannot log in', error)
       }
     },
     async logout (e) {
       let res = await axios.get('/logout')
+      this.$toasted.show('Logged out.')
       console.log(res)
       // this.$router.push('/') // TODO: redirect if logout is done on other pages
     }

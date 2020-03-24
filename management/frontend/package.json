@@ -4,8 +4,8 @@
   "description": "A tiny VueJS app bundled using ParcelJS && Pouch Database & Frontend",
   "main": "index.html",
   "scripts": {
-    "build": "parcel build ./client/index.html --public-url 'http://localhost:8080' ",
-    "build-watch": "parcel watch ./client/index.html --public-url 'http://localhost:8080' ",
+    "build": "parcel build ./client/index.html --public-url 'http://152.14.85.156:8080' ",
+    "build-watch": "parcel watch ./client/index.html --public-url 'http://152.14.85.156:8080' ",
     "dev": "concurrently --kill-others \"npm run start-watch\" \"npm run build-watch\"",
     "format": "npx prettier-standard && npx sort-package-json ",
     "start": "NODE_ENV=development npm run build && DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history node server/index.js",
@@ -62,6 +62,7 @@
     "vue-good-table": "^2.19.1",
     "vue-progressbar": "^0.7.5",
     "vue-router": "latest",
+    "vue-toasted": "^1.1.28",
     "vuejs-datatable": "^2.0.0-alpha.7",
     "xterm": "^4.4.0",
     "xterm-addon-attach": "^0.5.0",
