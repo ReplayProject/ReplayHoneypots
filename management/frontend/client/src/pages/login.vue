@@ -97,7 +97,6 @@ export default {
       let res = await axios.get('/logout')
       this.$toasted.show('Logged out.')
       console.log(res)
-      // this.$router.push('/') // TODO: redirect if logout is done on other pages
     }
   }
 }

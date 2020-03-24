@@ -125,7 +125,6 @@ class TestSniffer(unittest.TestCase):
 
         sniff.join()
 
-# TODO: track down the unclosed socket
 class TestConfigTunnel(unittest.TestCase):
     """
     Handles testing for the ConfigTunnel module
@@ -147,6 +146,14 @@ class TestConfigTunnel(unittest.TestCase):
         time.sleep(2)
         self.ctunnel.join()
         self.stunnel.join()
+
+    def test_fulltest(self):
+        # Server & Client Start
+        self.stunnel.start()
+        self.ctunnel.start()
+        time.sleep(1)
+        print("yeet")
+        self.assertTrue(True)
 
     def test_init(self):
         """
@@ -203,12 +210,12 @@ class TestConfigTunnel(unittest.TestCase):
         self.assertTrue(handle_client_done.called)
         handle_client_done.assert_called_once_with(["echo", "value"])
 
-class TestCron(unittest.TestCase): 
+class TestCron(unittest.TestCase):
     """
     Tests CronInstaller and CronUninstaller
     """
 
-    def test_cron(self): 
+    def test_cron(self):
 
         """
         Setup
@@ -222,10 +229,10 @@ class TestCron(unittest.TestCase):
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-        
+
         # If there are previous Cron jobs, save them before clearing out Cron
         previous = False
-        if stdout: 
+        if stdout:
             previous = True
             crontab_file = open("previous", 'w')
             crontab_file.write(stdout.decode())
@@ -235,16 +242,16 @@ class TestCron(unittest.TestCase):
         """
         Test CronInstaller's argparser
         """
-        
-        with self.assertRaises(SystemExit): 
+
+        with self.assertRaises(SystemExit):
             CronInstaller.main([])
-        with self.assertRaises(SystemExit): 
+        with self.assertRaises(SystemExit):
             CronInstaller.main(['-p', 'PortThreadManager.py'])
-        with self.assertRaises(SystemExit): 
+        with self.assertRaises(SystemExit):
             CronInstaller.main(['-p', 'PortThreadManager.py', '-c', '../config/new-config.json', '-n', '../nmap/default.nmap'])
-        with self.assertRaises(FileNotFoundError): 
+        with self.assertRaises(FileNotFoundError):
             CronInstaller.main(['-p', 'badfilepath', '-c', '../config/new-config.json'])
-        with self.assertRaises(FileNotFoundError): 
+        with self.assertRaises(FileNotFoundError):
             CronInstaller.main(['-p', 'PortThreadManager.py', '-c', 'badfilepath'])
         CronInstaller.main(['-p', 'PortThreadManager.py', '-c', '../config/new-config.json'])
         CronUninstaller.uninstall()
@@ -252,14 +259,14 @@ class TestCron(unittest.TestCase):
         CronUninstaller.uninstall()
 
         """
-        Install Cron when there is no existing Cron file. 
-        We expect the installer to: 
+        Install Cron when there is no existing Cron file.
+        We expect the installer to:
         - Create/edit the restart script
         - Create a Cron file for the user
-        - Use the correct absolute paths for both files 
+        - Use the correct absolute paths for both files
 
-        Uninstall Cron when there is only our job. 
-        We expect the uninstaller to simply delete the Cron file. 
+        Uninstall Cron when there is only our job.
+        We expect the uninstaller to simply delete the Cron file.
         """
 
         CronInstaller.install("PortThreadManager.py", "-c", "../config/new-config.json")
@@ -289,8 +296,8 @@ class TestCron(unittest.TestCase):
         self.assertEqual(stderr.decode(), "no crontab for root\n")
 
         """
-        Install Cron when there is already an existing Cron file, and that file contains our job. 
-        We expect the installer to identify our job and not duplicate the Cron job. 
+        Install Cron when there is already an existing Cron file, and that file contains our job.
+        We expect the installer to identify our job and not duplicate the Cron job.
         """
 
         CronInstaller.install("PortThreadManager.py", "-c", "../config/new-config.json")
@@ -303,12 +310,12 @@ class TestCron(unittest.TestCase):
         CronUninstaller.uninstall()
 
         """
-        Install Cron when there is already an existing Cron file, and that file does not contain our job. 
-        We expect the installer to: 
+        Install Cron when there is already an existing Cron file, and that file does not contain our job.
+        We expect the installer to:
         - Preserve the previous contents of the Cron file
         - Add our job to the Cron file
 
-        Uninstall Cron when there are other jobs besides our own. 
+        Uninstall Cron when there are other jobs besides our own.
         We expect the uninstaller to:
         - Preserve the previous contents of the Cron file
         - Remove our job from the Cron file
@@ -340,15 +347,15 @@ class TestCron(unittest.TestCase):
         stdout, stderr = process.communicate()
 
         """
-        Uninstall Cron when there is no Cron file. 
+        Uninstall Cron when there is no Cron file.
         We expect the uninstaller to throw an error.
         """
-        with self.assertRaises(FileNotFoundError): 
+        with self.assertRaises(FileNotFoundError):
             CronUninstaller.uninstall()
 
         """
-        Uninstall Cron when there are is a Cron file, but it does not contain our job. 
-        We expect the uninstaller to: 
+        Uninstall Cron when there are is a Cron file, but it does not contain our job.
+        We expect the uninstaller to:
         - Preserve the previous contents of the Cron file
         - Throw an error
         """
@@ -360,7 +367,7 @@ class TestCron(unittest.TestCase):
                                 stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
         os.remove("not_honeypot")
-        with self.assertRaises(LookupError): 
+        with self.assertRaises(LookupError):
             CronUninstaller.uninstall()
         process = subprocess.Popen(['crontab', '-l'],
                                 stdout=subprocess.PIPE,
@@ -375,8 +382,8 @@ class TestCron(unittest.TestCase):
         """
         Teardown
         """
-        if previous: # If there were previous Cron jobs: 
-            # Restore them 
+        if previous: # If there were previous Cron jobs:
+            # Restore them
             process = subprocess.Popen(['crontab', 'previous'],
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)

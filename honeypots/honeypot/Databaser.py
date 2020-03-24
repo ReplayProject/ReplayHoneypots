@@ -26,6 +26,7 @@ class Databaser(Thread):
         self.conf = options[1]
         self.dbfolder = options[2]
         self.bindaddress = options[3]
+        self.targetaddress = options[4]
         self.url = 'http://{}:{}/'.format(self.bindaddress, self.port)
         self.db_name = socket.gethostname() + "_logs"
         self.db_url = self.url + self.db_name
@@ -37,7 +38,6 @@ class Databaser(Thread):
         """
         Create this device's log database
         """
-        # TODO: automatically setup the replication settings
         header = {"content-type": "application/json"}
         r = put(url=self.url + self.db_name,
                 headers=header, verify=False, timeout=3)
@@ -51,7 +51,7 @@ class Databaser(Thread):
             "continuous": True,
             "create_target": True,
             "source": self.db_name,
-            "target": "https://sd-db.glitch.me/" + self.db_name
+            "target": self.targetaddress + self.db_name
         }
 
         if self.replication:
@@ -65,8 +65,6 @@ class Databaser(Thread):
         """
         Runs the thread, begins sniffing
         """
-        # TODO: check database is not running before starting (especially replicating)
-
         # Setup files needed to run db
         # Path(self.dbfolder + '/log.txt').touch(mode=0o777, exist_ok=True)
         Path(self.dbfolder + '/log.txt').touch(mode=0o777, exist_ok=True)
@@ -78,7 +76,6 @@ class Databaser(Thread):
         self.process = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.dbfolder)
 
-        # TODO: make this not a timing issue.
         print("Waiting 5 seconds for DB to start")
         time.sleep(5)
 
