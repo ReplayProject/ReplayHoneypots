@@ -37,11 +37,11 @@ router.ws('/', (ws, req) => {
   // Listen for client input
   ws.on('message', data => {
     if (data.includes('meta')) {
-      termLog('Resize!')
+      // TODO: decide if meta messages are needed
+      termLog('Meta Message!')
       // Adjust for sizing
       let rc = data.split(',').slice(1)
       // term.resize(term, rc[0], rc[1]);
-      // TODO: resize is messed up (may not need in the end)
     } else term.write(data)
   })
   // Listen on the terminal for output and send it to the client

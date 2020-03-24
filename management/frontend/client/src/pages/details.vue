@@ -109,7 +109,6 @@ export default {
           type: 'text'
         },
         {
-          // TODO: https://xaksis.github.io/vue-good-table/guide/configuration/column-options.html#dateinputformat
           label: 'time',
           field: 'timestamp',
           formatFn: x => {
@@ -124,15 +123,6 @@ export default {
           label: 'proto',
           field: 'trafficType',
           type: 'text'
-          // TODO: decide if needed
-          // filterOptions: {
-          //   enabled: true, // enable filter for this column
-          //   placeholder: 'Filter', // placeholder for filter input
-          //   // filterValue: 'UDP', // initial populated value for this filter
-          //   filterDropdownItems: ['UDP', 'TCP'], // dropdown (with selected values) instead of text input
-          //   // filterFn: this.columnFilterFn, //custom filter function that
-          //   // trigger: 'enter' //only trigger on enter not on keyup
-          // }
         },
         {
           label: 'sPort',
@@ -239,7 +229,6 @@ export default {
       let fields = [
         ...Object.keys(this.serverParams.columnFilters),
         ...this.serverParams.sort.map(x => x.field)
-        // TODO: columnFilters
       ]
       fields.sort()
 
@@ -320,12 +309,6 @@ export default {
       // Mark everything as done loading
       this.$Progress.finish()
       this.isLoading = false
-
-      // TODO: refactor using better async things if using multiple awaits:
-      // Promise.allSettled([
-      //     Promise.resolve('a'),
-      //     Promise.reject('b')
-      // ]).then(console.log)
     }
   }
 }
