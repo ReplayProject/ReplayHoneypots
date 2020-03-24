@@ -73,6 +73,7 @@ router.beforeEach(async (to, from, next) => {
       // console.log(res.data) // TODO: maybe save this in app internals
       next()
     } catch (err) {
+      v.$toasted.show('Please log in.')
       next({ name: 'login' })
       return
     }

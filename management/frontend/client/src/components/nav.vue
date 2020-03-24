@@ -14,9 +14,6 @@
     <h2 class="ttu mt0 mb2 f6 fw5 silver">Test Links</h2>
     <ul class="list pl0 mt0 mb4">
       <li class="mb2">
-        <router-link to="/login" class="block link dim blue">Login</router-link>
-      </li>
-      <li class="mb2">
         <router-link to="/" class="block link dim blue">Home</router-link>
       </li>
       <li class="mb2">
@@ -29,6 +26,15 @@
         <router-link to="/terminal" class="block link dim blue"
           >Terminal</router-link
         >
+      </li>
+      <li class="mb2">
+        <div
+          class="block link dim blue pointer"
+          @click="logout"
+          v-if="$route.name != 'login'"
+        >
+          Logout
+        </div>
       </li>
     </ul>
     <!-- More Realistic Options -->
@@ -91,6 +97,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'Nav',
   computed: {
@@ -103,6 +111,14 @@ export default {
       //     >{{ db.db_name | formatDBName }}</router-link
       //   >
       // </li>
+    }
+  },
+  methods: {
+    async logout (e) {
+      let res = await axios.get('/logout')
+      this.$toasted.show('Logged out.')
+      console.log(res)
+      this.$router.push('/login') // TODO: redirect if logout is done on other pages
     }
   },
   data () {

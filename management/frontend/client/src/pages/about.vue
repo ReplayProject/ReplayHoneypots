@@ -245,7 +245,8 @@ export default {
   // the logic will be slightly different.
   async beforeRouteUpdate (to, from, next) {
     let [res, err] = await getAllLogs('lenny_logs')
-    this.setData(err, res.data.rows)
+    if (!err) this.setData(err, res.data.rows)
+    console.log(res)
     next()
   },
   methods: {

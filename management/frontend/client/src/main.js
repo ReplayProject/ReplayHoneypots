@@ -3,6 +3,7 @@ import Vue from 'vue'
 import app from './app.vue'
 import VueProgressBar from 'vue-progressbar'
 import router from './router'
+import Toasted from 'vue-toasted'
 
 import 'tachyons/css/tachyons.min.css'
 // TODO: organize imports in the same manner
@@ -17,6 +18,12 @@ PouchDB.plugin(PouchdbFind)
 PouchDB.plugin(require('pouchdb-live-find'))
 // PouchDB.plugin(require('pouchdb-authentication'));
 // TODO: when we add auth
+
+Vue.use(Toasted, {
+  theme: 'toasted-primary',
+  position: 'bottom-center',
+  duration: 5000
+})
 
 // https://github.com/MDSLKTR/pouch-vue
 Vue.use(PouchVue, {
