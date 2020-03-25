@@ -1,22 +1,50 @@
 version: '3.3'
 
 services:
+  # Service to start a devault ubuntu container with ssh running
+  newpot:
+    image: linuxserver/openssh-server
+    container_name: openssh-server
+    hostname: openssh-server
+    ports:
+      - 2222:2222
+    networks:
+      default:
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+      - PASSWORD_ACCESS=false
+      - PUBLIC_KEY=ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDVtnZ/ax3m7dOKuYPULSCRnJyiKDDHHyBRWGMFCq/yHEI7B61VfqP69fsoklvAwF7aTHfDotiWaum5PwEs2W66oHDHTyO2U08YnSp6vk/4sHiuuioyJbUfG3DKkIQOALUwlq7YjS8JQCG6TK/Eu2MhqyD9M0YpSi30H/dgi4u2PzQHbgk3dgnDiRaG3PCA1lD6S6timbNmhLmtkV5EFNIXquIadDqOeoNORS/bTFeatAzcoYUzszfUoHdOLcvV8EKlZ3cDL3kRxRUFqS20ktZXDpynVrBPqJFuWWUfhzMERpBLejA5IgEdVUMEb5Kl8jGBgbtT6p4ZPPGB6y5wpAn5 root@6344607aa60b
+      - SUDO_ACCESS=true
+      - USER_PASSWORD=password
+      - USER_NAME=linuxserver.io
+    volumes:
+      - replay-src:/src
+    ports:
+      - 2222:2222
+    restart: unless-stopped
+
   # Service to get manager up and running
   honeypot-manager:
+    command: npm run dev
     build:
       context: './management'
       dockerfile: Dockerfile
+    container_name: honeypot-manager
+    hostname: honeypot-manager
     ports:
       - 8080:8080
       - 8081:8081
     networks:
       default:
-        aliases:
-          - manager
-    volumes:
-      - replay-src:/src
-    environment:
-      - NODE_ENV=development
+    depends_on:
+      - newpot
+    restart: "no"
+    # volumes:
+      # - replay-src:/src
+    # environment:
+    #   - NODE_ENV=development
     deploy:
       labels:
         - ismanager=true
@@ -30,16 +58,21 @@ services:
     build:
       context: './honeypots'
       dockerfile: Dockerfile
+    # container_name: honeypot # Only works with one honeypot
+    # hostname: honeypot # Only works with one honeypot
     ports:
-      - 1437:1437
+      # forward to this port somewhere
+      - 1437
     networks:
-      - default
-    volumes:
-      - replay-src:/src
-    environment:
-      - NODE_ENV=development
+      default:
+      # outside:
     depends_on:
       - honeypot-manager
+    restart: "no"
+    # volumes:
+      # - replay-src:/src
+    # environment:
+      # - NODE_ENV=development
     deploy:
       labels:
         - ishoneypot=true
@@ -49,7 +82,18 @@ services:
           - spread: node.id
 
 volumes:
+  # This volume gives access to the source code for the system
   replay-src:
+    driver: local
+    driver_opts:
+      type: none
+      device: $PWD
+      o: bind
 
 networks:
+  # Default network for container-container communication
   default:
+  # Lets a device adopt the network environment of the host machineis
+  outside:
+    external:
+      name: "host"
