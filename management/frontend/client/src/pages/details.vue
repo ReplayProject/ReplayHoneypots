@@ -240,7 +240,10 @@ export default {
           this.dbURI
         )
         // Only log index creation if it was new
-        if (idx.result != 'exists') console.log('New Index created: ', idx)
+        if (idx.result != 'exists') {
+          console.log('New Index created: ', idx)
+          this.$toasted.show('New query index created')
+        }
       }
 
       let selector = {}
