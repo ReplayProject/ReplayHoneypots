@@ -54,5 +54,5 @@ dist
 .nyc_output
 
 #Configuration files
-properties.cfg
+honeypots/honeypot/config/properties.cfg
 restart.sh

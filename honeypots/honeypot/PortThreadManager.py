@@ -15,12 +15,10 @@ from NmapParser import NmapParser
 from Sniffer import Sniffer
 from Databaser import Databaser
 from PortListener import PortListener
+from ConfigTunnel import ConfigTunnel
 
-config = configparser.RawConfigParser()
-configFilePath = r'../config/properties.cfg'
-HONEY_IP = None
-MGMT_IPs = None
-DATABASE_OPTIONS = None
+#default location that PortThreadManager will look for config options
+CONFIG_FILE_PATH = r'../config/properties.cfg'
 
 """
 Handles the port threads to run the honeypot
@@ -35,7 +33,7 @@ class PortThreadManager:
         portList: a list of int port numbers
     """
 
-    def __init__(self, portList):
+    def __init__(self):
         self.portList = []
         self.ip = str(get('https://api.ipify.org').text)
         self.processList = dict()
@@ -47,23 +45,21 @@ class PortThreadManager:
         self.whitelist = None
         self.keepRunning = True
         self.responseData = None
+        self.configFilePath = None
 
     """
-    Gets config information; ran when PortThreadManager configuration changes      
+    Gets config information; ran when PortThreadManager configuration changes
     """
     def getConfigData(self):
-        global config
-        global HONEY_IP
-        global MGMT_IPs
-        global DATABASE_OPTIONS
+        config = configparser.RawConfigParser()
 
-        config.read(configFilePath)
+        config.read(self.configFilePath)
         dataFile = config.get('Attributes', 'pcap_data_file')
 
-        HONEY_IP = config.get('IPs', 'honeypotIP')
-        MGMT_IPs = json.loads(config.get("IPs", "managementIPs"))
+        self.HONEY_IP = config.get('IPs', 'honeypotIP')
+        self.MGMT_IPs = json.loads(config.get("IPs", "managementIPs"))
 
-        DATABASE_OPTIONS = [
+        self.DATABASE_OPTIONS = [
             config.get("Databaser", "port"),
             config.get("Databaser", "dbconf"),
             config.get("Databaser", "dbfolder"),
@@ -81,8 +77,8 @@ class PortThreadManager:
     Start a thread for each port in the config file, connects to the database, runs sniffer class
     """
 
-    def deploy(self, updateSniffer = False, updateOpenPorts = False):
-        #TODO: add three optional parameters to tell which part is getting updated
+    def deploy(self, propertiesFile = CONFIG_FILE_PATH, updateSniffer = False, updateOpenPorts = False):
+        self.configFilePath = propertiesFile
 
         #Gets the info from config file initially
         self.getConfigData()
@@ -90,7 +86,7 @@ class PortThreadManager:
         #--- Databaser Thread (does not get updated on dynamic config change)---#
         # Setup the DB
         if (self.databaserThread == None):
-            self.databaserThread = Databaser(options=DATABASE_OPTIONS)
+            self.databaserThread = Databaser(options=self.DATABASE_OPTIONS)
             self.databaserThread.daemon = True
             self.databaserThread.start()
 
@@ -101,16 +97,16 @@ class PortThreadManager:
         #--- Sniffer Thread ---#
         if (self.snifferThread == None):
             #TODO: Switch config="testing" to "base" when in production
-            self.snifferThread = Sniffer(config="testing", openPorts=self.portList, whitelist=self.whitelist,
-                                         db_url=self.databaserThread.db_url, honeypotIP=HONEY_IP, managementIPs=MGMT_IPs)
+            self.snifferThread = Sniffer(config="testing", openPorts=list(self.responseData.keys()), whitelist=self.whitelist,
+                                         db_url=self.databaserThread.db_url, honeypotIP=self.HONEY_IP, managementIPs=self.MGMT_IPs)
             self.snifferThread.daemon = True
             self.snifferThread.start()
         elif (updateSniffer == True):
-            self.snifferThread.configUpdate(openPorts=self.portList, whitelist=self.whitelist, db_url=self.databaserThread.db_url, honeypotIP=HONEY_IP, managementIPs=MGMT_IPs)
+            self.snifferThread.configUpdate(openPorts=list(self.responseData.keys()), whitelist=self.whitelist, db_url=self.databaserThread.db_url, honeypotIP=self.HONEY_IP, managementIPs=self.MGMT_IPs)
 
         #--- Open Sockets ---#
         #On initial run
-        if (len(portList) == 0):
+        if (len(self.processList) == 0):
             for port in self.responseData.keys():
                 portThread = PortListener(port, self.responseData[port], self.delay)
                 portThread.daemon = True
@@ -118,20 +114,21 @@ class PortThreadManager:
                 self.processList[port] = portThread
             # for thread in self.processList.values():
             #     thread.join()
+
         #Updating to new set of ports
         elif (updateOpenPorts == True):
-            updatedPorts = self.responseData.keys()
-            currentPorts = map(lambda x: x.port(), self.processList.keys())
+            updatedPorts = list(self.responseData.keys())
+            currentPorts = list(self.processList.keys())
 
             for p in currentPorts:
                 if (not p in updatedPorts):
                     self.processList[p].isRunning = False
             for p in updatedPorts:
                 if (not p in currentPorts):
-                    portThread = PortListener(port, self.responseData[port], self.delay)
+                    portThread = PortListener(p, self.responseData[p], self.delay)
                     portThread.daemon = True
                     portThread.start()
-                    self.processList[port] = portThread
+                    self.processList[p] = portThread
 
 
         # self.snifferThread.join()
@@ -145,12 +142,24 @@ if __name__ == '__main__':
 
     portList = []
     if args.nmap:
-        parser = NmapParser(args.nmap) 
+        parser = NmapParser(args.nmap)
         portList = parser.getPorts()
 
-    manager = PortThreadManager(portList)
-    manager.deploy()
+    manager = PortThreadManager()
+    # manager.deploy()
+    def handle_test(args):
+      print("YONK WE GOT A POKE SONNY: ", args)
 
+    # Lets get cracking
+    stunnel = ConfigTunnel('server')
+    stunnel.setHandler("test", handle_test)
+    stunnel.start()
+
+    print("Listening")
     #keep main thread alive
     while True:
-        time.sleep(0.5)
+        time.sleep(5)
+        # print("READY: ", stunnel.ready)
+        print("redeploying")
+        manager.deploy()
+        

@@ -11,8 +11,16 @@ import re
 import sys
 import six
 import signal
+import time
 import itertools
 import subprocess
+
+
+# insert at 1, 0 is the script path (or '' in REPL)
+sys.path.insert(1, '/home/winnie/2020SpringTeam18/honeypots/honeypot')
+
+
+from ConfigTunnel import ConfigTunnel
 
 # Interactivity
 from PyInquirer import Token, ValidationError, Validator, print_json, prompt, style_from_dict, Separator
@@ -292,6 +300,12 @@ def start(ctx, debug):
     log("Welcome to the RePlay CLI" +
         (" (DEBUGGING MODE)" if debug else ""), "green")
 
+
+    ctunnel = ConfigTunnel('client', "localhost")
+    try:
+      ctunnel.start()
+    except Exception:
+      print("Config tunnel did not start")
     # Main Loop to run the interactive menu
     while True:
         try:
@@ -317,6 +331,14 @@ def start(ctx, debug):
 
         if choice == 'add host':
             ctx.invoke(addhost)
+
+        elif choice == 'deploy':
+
+            time.sleep(2)
+
+            print("READY: ", ctunnel.ready)
+
+            ctunnel.send("test")
 
         elif choice == 'exit':
             os.kill(os.getpid(), signal.SIGINT)

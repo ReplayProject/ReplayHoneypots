@@ -22,7 +22,6 @@ import subprocess
 This file contains test cases for the honeypot code
 """
 
-
 def run_nmap():
     time.sleep(5)
     os.system("nmap localhost")
