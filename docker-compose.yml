@@ -1,7 +1,5 @@
 version: '3.3'
 
-# sudo docker run -d -P --name test_sshd rastasheep/ubuntu-sshd:14.04 -v ./:/src
-
 services:
   # Service to get manager up and running
   honeypot-manager:
@@ -12,7 +10,9 @@ services:
       - 8080:8080
       - 8081:8081
     networks:
-      - default
+      default:
+        aliases:
+          - manager
     volumes:
       - replay-src:/src
     environment:
@@ -27,12 +27,13 @@ services:
 
   # Service to get ready to run a honeypot
   honeypot:
-    network_mode: host
     build:
       context: './honeypots'
       dockerfile: Dockerfile
     ports:
       - 1437:1437
+    networks:
+      - default
     volumes:
       - replay-src:/src
     environment:
