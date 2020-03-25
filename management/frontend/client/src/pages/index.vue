@@ -34,13 +34,13 @@
     </div>
     <div class="flex flex-wrap mt3 nl3 nr3">
       <div
-        v-for="(db, idx) in appRef.dbInfo"
+        v-for="db in appRef.dbInfo"
         :key="db.db_name + '1'"
-        class="w-50 w-33-l mb4 mb0-l relative flex flex-column ph3"
+        class="w-50 w-33-l mb4 mb0-l relative flex flex-column ph3 mv2"
       >
         <sparkline
           :title="db.db_name"
-          :class="idxToColor(idx)"
+          :class="pickColor(db.db_name)"
           :value="db.doc_count"
         ></sparkline>
       </div>
@@ -78,8 +78,9 @@ export default {
     }
   },
   methods: {
-    idxToColor (i) {
-      return i == 0 ? 'bg-green' : i == 1 ? 'bg-red' : 'bg-purple'
+    pickColor (s) {
+      let colors = ['bg-green', 'bg-red', 'bg-purple', 'bg-blue']
+      return colors[s.charCodeAt(0) % colors.length]
     }
   },
   mounted () {}

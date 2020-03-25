@@ -47,13 +47,6 @@
           <a href="#0" class="f6 link dim black db">Forgot your password?</a>
         </div> -->
       </form>
-      <br />
-      <input
-        class="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib mb3"
-        type="submit"
-        @click="logout"
-        value="Sign Out"
-      />
     </main>
   </main>
 </template>
@@ -84,7 +77,6 @@ export default {
 
       try {
         let res = await axios.post('/login', data)
-
         console.log('Logged in')
         this.$toasted.show('Authenticated')
         this.$router.push('/dashboard')
@@ -92,11 +84,6 @@ export default {
         this.$toasted.show('Failed to Login. Error: ' + error.message)
         console.log('Cannot log in', error)
       }
-    },
-    async logout (e) {
-      let res = await axios.get('/logout')
-      this.$toasted.show('Logged out.')
-      console.log(res)
     }
   }
 }

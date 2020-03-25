@@ -237,18 +237,6 @@ export default {
       error: null
     }
   },
-  async beforeRouteEnter (to, from, next) {
-    let [res, err] = await getAllLogs('lenny_logs')
-    next(async vm => vm.setData(err, res.data.rows))
-  },
-  // when route changes and this component is already rendered,
-  // the logic will be slightly different.
-  async beforeRouteUpdate (to, from, next) {
-    let [res, err] = await getAllLogs('lenny_logs')
-    if (!err) this.setData(err, res.data.rows)
-    console.log(res)
-    next()
-  },
   methods: {
     setData (err, logs) {
       if (err) {
