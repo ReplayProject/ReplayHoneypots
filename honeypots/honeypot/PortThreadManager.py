@@ -49,7 +49,7 @@ class PortThreadManager:
         self.responseData = None
 
     """
-    Gets config information; ran when PortThreadManager configuration changes      
+    Gets config information; ran when PortThreadManager configuration changes
     """
     def getConfigData(self):
         global config
@@ -90,7 +90,7 @@ class PortThreadManager:
         #--- Databaser Thread (does not get updated on dynamic config change)---#
         # Setup the DB
         if (self.databaserThread == None):
-            self.databaserThread = Databaser(options=DATABASE_OPTIONS)
+            self.databaserThread = Databaser(options=DATABASE_OPTIONS, replication=True)
             self.databaserThread.daemon = True
             self.databaserThread.start()
 
@@ -145,7 +145,7 @@ if __name__ == '__main__':
 
     portList = []
     if args.nmap:
-        parser = NmapParser(args.nmap) 
+        parser = NmapParser(args.nmap)
         portList = parser.getPorts()
 
     manager = PortThreadManager(portList)
