@@ -14,10 +14,16 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Get source files
 COPY . .
 
-# Expose some ports
+# Expose some ports for "poking"
 EXPOSE 80
 EXPOSE 445
+EXPOSE 5040
+# Database and ConfigTunnel Ports
 EXPOSE 1437
+EXPOSE 9998
+
+# Do not buffer python otput
+ENV PYTHONUNBUFFERED=0
 
 WORKDIR /usr/src/app/honeypot
-CMD ["python3", "./PortThreadManager.py"]
+CMD ["python3", "-u", "./PortThreadManager.py"]
