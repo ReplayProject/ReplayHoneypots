@@ -109,14 +109,18 @@ def main(ctx):
 
 
 """
+##########
 Validators
+##########
 """
 
 
-class DeviceIPValidator(Validator):
-    """
-    Validate an IP address based on ping response
-    """
+"""
+Validate an IP address based on: 
+1 - IP address value
+2 - whether the IP address already exists in the CLI data
+"""
+class DeviceIPValidator(Validator): 
     def validate(self, value):
 
         if len(value.text):
@@ -154,6 +158,14 @@ class EmptyValidator(Validator):
                 cursor_position=len(value.text))
 
 
+"""
+Validate a path based on if it is a file
+
+Invalid paths include: 
+1 - folder paths
+2 - file paths that the user does not have permission to access
+3 - non-existent paths 
+"""
 class FilePathValidator(Validator): 
     def validate(self, value):
         if len(value.text):
@@ -167,6 +179,9 @@ class FilePathValidator(Validator):
                 cursor_position=len(value.text))
 
 
+"""
+Validate a hostname based on whether the hostname already exists in the CLI data
+"""
 class HostnameValidator(Validator):
     """
     Validate a hostname
@@ -192,7 +207,9 @@ class HostnameValidator(Validator):
 
 
 """
+############
 CLI Commands
+############
 """
 
 
@@ -216,7 +233,7 @@ def choices(ctx):
     # Main Loop to run the interactive menu
     while True:
         try:
-            answers = prompt([
+            choice = prompt([
                 {
                     'type': 'list',
                     'name': 'choice',
@@ -231,20 +248,18 @@ def choices(ctx):
                      'Exit'],
                     'filter': lambda val: val.lower()
                 }
-            ], style=style)
-
-            choice = answers['choice']
+            ], style=style)['choice']
         except KeyError:
             os.kill(os.getpid(), signal.SIGINT)
 
         if choice == 'add host':
-            ctx.invoke(addhost) #done
+            ctx.invoke(addhost) #done, to be tested
 
         elif choice == 'remove host':
             ctx.invoke(removehost) #not started
 
         elif choice == 'start honeypot': 
-            ctx.invoke(starthoneypot) #not started
+            ctx.invoke(starthoneypot) #done, to be tested
 
         elif choice == 'stop honeypot':
             ctx.invoke(stophoneypot) #not started
@@ -291,7 +306,7 @@ def addhost():
         {
             'type': 'input',
             'name': 'ssh_key',
-            'message': 'SSH Key Absolute Path:',
+            'message': 'SSH Key (Absolute Path):',
             'validate': FilePathValidator,
         },
     ], style=style)
@@ -330,21 +345,29 @@ def starthoneypot(ctx):
         host_choices.append({
             'name': host
         })
-
-    answers = prompt([
+    
+    honeypots = prompt([
         {
             'type': 'checkbox',
             'name': 'hosts',
             'message': 'Which host(s) do you want to start a honeypot on?',
             'choices': host_choices
         }
-    ], style=style)
-
-    honeypots = answers['hosts']
+    ], style=style)['hosts']
 
     if len(honeypots) == 0: 
         log ("No host has been selected.", "red")
     else: 
+
+        tar_file = prompt([
+            {
+                'type': 'input',
+                'name': 'tar_file',
+                'message': 'Tar File:',
+                'validate': FilePathValidator
+            }
+        ], style=style)['tar_file']
+
         hosts = config.items('HOSTS')
         
         for host in hosts: 
@@ -354,20 +377,31 @@ def starthoneypot(ctx):
                 ip = host_data['ip']
                 ssh_key = host_data['ssh_key']
                 
-                answers = prompt([
+                password = prompt([
                     {
                         'type': 'password',
-                        'name': 'pass',
+                        'name': 'password',
                         'message': ('Password for ' + user + "@" + ip + ":"),
                     }
-                ], style=style)
-                
-                # THIS WILL BE THE CALL TO BASH SCRIPTS - DELETE THESE PRINTS LATER
+                ], style=style)['password']
+
+                # TODO: DELETE BEFORE PUTTING ON MASTER
+                print ("DEBUG VARIABLES (to be removed after tested)")
+                print ("============================================")
+
                 print ("KEYPATH: " + ssh_key)
                 print ("REMOTEIP: " + ip)
                 print ("REMOTENAME: " + user)
-                print ("REMOTEPASS: " + answers['pass'])
+                print ("REMOTEPASS: " + password)
+                print ("REPOPATH: " + tar_file)
 
+                stdout, stderr = subprocess.Popen(['deployment/deploy.sh', ssh_key, ip, user, password, tar_file],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE).communicate()
+
+                print (("" + stdout.decode() + stderr.decode()))
+
+                # TODO: check for errors, do not label host as "active" if there were any errors with deployment
                 host_data['status'] = 'active'
                 host_value = str(host_data)
                 config.set('HOSTS', host[0], host_value)
