@@ -1,0 +1,4 @@
+KEYPATH="/shared/manager_rsa"
+REMOTEIP="192.168.42.52"
+REMOTENAME="yogi"
+REMOTEPASS="@HoneyYogi"
