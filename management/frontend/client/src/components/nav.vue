@@ -23,11 +23,6 @@
         <router-link to="/edit" class="block link dim blue">Edit</router-link>
       </li>
       <li class="mb2">
-        <router-link to="/terminal" class="block link dim blue"
-          >Terminal</router-link
-        >
-      </li>
-      <li class="mb2">
         <div
           class="block link dim blue pointer"
           @click="logout"
