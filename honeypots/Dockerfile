@@ -1,6 +1,6 @@
 FROM nikolaik/python-nodejs:python3.8-nodejs13
 
-# Create working directory
+# Create working directory (bundled source)
 WORKDIR /usr/src/app
 
 # Get DB Dependency
@@ -15,8 +15,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expose some ports for "poking"
-EXPOSE 80
-EXPOSE 445
 EXPOSE 5040
 # Database and ConfigTunnel Ports
 EXPOSE 1437
