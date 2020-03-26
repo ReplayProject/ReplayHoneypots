@@ -19,7 +19,7 @@ import ipaddress
 
 
 # insert at 1, 0 is the script path (or '' in REPL)
-sys.path.insert(1, '/home/winnie/2020SpringTeam18/honeypots/honeypot')
+sys.path.insert(1, '../../honeypots/honeypot/')
 
 
 from ConfigTunnel import ConfigTunnel
@@ -124,28 +124,28 @@ Validators
 
 
 """
-Validate an IP address based on: 
+Validate an IP address based on:
 1 - IP address value
 2 - whether the IP address already exists in the CLI data
 """
-class DeviceIPValidator(Validator): 
+class DeviceIPValidator(Validator):
     def validate(self, value):
 
         if len(value.text):
-            try: 
+            try:
                 valid_ip = ipaddress.ip_address(value.text)
-            except ValueError as e: 
+            except ValueError as e:
                 raise ValidationError(
-                    message=str(e), 
+                    message=str(e),
                     cursor_position=len(value.text))
 
             hosts = config.items('HOSTS')
             ip = []
 
-            for host in hosts: 
+            for host in hosts:
                 data = json.loads(host[1].replace("\'", "\""))
                 ip.append(data['ip'])
-                
+
             if (value.text in ip):
                 raise ValidationError(
                     message="A host with that IP address already exists. To replace it, please remove host first.",
@@ -169,19 +169,19 @@ class EmptyValidator(Validator):
 """
 Validate a path based on if it is a file
 
-Invalid paths include: 
+Invalid paths include:
 1 - folder paths
 2 - file paths that the user does not have permission to access
-3 - non-existent paths 
+3 - non-existent paths
 """
-class FilePathValidator(Validator): 
+class FilePathValidator(Validator):
     def validate(self, value):
         if len(value.text):
-            if not os.path.isfile(value.text): 
+            if not os.path.isfile(value.text):
                 raise ValidationError(
                     message=("File " + value.text + " could not be found"),
                     cursor_position=len(value.text))
-        else: 
+        else:
             raise ValidationError(
                 message="You can't leave this blank",
                 cursor_position=len(value.text))
@@ -200,9 +200,9 @@ class HostnameValidator(Validator):
             hosts = config.items('HOSTS')
             hostnames = []
 
-            for host in hosts: 
+            for host in hosts:
                 hostnames.append(host[0])
-                
+
             if (value.text in hostnames):
                 raise ValidationError(
                     message="A host with that hostname already exists. To replace it, please remove host first.",
@@ -237,7 +237,7 @@ def start(ctx, debug):
 
 
 @click.pass_context
-def choices(ctx): 
+def choices(ctx):
     # Main Loop to run the interactive menu
     while True:
         try:
@@ -250,7 +250,7 @@ def choices(ctx):
                     ['Add Host',
                      'Remove Host',
                      'Start Honeypot',
-                     'Stop Honeypot', 
+                     'Stop Honeypot',
                      'Check Status',
                      'Open Config',
                      'Exit'],
@@ -266,14 +266,14 @@ def choices(ctx):
         elif choice == 'remove host':
             ctx.invoke(removehost) #not started
 
-        elif choice == 'start honeypot': 
+        elif choice == 'start honeypot':
             ctx.invoke(starthoneypot) #done, to be tested
 
         elif choice == 'stop honeypot':
             ctx.invoke(stophoneypot) #not started
 
         elif choice == 'check status':
-            ctx.invoke(checkstatus) #wip 
+            ctx.invoke(checkstatus) #wip
 
         elif choice == 'open config': #wip
             log("Opening Config file...", "green")
@@ -353,7 +353,7 @@ def starthoneypot(ctx):
         host_choices.append({
             'name': host
         })
-    
+
     honeypots = prompt([
         {
             'type': 'checkbox',
@@ -363,9 +363,9 @@ def starthoneypot(ctx):
         }
     ], style=style)['hosts']
 
-    if len(honeypots) == 0: 
+    if len(honeypots) == 0:
         log ("No host has been selected.", "red")
-    else: 
+    else:
 
         tar_file = prompt([
             {
@@ -377,14 +377,14 @@ def starthoneypot(ctx):
         ], style=style)['tar_file']
 
         hosts = config.items('HOSTS')
-        
-        for host in hosts: 
-            if host[0] in honeypots: 
+
+        for host in hosts:
+            if host[0] in honeypots:
                 host_data = json.loads(host[1].replace("\'", "\""))
                 user = host_data['user']
                 ip = host_data['ip']
                 ssh_key = host_data['ssh_key']
-                
+
                 password = prompt([
                     {
                         'type': 'password',
