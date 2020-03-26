@@ -22,6 +22,20 @@
       <li class="mb2">
         <router-link to="/edit" class="block link dim blue">Edit</router-link>
       </li>
+      <li class="mb2">
+        <router-link to="/terminal" class="block link dim blue"
+          >Terminal</router-link
+        >
+      </li>
+      <li class="mb2">
+        <div
+          class="block link dim blue pointer"
+          @click="logout"
+          v-if="$route.name != 'login'"
+        >
+          Logout
+        </div>
+      </li>
     </ul>
     <!-- More Realistic Options -->
     <h2 class="ttu mt0 mb2 f6 fw5 silver">Dashboards</h2>
@@ -37,6 +51,11 @@
           class="block link dim blue"
           >{{ db.db_name | formatDBName }}</router-link
         >
+      </li>
+      <li v-if="$parent.dbInfo.length != 0" class="mb2">
+        <router-link to="/details/aggregate" class="block link dim blue">{{
+          'aggregate' | formatDBName
+        }}</router-link>
       </li>
     </ul>
     <h2 class="ttu mt0 mb2 f6 fw5 silver">More</h2>
@@ -78,8 +97,30 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'Nav',
+  computed: {
+    navLinks () {
+      // let l = this.$parent.dbInfo.map(x => )
+      // <li v-for="db in $parent.dbInfo" :key="db.db_name" class="mb2">
+      //   <router-link
+      //     :to="'/details/' + db.db_name"
+      //     class="block link dim blue"
+      //     >{{ db.db_name | formatDBName }}</router-link
+      //   >
+      // </li>
+    }
+  },
+  methods: {
+    async logout (e) {
+      let res = await axios.get('/logout')
+      this.$toasted.show('Logged out.')
+      console.log(res) // TODO: decide if we need more logic on the backend here
+      this.$router.push('/login') // TODO: redirect if logout is done on other pages
+    }
+  },
   data () {
     return {
       managementDBUrl: process.env.DB_URL

@@ -14,6 +14,8 @@ import signal
 import time
 import itertools
 import subprocess
+import json
+import ipaddress
 
 
 # insert at 1, 0 is the script path (or '' in REPL)
@@ -83,7 +85,7 @@ def writeConfig(message):
 
 
 def signal_handler(sig, frame):
-    writeConfig('Goodbye, your config has been updated')
+    writeConfig('Exiting the RePlay CLI...')
     sys.exit(0)
 
 
@@ -105,6 +107,55 @@ def log(string, color, font="slant", figlet=False):
         six.print_(string)
 
 
+@click.group()
+@click.pass_context
+def main(ctx):
+    """
+    Straightforward CLI for managing & deploying honeypots
+    """
+    ctx.ensure_object(dict)
+
+
+"""
+##########
+Validators
+##########
+"""
+
+
+"""
+Validate an IP address based on: 
+1 - IP address value
+2 - whether the IP address already exists in the CLI data
+"""
+class DeviceIPValidator(Validator): 
+    def validate(self, value):
+
+        if len(value.text):
+            try: 
+                valid_ip = ipaddress.ip_address(value.text)
+            except ValueError as e: 
+                raise ValidationError(
+                    message=str(e), 
+                    cursor_position=len(value.text))
+
+            hosts = config.items('HOSTS')
+            ip = []
+
+            for host in hosts: 
+                data = json.loads(host[1].replace("\'", "\""))
+                ip.append(data['ip'])
+                
+            if (value.text in ip):
+                raise ValidationError(
+                    message="A host with that IP address already exists. To replace it, please remove host first.",
+                    cursor_position=len(value.text))
+        else:
+            raise ValidationError(
+                message="You can't leave this blank",
+                cursor_position=len(value.text))
+
+
 class EmptyValidator(Validator):
     def validate(self, value):
         if len(value.text):
@@ -116,35 +167,262 @@ class EmptyValidator(Validator):
 
 
 """
-################
-AND SO IT BEGINS
-################
+Validate a path based on if it is a file
+
+Invalid paths include: 
+1 - folder paths
+2 - file paths that the user does not have permission to access
+3 - non-existent paths 
 """
-
-
-@click.group()
-@click.pass_context
-def main(ctx):
-    """
-    Straightforward CLI for managing & deploying honeypots
-    """
-    ctx.ensure_object(dict)
-
-
-class SSHKEYValidator(Validator):
+class FilePathValidator(Validator): 
     def validate(self, value):
         if len(value.text):
-            print(value.text)
-            output = os.popen('ssh-keygen -l -f ' + value.text)
-            output.read()
-            if output.close() is not None:
+            if not os.path.isfile(value.text): 
                 raise ValidationError(
-                    message="That is not a valid ssh key",
+                    message=("File " + value.text + " could not be found"),
                     cursor_position=len(value.text))
+        else: 
+            raise ValidationError(
+                message="You can't leave this blank",
+                cursor_position=len(value.text))
+
+
+"""
+Validate a hostname based on whether the hostname already exists in the CLI data
+"""
+class HostnameValidator(Validator):
+    """
+    Validate a hostname
+    """
+    def validate(self, value):
+
+        if len(value.text):
+            hosts = config.items('HOSTS')
+            hostnames = []
+
+            for host in hosts: 
+                hostnames.append(host[0])
+                
+            if (value.text in hostnames):
+                raise ValidationError(
+                    message="A host with that hostname already exists. To replace it, please remove host first.",
+                    cursor_position=len(value.text))
+
         else:
             raise ValidationError(
                 message="You can't leave this blank",
                 cursor_position=len(value.text))
+
+
+"""
+############
+CLI Commands
+############
+"""
+
+
+@main.command()
+@click.option('--debug/--no-debug', default=False)
+@click.pass_context
+def start(ctx, debug):
+    """
+    Run this CLI in interactive mode
+    """
+    global config
+    log("RePlay CLI", color="blue", figlet=True)
+    log("Welcome to the RePlay CLI" +
+        (" (DEBUGGING MODE)" if debug else ""), "green")
+
+    ctx.invoke(choices)
+
+
+@click.pass_context
+def choices(ctx): 
+    # Main Loop to run the interactive menu
+    while True:
+        try:
+            choice = prompt([
+                {
+                    'type': 'list',
+                    'name': 'choice',
+                    'message': 'What do you need to do?',
+                    'choices':
+                    ['Add Host',
+                     'Remove Host',
+                     'Start Honeypot',
+                     'Stop Honeypot', 
+                     'Check Status',
+                     'Open Config',
+                     'Exit'],
+                    'filter': lambda val: val.lower()
+                }
+            ], style=style)['choice']
+        except KeyError:
+            os.kill(os.getpid(), signal.SIGINT)
+
+        if choice == 'add host':
+            ctx.invoke(addhost) #done, to be tested
+
+        elif choice == 'remove host':
+            ctx.invoke(removehost) #not started
+
+        elif choice == 'start honeypot': 
+            ctx.invoke(starthoneypot) #done, to be tested
+
+        elif choice == 'stop honeypot':
+            ctx.invoke(stophoneypot) #not started
+
+        elif choice == 'check status':
+            ctx.invoke(checkstatus) #wip 
+
+        elif choice == 'open config': #wip
+            log("Opening Config file...", "green")
+            subprocess.Popen(['nano', CONF_PATH]).wait()
+            log("Reloading Edited Config file", "green")
+            config = configparser.ConfigParser()
+            setupConfig()
+
+        elif choice == 'exit': #done
+            os.kill(os.getpid(), signal.SIGINT)
+
+
+@main.command()
+def addhost():
+    """
+    Add a host
+    """
+
+    new_host = prompt([
+        {
+            'type': 'input',
+            'name': 'hostname',
+            'message': 'Hostname:',
+            'validate': HostnameValidator
+        },
+        {
+            'type': 'input',
+            'name': 'user',
+            'message': 'Username:',
+            'validate': EmptyValidator
+        },
+        {
+            'type': 'input',
+            'name': 'ip',
+            'message': 'IP Address:',
+            'validate': DeviceIPValidator
+        },
+        {
+            'type': 'input',
+            'name': 'ssh_key',
+            'message': 'SSH Key (Absolute Path):',
+            'validate': FilePathValidator,
+        },
+    ], style=style)
+
+    hostname = new_host.pop("hostname")
+    new_host["status"] = "inactive"
+    host_value = str(new_host)
+    config.set('HOSTS', hostname, host_value)
+    writeConfig("New host " + hostname + " saved!")
+
+
+@main.command()
+def removehost():
+    """
+    Remove a host
+    """
+
+    # TODO
+    log("TODO", "red")
+
+
+@main.command()
+@click.pass_context
+def starthoneypot(ctx):
+    """
+    Start a honeypot
+    """
+
+    if len(config.items("HOSTS")) is 0:
+        log("No hosts have been added yet. To add a host, select 'Add Host' command.", "red")
+        ctx.invoke(choices)
+
+    host_choices = [Separator('== Honeypots =='), ]
+
+    for host in list(config['HOSTS']):
+        host_choices.append({
+            'name': host
+        })
+    
+    honeypots = prompt([
+        {
+            'type': 'checkbox',
+            'name': 'hosts',
+            'message': 'Which host(s) do you want to start a honeypot on?',
+            'choices': host_choices
+        }
+    ], style=style)['hosts']
+
+    if len(honeypots) == 0: 
+        log ("No host has been selected.", "red")
+    else: 
+
+        tar_file = prompt([
+            {
+                'type': 'input',
+                'name': 'tar_file',
+                'message': 'Tar File:',
+                'validate': FilePathValidator
+            }
+        ], style=style)['tar_file']
+
+        hosts = config.items('HOSTS')
+        
+        for host in hosts: 
+            if host[0] in honeypots: 
+                host_data = json.loads(host[1].replace("\'", "\""))
+                user = host_data['user']
+                ip = host_data['ip']
+                ssh_key = host_data['ssh_key']
+                
+                password = prompt([
+                    {
+                        'type': 'password',
+                        'name': 'password',
+                        'message': ('Password for ' + user + "@" + ip + ":"),
+                    }
+                ], style=style)['password']
+
+                # TODO: DELETE BEFORE PUTTING ON MASTER
+                print ("DEBUG VARIABLES (to be removed after tested)")
+                print ("============================================")
+
+                print ("KEYPATH: " + ssh_key)
+                print ("REMOTEIP: " + ip)
+                print ("REMOTENAME: " + user)
+                print ("REMOTEPASS: " + password)
+                print ("REPOPATH: " + tar_file)
+
+                stdout, stderr = subprocess.Popen(['deployment/deploy.sh', ssh_key, ip, user, password, tar_file],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE).communicate()
+
+                print (("" + stdout.decode() + stderr.decode()))
+
+                # TODO: check for errors, do not label host as "active" if there were any errors with deployment
+                host_data['status'] = 'active'
+                host_value = str(host_data)
+                config.set('HOSTS', host[0], host_value)
+
+
+@main.command()
+def stophoneypot():
+    """
+    Stop a honeypot
+    """
+
+    # TODO
+    log("TODO", "red")
 
 
 def askSSHKEY():
@@ -155,8 +433,8 @@ def askSSHKEY():
         {
             'type': 'input',
             'name': 'ssh_key',
-            'message': 'Enter path to SSHKEY for use with remote hosts\n',
-            'validate': SSHKEYValidator,
+            'message': 'Enter path to SSHKEY for use with remote hosts',
+            'validate': FilePathValidator,
         },
     ]
     return prompt(questions, style=style).get("ssh_key")
@@ -167,12 +445,12 @@ def askSSHKEY():
 @click.pass_context
 def checkstatus(ctx, key_file):
     """
-    Command to check the status of devices
+    Check the status of hosts
     """
 
     if len(config.items("HOSTS")) is 0:
-        log("No hosts setup, lets fix that :)", "red")
-        ctx.invoke(addhost)
+        log("No hosts have been added yet. To add a host, select 'Add Host' command.", "red")
+        ctx.invoke(choices)
 
     ssh_key = None
     if config.has_option("GENERAL", "ssh_key"):
@@ -222,9 +500,6 @@ def checkstatus(ctx, key_file):
         cmd = 'ssh' + info[0] + "@" + info[1] + \
             " -p " + info[2] + ' "uname -a"'
 
-        # TODO: attach to debug mode
-        # log(cmd, "red")
-
         output = os.popen(cmd)
         pprint(output.read())
         print('\n\n')
@@ -232,134 +507,11 @@ def checkstatus(ctx, key_file):
 
     log("Work In Progress", color="blue")
 
-
-class DeviceIPValidator(Validator):
-    """
-    Validate an IP address based on ping response
-    """
-
-    def validate(self, value):
-        if len(value.text):
-
-            hosts = config.items('HOSTS')
-
-            if ('value.text' in itertools.chain(*hosts)):
-                raise ValidationError(
-                    message="That host already exists",
-                    cursor_position=len(value.text))
-
-
-@main.command()
-def addhost():
-    """
-    Command to check the status of devices
-    """
-
-    new_device = prompt([
-        {
-            'type': 'input',
-            'name': 'name',
-            'message': 'What should we call this device:',
-            'validate': EmptyValidator
-        },
-        {
-            'type': 'input',
-            'name': 'user',
-            'message': 'What user:',
-            'validate': EmptyValidator
-        },
-        {
-            'type': 'input',
-            'name': 'ip',
-            'message': 'Which IP:',
-            'validate': DeviceIPValidator
-            # TODO: ping on port
-        },
-        {
-            'type': 'input',
-            'name': 'port',
-            'message': 'Which Port:',
-            'validate': EmptyValidator
-        }
-    ], style=style)
-
-    host_value = ':'.join(list(new_device.values())[1:])
-    config.set('HOSTS', new_device["name"], host_value)
-    writeConfig("New host " + new_device["name"] + " saved!")
-
-
-@main.command()
-@click.option('--debug/--no-debug', default=False)
-@click.pass_context
-def start(ctx, debug):
-    """
-    Run this tool in interactive mode
-    """
-    global config
-    log("RePlay CLI", color="blue", figlet=True)
-    log("Welcome to the RePlay CLI" +
-        (" (DEBUGGING MODE)" if debug else ""), "green")
-
-
-    ctunnel = ConfigTunnel('client', "localhost")
-    try:
-      ctunnel.start()
-    except Exception:
-      print("Config tunnel did not start")
-    # Main Loop to run the interactive menu
-    while True:
-        try:
-            answers = prompt([
-                {
-                    'type': 'list',
-                    'name': 'choice',
-                    'message': 'What do you need to do?',
-                    'choices':
-                    ['Check Status',
-                     'Deploy',
-                     'Teardown',
-                     'Add Host',
-                     'Open Config',
-                     'Exit'],
-                    'filter': lambda val: val.lower()
-                }
-            ], style=style)
-
-            choice = answers['choice']
-        except KeyError:
-            os.kill(os.getpid(), signal.SIGINT)
-
-        if choice == 'add host':
-            ctx.invoke(addhost)
-
-        elif choice == 'deploy':
-
-            time.sleep(2)
-
-            print("READY: ", ctunnel.ready)
-
-            ctunnel.send("test")
-
-        elif choice == 'exit':
-            os.kill(os.getpid(), signal.SIGINT)
-
-        elif choice == 'check status':
-            ctx.invoke(checkstatus)
-
-        elif choice == 'open config':
-            log("Opening Config file...", "green")
-            subprocess.Popen(['nano', CONF_PATH]).wait()
-            log("Reloading Edited Config file", "green")
-            config = configparser.ConfigParser()
-            setupConfig()
-
+if __name__ == '__main__':
+    main()
 
 # New Command Template
 # @main.command()
 # @click.argument('option')
 # def test(debug, option=""):
 #     pass
-
-
-if __name__ == '__main__':
-    main()

@@ -45,7 +45,7 @@ __pycache__/
 honeypots/.vscode/settings.json
 honeypots/database/log.txt
 honeypots/config/dbconfig.json
-management/cli/honeycli.cfg
+# management/cli/honeycli.cfg
 
 # Frontend Stuff
 node_modules
@@ -53,8 +53,13 @@ npm-debug.log
 dist
 .cache
 .nyc_output
-.data
 
 #Configuration files
-properties.cfg
+# properties.cfg
 restart.sh
+
+# Misc
+.coverage
+src_data
+pcap
+nmap

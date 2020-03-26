@@ -86,7 +86,7 @@ class PortThreadManager:
         #--- Databaser Thread (does not get updated on dynamic config change)---#
         # Setup the DB
         if (self.databaserThread == None):
-            self.databaserThread = Databaser(options=self.DATABASE_OPTIONS)
+            self.databaserThread = Databaser(options=DATABASE_OPTIONS, replication=True)
             self.databaserThread.daemon = True
             self.databaserThread.start()
 

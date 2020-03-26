@@ -124,7 +124,6 @@ class TestSniffer(unittest.TestCase):
 
         sniff.join()
 
-# TODO: track down the unclosed socket
 class TestConfigTunnel(unittest.TestCase):
     """
     Handles testing for the ConfigTunnel module
