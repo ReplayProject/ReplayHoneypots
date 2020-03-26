@@ -38,7 +38,6 @@ class Databaser(Thread):
         """
         Create this device's log database
         """
-        # TODO: automatically setup the replication settings
         header = {"content-type": "application/json"}
         r = put(url=self.url + self.db_name,
                 headers=header, verify=False, timeout=3)
@@ -66,8 +65,6 @@ class Databaser(Thread):
         """
         Runs the thread, begins sniffing
         """
-        # TODO: check database is not running before starting (especially replicating)
-
         # Setup files needed to run db
         # Path(self.dbfolder + '/log.txt').touch(mode=0o777, exist_ok=True)
         Path(self.dbfolder + '/log.txt').touch(mode=0o777, exist_ok=True)
@@ -79,7 +76,6 @@ class Databaser(Thread):
         self.process = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.dbfolder)
 
-        # TODO: make this not a timing issue.
         print("Waiting 5 seconds for DB to start")
         time.sleep(5)
 
