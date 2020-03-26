@@ -2,7 +2,7 @@
 FROM node:13-alpine
 
 # Create app directory
-WORKDIR /usr/src/app
+WORKDIR /usr/src/frontend
 
 # Install app dependencies
 COPY ./frontend/package*.json ./
@@ -25,5 +25,4 @@ EXPOSE 8081
 # Image Env Variables
 ENV PARCEL_WORKERS 1
 
-# -q for quiet
 CMD [ "npm", "run", "start" ]
