@@ -11,10 +11,18 @@ import re
 import sys
 import six
 import signal
+import time
 import itertools
 import subprocess
 import json
 import ipaddress
+
+
+# insert at 1, 0 is the script path (or '' in REPL)
+sys.path.insert(1, '/home/winnie/2020SpringTeam18/honeypots/honeypot')
+
+
+from ConfigTunnel import ConfigTunnel
 
 # Interactivity
 from PyInquirer import Token, ValidationError, Validator, print_json, prompt, style_from_dict, Separator
@@ -499,10 +507,8 @@ def checkstatus(ctx, key_file):
 
     log("Work In Progress", color="blue")
 
-
 if __name__ == '__main__':
     main()
-
 
 # New Command Template
 # @main.command()
