@@ -44,7 +44,6 @@
     "express-ws": "^4.0.0",
     "helmet": "^3.21.3",
     "memdown": "^5.1.0",
-    "node-pty": "^0.9.0",
     "nodemon": "^2.0.2",
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
@@ -63,11 +62,7 @@
     "vue-progressbar": "^0.7.5",
     "vue-router": "latest",
     "vue-toasted": "^1.1.28",
-    "vuejs-datatable": "^2.0.0-alpha.7",
-    "xterm": "^4.4.0",
-    "xterm-addon-attach": "^0.5.0",
-    "xterm-addon-fit": "^0.3.0",
-    "xterm-addon-web-links": "^0.2.1"
+    "vuejs-datatable": "^2.0.0-alpha.7"
   },
   "devDependencies": {
     "@babel/core": "7.8.4",

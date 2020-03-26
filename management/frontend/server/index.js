@@ -48,10 +48,6 @@ app.get('/test', authGuard(), (req, res) =>
   res.send('you passed the authentication check')
 )
 
-// Web Terminal
-var expressWs = require('express-ws')(app)
-app.use(require('./modules/terminal'))
-
 // Host the app's frontend on port 8080
 const path = require('path')
 const dist = path.join(__dirname, '../dist')
