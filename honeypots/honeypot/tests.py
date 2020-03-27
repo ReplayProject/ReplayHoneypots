@@ -65,8 +65,7 @@ class TestLogs(unittest.TestCase):
     """
 
     def test_entry(self):
-        entry = LogEntry("80", "192.1.1.1", "81", "192.1.1.2",
-                         "Www Mmm dd hh:mm:ss yyyy", True)
+        entry = LogEntry("80", "192.1.1.1", "00-11-22-33-44-55", "81", "192.1.1.2", "AA-BB-CC-DD-EE-FF", "TCP", True)
         self.assertEqual("80", entry.sourcePortNumber)
         self.assertTrue(type(entry.timestamp) is int)
 
@@ -95,11 +94,9 @@ class TestSniffer(unittest.TestCase):
         Test that the sniffer successfully sets itself up
         """
         # Get my IP
-        host_name = socket.gethostname()
-        host_ip = socket.gethostbyname(host_name)
+        host_ip = "192.168.42.51"
         # Start the sniffer
         sniff = Sniffer(
-            count=10,
             config="onlyUDP",
             openPorts=[],
             whitelist=[],
@@ -111,15 +108,13 @@ class TestSniffer(unittest.TestCase):
         sniff.start()
 
         # Make some UDP traffic
-        send(IP(dst=host_ip)/UDP(dport=1337)/Raw(load="whatever"), count=10)
+        send(IP(src="192.168.42.53", dst=host_ip)/UDP(dport=1337)/Raw(load="whatever"), count=10)
 
         # Let the logger handle whats up
         time.sleep(2)
 
-        print(list(sniff.UDP_RECORD.keys()))
-
         localhost_in_udp_record = any(
-            host_ip in i for i in list(sniff.UDP_RECORD.keys()))
+            host_ip in i for i in sniff.UDP_RECORD)
         self.assertTrue(localhost_in_udp_record)
 
         sniff.join()

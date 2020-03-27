@@ -30,6 +30,9 @@ class Sniffer(Thread):
         self.running = True
         #This number doesn't matter, this is used to stop the thread if a reset is necessary
         self.count = 1
+
+        #set used for testing convenience
+        self.UDP_RECORD = set()
     """
     Runs the thread, begins sniffing
     """
@@ -99,6 +102,11 @@ class Sniffer(Thread):
             log = LogEntry(srcPort, srcIP, sourceMAC, destPort, dstIP, destMAC,
                            trafficType, destPort in self.openPorts)
             self.post(log)
+            
+            #storing UDP mini-logs for testing
+            if (self.config == "onlyUDP"):
+                if (not srcIP in self.UDP_RECORD):
+                    self.UDP_RECORD.add(srcIP)
 
     def post(self, payload):
         header = {"content-type": "application/json"}
