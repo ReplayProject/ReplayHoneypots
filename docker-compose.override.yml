@@ -32,6 +32,7 @@ services:
     build:
       context: './management'
       dockerfile: Dockerfile
+    restart: "no"
     container_name: honeypot-manager
     # used when we want a blank container for testing also
     # depends_on:
@@ -47,6 +48,7 @@ services:
     build:
       context: './honeypots'
       dockerfile: Dockerfile
+    restart: "no"
     # container_name: virtualpot
     # hostname: virtualpot
     # container_name: honeypot # Only works with one honeypot

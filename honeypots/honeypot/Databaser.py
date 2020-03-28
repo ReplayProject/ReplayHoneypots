@@ -7,7 +7,7 @@ from threading import Thread
 from requests import put, post
 from pathlib import Path
 
-
+# TODO: make starting replication something that can be triggered async
 class Databaser(Thread):
     """
     Use pouch db to run the database for logging
