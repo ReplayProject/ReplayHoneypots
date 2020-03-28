@@ -29,7 +29,6 @@ services:
 
   # Service to get manager up and running
   replay-manager:
-    command: npm run dev # just for development
     build:
       context: './management'
       dockerfile: Dockerfile
@@ -40,27 +39,25 @@ services:
     volumes:
       - replay-src:/src
     working_dir: /src/management/frontend # comment to use bundled source code (needs fresh image)
-    environment:
-      - NODE_ENV=development
+    # environment:
+    #   - NODE_ENV=development
 
   # Service to get ready to run a honeypot
   replay-honeypot:
     build:
       context: './honeypots'
       dockerfile: Dockerfile
+    # container_name: virtualpot
+    # hostname: virtualpot
     # container_name: honeypot # Only works with one honeypot
     # hostname: honeypot # Only works with one honeypot
     ports:
       - 5040:5040 # change to 5040 ^^
-    network_mode: "none"
-    networks:
-      default:
-     # outside: # allow connecting to outside network
     volumes:
       - replay-src:/src
     working_dir: /src/honeypots/honeypot # comment to use bundled source code (needs fresh image)
-    environment:
-      - NODE_ENV=development
+    # environment:
+    #   - NODE_ENV=development
 
 volumes:
   # This volume gives access to the source code for the system (runtime binding)
