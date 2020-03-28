@@ -1,22 +1,8 @@
 version: '3.3'
 
 services:
-  # Service to run swarm state visualizer
-  viz:
-    image: dockersamples/visualizer:stable
-    ports:
-      - "8080:8080"
-    stop_grace_period: 1m30s
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-    deploy:
-      placement:
-        constraints:
-          - "node.role==manager"
-
   # Service to get manager up and running
   replay-manager:
-    command: npm run dev # TODO: just for development, remove before shipping
     image: cloud.canister.io:5000/seth/replay-manager:latest
     hostname: replay-manager
     ports:
@@ -27,32 +13,34 @@ services:
     # Volume to keep database data external to the container
     volumes:
         - replay-db:/usr/src/frontend/.data
-    restart: "no"
     deploy:
       replicas: 1
       placement:
         constraints:
           - 'node.role==manager'
+      restart_policy:
+        condition: on-failure
 
   # Service to get ready to run a honeypot
-  replay-honeypot:
-    image: cloud.canister.io:5000/seth/replay-honeypot:latest
-    ports:
-      - 1437:1437 # change to 1437 when running many honeypots
-    networks:
-      - default
-      - outside
-    # used to start honeypot after the manager container
-    # depends_on:
-    #   - replay-manager
-    restart: "no"
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - 'node.role==worker'
-        preferences:
-          - spread: node.id
+  # replay-honeypot:
+  #   image: cloud.canister.io:5000/seth/replay-honeypot:latest
+  #   ports:
+  #     - 1437:1437 # change to 1437 when running many honeypots
+  #   networks:
+  #     - default
+  #     - outside
+  #   # used to start honeypot after the manager container
+  #   # depends_on:
+  #   #   - replay-manager
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #         - 'node.role==worker'
+  #       preferences:
+  #         - spread: node.id
+  #     restart_policy:
+  #       condition: on-failure
 
 networks:
   # Default network for container-container communication
