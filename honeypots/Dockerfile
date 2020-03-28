@@ -1,4 +1,4 @@
-FROM nikolaik/python-nodejs:python3.8-nodejs13
+FROM nikolaik/python-nodejs:python3.8-nodejs13-alpine
 
 # Create working directory (bundled source)
 WORKDIR /usr/src/app
@@ -7,7 +7,8 @@ WORKDIR /usr/src/app
 RUN npm install -g pouchdb-server
 
 # Install dependencies
-RUN apt-get update -y && apt-get install tcpdump -y
+RUN apk add --update tcpdump
+RUN apk add gcc g++ make libffi-dev openssl-dev
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
