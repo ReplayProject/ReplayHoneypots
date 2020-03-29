@@ -11,7 +11,7 @@ from Databaser import Databaser
 from Sniffer import Sniffer
 from CronInstaller import CronInstaller
 from CronUninstaller import CronUninstaller
-from scapy.all import send, UDP, Raw, IP
+from scapy.all import send, UDP, Raw, IP, TCP
 import os
 import time
 from threading import Thread
@@ -75,7 +75,16 @@ class TestDatabaser(unittest.TestCase):
         """
         Test that the database successfully sets itself up
         """
-        db = Databaser()
+
+        DATABASE_OPTIONS = [
+            "1437",
+            '../config/dbconfig.json',
+            '../database',
+            'localhost',
+            'http://honeypot-manager:8081/'
+        ]
+
+        db = Databaser(options=DATABASE_OPTIONS, replication=True)
         db.daemon = True
         db.start()
 
@@ -93,10 +102,39 @@ class TestSniffer(unittest.TestCase):
         """
         Test that the sniffer successfully sets itself up
         """
-        # Get my IP
+
+        # Start the sniffer
+        s = Sniffer(config="testing", openPorts=[], whitelist=[], db_url="fakeURL", honeypotIP="localhost", managementIPs=("52.87.97.77", "54.80.228.0"))
+        s.daemon = True
+        s.start()
+
+        #Google IP; we'll be using this later
+        IPPipe = os.popen('dig +short www.google.com')
+        responseIP = IPPipe.read()[:-1]
+        IPPipe.close()
+
+        #Making sure we catch it
+        os.system("curl www.google.com 2>&1 >> /dev/null")
+        os.system("curl www.google.com 2>&1 >> /dev/null")
+        os.system("curl www.google.com 2>&1 >> /dev/null")
+
+        # Let the logger handle whats up
+        time.sleep(2)
+
+        self.assertTrue(responseIP in s.RECORD.keys())
+        self.assertTrue(s.RECORD[responseIP][0].sourceIPAddress == responseIP)
+        self.assertTrue(s.RECORD[responseIP][0].sourcePortNumber == 80)
+        self.assertTrue(s.RECORD[responseIP][0].trafficType == "TCP")       
+
+        s.running = False
+
+    def testConfigUpdate(self):
+        """
+        Checks if updated options work
+        """
         host_ip = "192.168.42.51"
         # Start the sniffer
-        sniff = Sniffer(
+        s = Sniffer(
             config="onlyUDP",
             openPorts=[],
             whitelist=[],
@@ -104,20 +142,24 @@ class TestSniffer(unittest.TestCase):
             honeypotIP=host_ip,
             managementIPs=("52.87.97.77", "54.80.228.0")
         )
-        sniff.daemon = True
-        sniff.start()
+        s.daemon = True
+        s.start()
 
-        # Make some UDP traffic
-        send(IP(src="192.168.42.53", dst=host_ip)/UDP(dport=1337)/Raw(load="whatever"), count=10)
+        self.assertTrue(len(s.openPorts) == 0)
+        self.assertTrue(len(s.whitelist) == 0)
+        self.assertTrue(s.config == "onlyUDP")
+        self.assertTrue(len(s.managementIPs) == 2)
+        self.assertTrue(s.db_url == "fakeURL")
+        self.assertTrue(s.honeypotIP == "192.168.42.51")
 
-        # Let the logger handle whats up
-        time.sleep(2)
+        s.configUpdate(openPorts=[80, 443], whitelist=["8.8.8.8", "9.9.9.9"], db_url="anotherFakeURL", honeypotIP="192.168.42.42", managementIPs="54.80.228.0")
+        self.assertTrue(len(s.openPorts) == 2)
+        self.assertTrue(len(s.whitelist) == 2)
+        self.assertTrue(s.db_url == "anotherFakeURL")
+        self.assertTrue(s.managementIPs == "54.80.228.0")
+        self.assertTrue(s.honeypotIP == "192.168.42.42")
 
-        localhost_in_udp_record = any(
-            host_ip in i for i in sniff.UDP_RECORD)
-        self.assertTrue(localhost_in_udp_record)
-
-        sniff.join()
+        s.running = False
 
 class TestConfigTunnel(unittest.TestCase):
     """
@@ -231,7 +273,10 @@ class TestCron(unittest.TestCase):
             crontab_file = open("previous", 'w')
             crontab_file.write(stdout.decode())
             crontab_file.close()
-            CronUninstaller.uninstall()
+            process = subprocess.Popen(['crontab', '-r'],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            stdout, stderr = process.communicate()
 
         """
         Test CronInstaller's argparser

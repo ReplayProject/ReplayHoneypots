@@ -32,14 +32,14 @@ class Sniffer(Thread):
         self.count = 1
 
         #set used for testing convenience
-        self.UDP_RECORD = set()
+        self.RECORD = dict()
     """
     Runs the thread, begins sniffing
     """
 
     def run(self):
         print("Sniffing")
-        
+
         #This loop, along with self.count allow us to effectively update values on the fly
         while self.running:
             #building the base filter
@@ -55,8 +55,8 @@ class Sniffer(Thread):
             elif (self.config == "base"):
                 sniff(filter=fltr, prn=self.save_packet, count=self.count)
             elif (self.config == "onlyUDP"):
-                fltr = "udp and host {}".format(self.honeypotIP)
-                sniff(filter=fltr, prn=self.save_packet, count=self.count)
+                fltr = "udp"
+                sniff(filter=fltr, prn=self.save_packet, count=self.count, iface="lo")
 
     """
     Updates configuration options during runtime
@@ -74,6 +74,8 @@ class Sniffer(Thread):
     """
 
     def save_packet(self, packet):
+        print(packet.summary())
+
         # TODO: make this work with layer 2, for now just skip filtering those packets
         if (packet.haslayer("IP") == False):
             return
@@ -102,11 +104,13 @@ class Sniffer(Thread):
             log = LogEntry(srcPort, srcIP, sourceMAC, destPort, dstIP, destMAC,
                            trafficType, destPort in self.openPorts)
             self.post(log)
-            
+
             #storing UDP mini-logs for testing
-            if (self.config == "onlyUDP"):
-                if (not srcIP in self.UDP_RECORD):
-                    self.UDP_RECORD.add(srcIP)
+            if (self.config == "testing"):
+                if (not srcIP in self.RECORD.keys()):
+                    self.RECORD[srcIP] = [log]
+                else:
+                    self.RECORD[srcIP].append(log)
 
     def post(self, payload):
         header = {"content-type": "application/json"}
