@@ -2,9 +2,9 @@ from LogEntry import LogEntry
 from requests import post
 from scapy.all import sniff
 from threading import Thread
+from Databaser import Databaser
 import requests
 requests.adapters.DEFAULT_RETRIES = 0
-
 
 """
 Uses Scapy library to examine all incoming traffic
@@ -16,27 +16,34 @@ class Sniffer(Thread):
     Constructor; takes a config keyword to see what mode to run it in
     'testing' ignores ssh spam you get
     """
-
-    def __init__(self, config="base", openPorts=[], whitelist=[], db_url=None, honeypotIP=None, managementIPs=None):
+    def __init__(self,
+                 config="base",
+                 openPorts=[],
+                 whitelist=[],
+                 honeypotIP=None,
+                 managementIPs=None):
         Thread.__init__(self)
 
         self.config = config
         self.openPorts = openPorts
         self.whitelist = whitelist
-        self.db_url = db_url
         self.honeypotIP = honeypotIP
         self.managementIPs = managementIPs
+
+        # Setup DB
+        self.db = Databaser()
 
         self.running = True
         #This number doesn't matter, this is used to stop the thread if a reset is necessary
         self.count = 1
+
     """
     Runs the thread, begins sniffing
     """
 
     def run(self):
         print("Sniffing")
-        
+
         #This loop, along with self.count allow us to effectively update values on the fly
         while self.running:
             #building the base filter
@@ -58,10 +65,14 @@ class Sniffer(Thread):
     """
     Updates configuration options during runtime
     """
-    def configUpdate(self, openPorts=[], whitelist=[], db_url=None, honeypotIP=None, managementIPs=None):
+
+    def configUpdate(self,
+                     openPorts=[],
+                     whitelist=[],
+                     honeypotIP=None,
+                     managementIPs=None):
         self.openPorts = openPorts
         self.whitelist = whitelist
-        self.db_url = db_url
         self.honeypotIP = honeypotIP
         self.managementIPs = managementIPs
 
@@ -98,14 +109,5 @@ class Sniffer(Thread):
             # TODO: IS PORT OPEN NOT WORKING
             log = LogEntry(srcPort, srcIP, sourceMAC, destPort, dstIP, destMAC,
                            trafficType, destPort in self.openPorts)
-            self.post(log)
 
-    def post(self, payload):
-        header = {"content-type": "application/json"}
-        try:
-            r = post(url=self.db_url, data=payload.json(),
-                     headers=header, verify=False)
-            log_id = r.json()["id"]
-            print("Log created: %s" % log_id)
-        except Exception:
-            print("DB-Inactive: ", payload.json())
+            self.db.dave(log.json())

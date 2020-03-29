@@ -45,6 +45,7 @@ services:
 
   # Service to get ready to run a honeypot
   replay-honeypot:
+    image: cloud.canister.io:5000/seth/replay-honeypot:latest
     build:
       context: './honeypots'
       dockerfile: Dockerfile

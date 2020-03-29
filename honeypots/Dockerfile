@@ -1,10 +1,7 @@
-FROM nikolaik/python-nodejs:python3.8-nodejs13-alpine
+FROM python:3.8-alpine
 
 # Create working directory (bundled source)
 WORKDIR /usr/src/app
-
-# Get DB Dependency
-RUN npm install -g pouchdb-server
 
 # Install dependencies
 RUN apk add --update tcpdump
@@ -18,7 +15,6 @@ COPY . .
 # Expose some ports for "poking"
 EXPOSE 5040
 # Database and ConfigTunnel Ports
-EXPOSE 1437
 EXPOSE 9998
 
 # Do not buffer python otput
