@@ -13,6 +13,12 @@
     "start-serve": "DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history node server/index.js",
     "test": "npm run format && npx nyc ava test/specs/*"
   },
+  "nodemonConfig": {
+    "ignore": [
+      "dist/*",
+      "dist"
+    ]
+  },
   "browserslist": [
     "last 1 Chrome version"
   ],

@@ -1,11 +1,13 @@
 version: '3.3'
 
 services:
-  # Service to get manager up and running
+  # Service to get a database up and running with CORS
   couchdb:
     image: bitnami/couchdb:3
     environment:
-      - COUCHDB_PASSWORD=couchdb # TODO: change this
+      # TODO: change this
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=couchdb
     deploy:
       replicas: 1
       placement:
@@ -19,6 +21,8 @@ services:
       - '9100:9100'
     volumes:
       - couchdb_data:/bitnami/couchdb
+      - ${PWD}/local.ini:/opt/bitnami/couchdb/etc/local.d/cutom-local.ini
+
   # Optional service to interact with database visually
   fauxton:
     image: 3apaxicom/fauxton
@@ -36,6 +40,7 @@ services:
         constraints:
           - 'node.role==manager'
 
+  # Service to get manager up and running
   replay-manager:
     image: cloud.canister.io:5000/seth/replay-manager:latest
     hostname: replay-manager
