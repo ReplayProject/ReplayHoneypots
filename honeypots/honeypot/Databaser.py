@@ -19,15 +19,20 @@ class Databaser():
         """
         self.db_name = socket.gethostname() + "_logs"
         # Connect
-        self.couch = couchdb.Server(os.getenv('DB_URL'))
-        self.createDB()  # create the logging db for this device's logs
+        db_url = os.getenv('DB_URL')
+        if (db_url != "" and db_url.strip() != ""):
 
-        # Decide if we should be replicating
-        target = os.getenv("TARGET_ADDR")
-        if (target and target.strip() != ""):
-            self.startReplicate(target)
+            self.couch = couchdb.Server()
+            self.createDB()  # create the logging db for this device's logs
 
-        print("CouchDB Is connected with version ", self.couch.version())
+            # Decide if we should be replicating
+            target = os.getenv("TARGET_ADDR")
+            if (target and target.strip() != ""):
+                self.startReplicate(target)
+
+            print("CouchDB Is connected with version ", self.couch.version())
+        else:
+            print("No DB_URL provided, logging to stdout only")
 
     def startReplicate(self, target):
         """
@@ -68,10 +73,14 @@ class Databaser():
         """
         Save a json document
         """
+        # Logic for live mode vs testing mode
         try:
             doc_id, doc_rev = self.couch.save(json)
             print("Log created: %s" % doc_id)
             return doc_id
         except Exception:
-            print("DB-Inactive: ", json)
+            print(json)
+            return None
+        except AttributeError:
+            print(json)
             return None

@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3.4'
 
 services:
   # Service to get a database up and running with CORS

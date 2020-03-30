@@ -12,8 +12,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Get source files
 COPY . .
 
-# Expose some ports for "poking"
-EXPOSE 5040
 # Database and ConfigTunnel Ports
 EXPOSE 9998
 
