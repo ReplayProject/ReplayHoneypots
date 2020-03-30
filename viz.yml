@@ -2,6 +2,7 @@ version: '3.3'
 
 services:
   # Service to run swarm state visualizer
+  # https://github.com/dockersamples/docker-swarm-visualizer
   viz:
     image: dockersamples/visualizer:stable
     ports:

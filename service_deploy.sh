@@ -5,7 +5,7 @@ docker service create \
    --replicas 1 \
    --with-registry-auth \
    --network host \
-   --env DB_URL="http://admin:couchdb@192.168.23.50:5984" \
+   --env DB_URL="http://honeypots:securehoneypassword@192.168.23.50:5984" \
    --name replay-honeypot \
    --constraint node.role==worker \
    --placement-pref spread=node.id \

@@ -110,4 +110,4 @@ class Sniffer(Thread):
             log = LogEntry(srcPort, srcIP, sourceMAC, destPort, dstIP, destMAC,
                            trafficType, destPort in self.openPorts)
 
-            self.db.dave(log.json())
+            self.db.save(log.json())
