@@ -53,7 +53,7 @@ npm-debug.log
 dist
 .cache
 .nyc_output
-# .data # toggle to use persistant data TODO: make db data a volume, and config files
+.data
 
 #Configuration files
 # properties.cfg
@@ -64,3 +64,12 @@ restart.sh
 src_data
 pcap
 nmap
+
+# Frontend src
+client
+
+# Misc excludes
+src_data
+pcap
+nmap
+logs

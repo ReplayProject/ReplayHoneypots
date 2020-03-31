@@ -62,14 +62,3 @@ app.use(require('serve-static')(dist, { index: ['index.html'] }))
 
 // listen for frontend requests :)
 app.listen(port, () => log('Frontend listening on', port))
-
-// Start the database and host it on on next port from frontend
-
-const dbApp = express()
-
-dbApp.use(require('cors')())
-dbApp.use(require('helmet')())
-
-dbApp.use(require('./modules/database'))
-
-dbApp.listen(port + 1, () => log('DB listening on', port + 1))

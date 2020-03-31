@@ -13,13 +13,11 @@ import datetime
 import argparse
 from NmapParser import NmapParser
 from Sniffer import Sniffer
-from Databaser import Databaser
 from PortListener import PortListener
 from ConfigTunnel import ConfigTunnel
 
 # default location that PortThreadManager will look for config options
 CONFIG_FILE_PATH = r'../config/properties.cfg'
-
 """
 Handles the port threads to run the honeypot
 """
@@ -32,13 +30,10 @@ class PortThreadManager:
     Args:
         portList: a list of int port numbers
     """
-
     def __init__(self):
         self.portList = []
         self.ip = str(get('https://api.ipify.org').text)
         self.processList = dict()
-        # where the db thread will be located
-        self.databaserThread = None
         # where the sniffer thread will be located
         self.snifferThread = None
         self.delay = None
@@ -60,14 +55,6 @@ class PortThreadManager:
         self.HONEY_IP = config.get('IPs', 'honeypotIP')
         self.MGMT_IPs = json.loads(config.get("IPs", "managementIPs"))
 
-        self.DATABASE_OPTIONS = [
-            config.get("Databaser", "port"),
-            config.get("Databaser", "dbconf"),
-            config.get("Databaser", "dbfolder"),
-            config.get("Databaser", "bindaddress"),
-            config.get("Databaser", "targetaddress")
-        ]
-
         with open(dataFile, "r") as responseDataFile:
             self.responseData = json.load(responseDataFile)
 
@@ -78,41 +65,39 @@ class PortThreadManager:
     Start a thread for each port in the config file, connects to the database, runs sniffer class
     """
 
-    def activate(self, propertiesFile=CONFIG_FILE_PATH, updateSniffer=False, updateOpenPorts=False):
+    def activate(self,
+                 propertiesFile=CONFIG_FILE_PATH,
+                 updateSniffer=False,
+                 updateOpenPorts=False):
         self.configFilePath = propertiesFile
 
         # Gets the info from config file initially
         self.getConfigData()
 
-        #--- Databaser Thread (does not get updated on dynamic config change)---#
-        # Setup the DB
-        if (self.databaserThread == None):
-            self.databaserThread = Databaser(
-                options=self.DATABASE_OPTIONS, replication=True)
-            self.databaserThread.daemon = True
-            self.databaserThread.start()
-
-        # Wait for the DB to be ready
-        while not self.databaserThread.ready:
-            pass
-
         #--- Sniffer Thread ---#
         if (self.snifferThread == None):
             # TODO: Switch config="testing" to "base" when in production
-            self.snifferThread = Sniffer(config="testing", openPorts=list(self.responseData.keys()), whitelist=self.whitelist,
-                                         db_url=self.databaserThread.db_url, honeypotIP=self.HONEY_IP, managementIPs=self.MGMT_IPs)
+            self.snifferThread = Sniffer(config="testing",
+                                         openPorts=list(
+                                             self.responseData.keys()),
+                                         whitelist=self.whitelist,
+                                         honeypotIP=self.HONEY_IP,
+                                         managementIPs=self.MGMT_IPs)
             self.snifferThread.daemon = True
             self.snifferThread.start()
         elif (updateSniffer == True):
-            self.snifferThread.configUpdate(openPorts=list(self.responseData.keys(
-            )), whitelist=self.whitelist, db_url=self.databaserThread.db_url, honeypotIP=self.HONEY_IP, managementIPs=self.MGMT_IPs)
+            self.snifferThread.configUpdate(openPorts=list(
+                self.responseData.keys()),
+                                            whitelist=self.whitelist,
+                                            honeypotIP=self.HONEY_IP,
+                                            managementIPs=self.MGMT_IPs)
 
         #--- Open Sockets ---#
         # On initial run
         if (len(self.processList) == 0):
             for port in self.responseData.keys():
-                portThread = PortListener(
-                    port, self.responseData[port], self.delay)
+                portThread = PortListener(port, self.responseData[port],
+                                          self.delay)
                 portThread.daemon = True
                 portThread.start()
                 self.processList[port] = portThread
@@ -129,14 +114,13 @@ class PortThreadManager:
                     self.processList[p].isRunning = False
             for p in updatedPorts:
                 if (not p in currentPorts):
-                    portThread = PortListener(
-                        p, self.responseData[p], self.delay)
+                    portThread = PortListener(p, self.responseData[p],
+                                              self.delay)
                     portThread.daemon = True
                     portThread.start()
                     self.processList[p] = portThread
 
         # self.snifferThread.join()
-        # self.databaserThread.join()
 
 
 if __name__ == '__main__':

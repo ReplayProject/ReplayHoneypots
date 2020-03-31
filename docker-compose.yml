@@ -1,102 +1,81 @@
-version: '3.3'
+version: '3.4'
 
 services:
-  # Service to start a devault ubuntu container with ssh running
-  # newpot:
-  #   image: linuxserver/openssh-server
-  #   container_name: openssh-server
-  #   hostname: openssh-server
-  #   ports:
-  #     - 2222:2222
-  #   networks:
-  #     default:
-  #   environment:
-  #     - PUID=1000
-  #     - PGID=1000
-  #     - TZ=America/New_York
-  #     - PASSWORD_ACCESS=false
-  #     - PUBLIC_KEY=ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDVtnZ/ax3m7dOKuYPULSCRnJyiKDDHHyBRWGMFCq/yHEI7B61VfqP69fsoklvAwF7aTHfDotiWaum5PwEs2W66oHDHTyO2U08YnSp6vk/4sHiuuioyJbUfG3DKkIQOALUwlq7YjS8JQCG6TK/Eu2MhqyD9M0YpSi30H/dgi4u2PzQHbgk3dgnDiRaG3PCA1lD6S6timbNmhLmtkV5EFNIXquIadDqOeoNORS/bTFeatAzcoYUzszfUoHdOLcvV8EKlZ3cDL3kRxRUFqS20ktZXDpynVrBPqJFuWWUfhzMERpBLejA5IgEdVUMEb5Kl8jGBgbtT6p4ZPPGB6y5wpAn5 root@6344607aa60b
-  #     - SUDO_ACCESS=true
-  #     - USER_PASSWORD=password
-  #     - USER_NAME=linuxserver.io
-  #   volumes:
-  #     - replay-src:/src
-  #   ports:
-  #     - 2222:2222
-  #   restart: unless-stopped
-
-  # Service to get manager up and running
-  replay-manager:
-    image: ${REGISTRY_HOST}/seth/replay-manager:latest
-    build:
-      context: './management'
-      dockerfile: Dockerfile
-    container_name: honeypot-manager
-    hostname: honeypot-manager
-    ports:
-      - 8080:8080
-      - 8081:8081
+  # Service to get a database up and running with CORS
+  couchdb:
+    image: bitnami/couchdb:3
+    environment:
+      # TODO: change this
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=couchdb
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - 'node.role==manager'
     networks:
       default:
-    # used when we want a blank container for testing
-    # depends_on:
-    #   - newpot
-    restart: "no"
+    ports:
+      - '5984:5984'
+      - '4369:4369'
+      - '9100:9100'
     volumes:
-      - replay-src:/src
-    working_dir: /src/management/frontend # comment to use bundled source code (needs fresh image)
-    command: npm run dev # just for development
-    # environment:
-    #   - NODE_ENV=development
+      - couchdb_data:/bitnami/couchdb
+      - ${PWD}/local.ini:/opt/bitnami/couchdb/etc/local.d/cutom-local.ini
+
+  # Optional service to interact with database visually
+  fauxton:
+    image: 3apaxicom/fauxton
+    networks:
+      default:
+    ports:
+      - '8000:8000'
+    command:
+      - sh
+      - "-c"
+      - "fauxton -c http://couchdb:5984"
     deploy:
-      labels:
-        - ismanager=true
       replicas: 1
       placement:
         constraints:
           - 'node.role==manager'
 
-  # Service to get ready to run a honeypot
-  replay-honeypot:
-    image: ${REGISTRY_HOST}/seth/replay-honeypot:latest
-    build:
-      context: './honeypots'
-      dockerfile: Dockerfile
-    # container_name: honeypot # Only works with one honeypot
-    # hostname: honeypot # Only works with one honeypot
+  # Service to get manager up and running
+  replay-manager:
+    image: cloud.canister.io:5000/seth/replay-manager:latest
+    hostname: replay-manager
     ports:
-      - 1437 # change to 11437:1437 when running one honeypot
-      - 5040 # change to 5040:5040 ^^
+      - 8080:8080
     networks:
       default:
-      # outside: # allow connecting to outside network
-    # used to start honeypot after the manager container
-    depends_on:
-      - replay-manager
-    restart: "no"
-    volumes:
-      - replay-src:/src
-    working_dir: /src/honeypots/honeypot # comment to use bundled source code (needs fresh image)
-    # environment:
-      # - NODE_ENV=development
     deploy:
-      labels:
-        - ishoneypot=true
       replicas: 1
       placement:
         constraints:
-          - 'node.role==worker'
-        preferences:
-          - spread: node.id
+          - 'node.role==manager'
+      restart_policy:
+        condition: on-failure
 
-volumes:
-  # This volume gives access to the source code for the system (runtime binding)
-  replay-src:
-    driver: local
-    driver_opts:
-      type: none
-      device: $PWD
-      o: bind
+  # Service to get ready to run a honeypot
+  # replay-honeypot:
+  #   image: cloud.canister.io:5000/seth/replay-honeypot:latest
+  #   ports:
+  #     - 1437:1437 # change to 1437 when running many honeypots
+  #   networks:
+  #     - default
+  #     - outside
+  #   # used to start honeypot after the manager container
+  #   # depends_on:
+  #   #   - replay-manager
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #         - 'node.role==worker'
+  #       preferences:
+  #         - spread: node.id
+  #     restart_policy:
+  #       condition: on-failure
 
 networks:
   # Default network for container-container communication
@@ -105,3 +84,8 @@ networks:
   outside:
     external:
       name: "host"
+
+volumes:
+  replay-db:
+  couchdb_data:
+    driver: local

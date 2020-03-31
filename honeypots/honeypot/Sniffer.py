@@ -2,10 +2,9 @@ from LogEntry import LogEntry
 from requests import post
 from scapy.all import sniff
 from threading import Thread
+from Databaser import Databaser
 import requests
 requests.adapters.DEFAULT_RETRIES = 0
-
-
 """
 Uses Scapy library to examine all incoming traffic
 """
@@ -16,16 +15,22 @@ class Sniffer(Thread):
     Constructor; takes a config keyword to see what mode to run it in
     'testing' ignores ssh spam you get
     """
-
-    def __init__(self, config="base", openPorts=[], whitelist=[], db_url=None, honeypotIP=None, managementIPs=None):
+    def __init__(self,
+                 config="base",
+                 openPorts=[],
+                 whitelist=[],
+                 honeypotIP=None,
+                 managementIPs=None):
         Thread.__init__(self)
 
         self.config = config
         self.openPorts = openPorts
         self.whitelist = whitelist
-        self.db_url = db_url
         self.honeypotIP = honeypotIP
         self.managementIPs = managementIPs
+
+        # Setup DB
+        self.db = Databaser()
 
         self.running = True
         #This number doesn't matter, this is used to stop the thread if a reset is necessary
@@ -33,6 +38,7 @@ class Sniffer(Thread):
 
         #set used for testing convenience
         self.RECORD = dict()
+
     """
     Runs the thread, begins sniffing
     """
@@ -56,15 +62,22 @@ class Sniffer(Thread):
                 sniff(filter=fltr, prn=self.save_packet, count=self.count)
             elif (self.config == "onlyUDP"):
                 fltr = "udp"
-                sniff(filter=fltr, prn=self.save_packet, count=self.count, iface="lo")
+                sniff(filter=fltr,
+                      prn=self.save_packet,
+                      count=self.count,
+                      iface="lo")
 
     """
     Updates configuration options during runtime
     """
-    def configUpdate(self, openPorts=[], whitelist=[], db_url=None, honeypotIP=None, managementIPs=None):
+
+    def configUpdate(self,
+                     openPorts=[],
+                     whitelist=[],
+                     honeypotIP=None,
+                     managementIPs=None):
         self.openPorts = openPorts
         self.whitelist = whitelist
-        self.db_url = db_url
         self.honeypotIP = honeypotIP
         self.managementIPs = managementIPs
 
@@ -103,7 +116,8 @@ class Sniffer(Thread):
             # TODO: IS PORT OPEN NOT WORKING
             log = LogEntry(srcPort, srcIP, sourceMAC, destPort, dstIP, destMAC,
                            trafficType, destPort in self.openPorts)
-            self.post(log)
+
+            self.db.save(log.json())
 
             #storing UDP mini-logs for testing
             if (self.config == "testing"):
@@ -111,13 +125,3 @@ class Sniffer(Thread):
                     self.RECORD[srcIP] = [log]
                 else:
                     self.RECORD[srcIP].append(log)
-
-    def post(self, payload):
-        header = {"content-type": "application/json"}
-        try:
-            r = post(url=self.db_url, data=payload.json(),
-                     headers=header, verify=False)
-            log_id = r.json()["id"]
-            print("Log created: %s" % log_id)
-        except Exception:
-            print("DB-Inactive: ", payload.json())
