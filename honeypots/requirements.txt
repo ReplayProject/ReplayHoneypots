@@ -1,4 +1,4 @@
-coverage==4.5.4
 requests==2.18.4
 scapy==2.4.3
 pycrypto==2.6.1
+CouchDB==1.2
