@@ -20,9 +20,8 @@ class Databaser():
         self.db_name = socket.gethostname() + "_logs"
         # Connect
         db_url = os.getenv('DB_URL')
-        if (db_url != "" and db_url.strip() != ""):
-
-            self.couch = couchdb.Server()
+        if (db_url and db_url.strip() != ""):
+            self.couch = couchdb.Server(db_url)
             self.createDB()  # create the logging db for this device's logs
 
             # Decide if we should be replicating

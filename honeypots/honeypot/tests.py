@@ -68,12 +68,16 @@ class TestLogs(unittest.TestCase):
         self.assertTrue(type(entry.timestamp) is int)
 
 
+# DB_URL = 'http://admin:couchdb@152.14.85.156:5984'
+DB_URL = 'http://admin:couchdb@127.0.0.1:5984'
+
+
 class TestDatabaser(unittest.TestCase):
     def tearDown(self):
         """
         Clear out testing db (BE CAREFUL)
         """
-        os.environ["DB_URL"] = "http://admin:couchdb@152.14.85.156:5984"
+        os.environ["DB_URL"] = DB_URL
         try:
             db = Databaser()
             db.deleteDB()  # assuming admin
@@ -87,7 +91,7 @@ class TestDatabaser(unittest.TestCase):
         Test that the database successfully sets itself up
         """
         # Env Variables
-        os.environ["DB_URL"] = "http://admin:couchdb@152.14.85.156:5984"
+        os.environ["DB_URL"] = DB_URL
         # Successful run (assuming couch is running)
         try:
             db = Databaser()
@@ -95,18 +99,16 @@ class TestDatabaser(unittest.TestCase):
         except Exception:
             self.fail("Databaser raised an exception unexpectedly!")
 
-        # TODO: replication testing
-        # os.environ["TARGET_ADDR"] = "http://admin:couchdb@localhost:5984"
-
-        # Bad Run
+    def test_fail(self):
         try:
-            os.environ["DB_URL"] = "http://localhost:9999"
+            os.environ["DB_URL"] = DB_URL + "9"
             db = Databaser()
         except ConnectionRefusedError:
             self.assertRaises(Exception)
 
+    def test_fail_2(self):
         try:
-            os.environ["DB_URL"] = "http://localhost:8080"
+            os.environ["DB_URL"] = "http://localhost:1020"
             db = Databaser()
         except ConnectionRefusedError:
             self.assertRaises(Exception)
@@ -128,7 +130,6 @@ class TestSniffer(unittest.TestCase):
         s = Sniffer(config="testing",
                     openPorts=[],
                     whitelist=[],
-                    db_url="fakeURL",
                     honeypotIP="localhost",
                     managementIPs=("52.87.97.77", "54.80.228.0"))
         s.daemon = True
@@ -163,7 +164,6 @@ class TestSniffer(unittest.TestCase):
         s = Sniffer(config="onlyUDP",
                     openPorts=[],
                     whitelist=[],
-                    db_url="fakeURL",
                     honeypotIP=host_ip,
                     managementIPs=("52.87.97.77", "54.80.228.0"))
         s.daemon = True
@@ -173,17 +173,14 @@ class TestSniffer(unittest.TestCase):
         self.assertTrue(len(s.whitelist) == 0)
         self.assertTrue(s.config == "onlyUDP")
         self.assertTrue(len(s.managementIPs) == 2)
-        self.assertTrue(s.db_url == "fakeURL")
         self.assertTrue(s.honeypotIP == "192.168.42.51")
 
         s.configUpdate(openPorts=[80, 443],
                        whitelist=["8.8.8.8", "9.9.9.9"],
-                       db_url="anotherFakeURL",
                        honeypotIP="192.168.42.42",
                        managementIPs="54.80.228.0")
         self.assertTrue(len(s.openPorts) == 2)
         self.assertTrue(len(s.whitelist) == 2)
-        self.assertTrue(s.db_url == "anotherFakeURL")
         self.assertTrue(s.managementIPs == "54.80.228.0")
         self.assertTrue(s.honeypotIP == "192.168.42.42")
 
@@ -216,7 +213,6 @@ class TestConfigTunnel(unittest.TestCase):
         self.stunnel.start()
         self.ctunnel.start()
         time.sleep(1)
-        print("yeet")
         self.assertTrue(True)
 
     def test_init(self):
