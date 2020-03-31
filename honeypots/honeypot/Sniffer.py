@@ -87,8 +87,6 @@ class Sniffer(Thread):
     """
 
     def save_packet(self, packet):
-        print(packet.summary())
-
         # TODO: make this work with layer 2, for now just skip filtering those packets
         if (packet.haslayer("IP") == False):
             return
