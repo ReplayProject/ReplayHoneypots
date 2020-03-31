@@ -1,6 +1,7 @@
 import os
 import couchdb
 import socket
+import json
 
 
 # Couchdb Tutorial
@@ -68,18 +69,21 @@ class Databaser():
         else:
             db = self.couch.create(self.db_name)
 
-    def save(self, json):
+    def save(self, json_raw):
         """
         Save a json document
         """
         # Logic for live mode vs testing mode
         try:
-            doc_id, doc_rev = self.couch.save(json)
+            # TODO: should put extra test here
+            db = self.couch[self.db_name]
+            doc_id, doc_rev = db.save(json.loads(json_raw))
             print("Log created: %s" % doc_id)
             return doc_id
-        except Exception:
-            print(json)
+        except Exception as e:
+            # print(str(e))
+            print("DB Save Error:", json_raw)
             return None
         except AttributeError:
-            print(json)
+            print("Attr Warning:", json_raw)
             return None
