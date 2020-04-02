@@ -251,6 +251,8 @@ def choices(ctx):
                      'Remove Host',
                      'Start Honeypot',
                      'Stop Honeypot',
+                     'Uninstall Honeypot', 
+                     'Reinstall Honeypot', 
                      'Check Status',
                      'Open Config',
                      'Exit'],
@@ -264,13 +266,19 @@ def choices(ctx):
             ctx.invoke(addhost) #done, to be tested
 
         elif choice == 'remove host':
-            ctx.invoke(removehost) #not started
+            ctx.invoke(removehost) #done, to be tested
 
         elif choice == 'start honeypot':
             ctx.invoke(starthoneypot) #done, to be tested
 
         elif choice == 'stop honeypot':
-            ctx.invoke(stophoneypot) #not started
+            ctx.invoke(stophoneypot) #wip
+
+        elif choice == 'uninstall honeypot':
+            ctx.invoke(uninstallhoneypot) #wip
+
+        elif choice == 'reinstall honeypot':
+            ctx.invoke(reinstallhoneypot) #wip
 
         elif choice == 'check status':
             ctx.invoke(checkstatus) #wip
@@ -321,28 +329,14 @@ def addhost():
 
     hostname = new_host.pop("hostname")
     new_host["status"] = "inactive"
+    new_host["installed"] = "False"
     host_value = str(new_host)
     config.set('HOSTS', hostname, host_value)
     writeConfig("New host " + hostname + " saved!")
 
 
-@main.command()
-def removehost():
-    """
-    Remove a host
-    """
-
-    # TODO
-    log("TODO", "red")
-
-
-@main.command()
 @click.pass_context
-def starthoneypot(ctx):
-    """
-    Start a honeypot
-    """
-
+def hostselector(ctx, message): 
     if len(config.items("HOSTS")) is 0:
         log("No hosts have been added yet. To add a host, select 'Add Host' command.", "red")
         ctx.invoke(choices)
@@ -354,14 +348,55 @@ def starthoneypot(ctx):
             'name': host
         })
 
-    honeypots = prompt([
+    return prompt([
         {
             'type': 'checkbox',
             'name': 'hosts',
-            'message': 'Which host(s) do you want to start a honeypot on?',
+            'message': message,
             'choices': host_choices
         }
     ], style=style)['hosts']
+
+@main.command()
+@click.pass_context
+def removehost(ctx):
+    """
+    Remove a host
+    """
+
+    honeypots = hostselector("Which host(s) do you want to remove?")
+
+    if len(honeypots) == 0:
+        log ("No host has been selected.", "red")
+    else:
+
+        hosts = config.items('HOSTS')
+
+        for host in hosts: 
+            if host[0] in honeypots: 
+                host_data = json.loads(host[1].replace("\'", "\""))
+                installed = host_data['installed']
+
+                if installed == "True": 
+                    log(host[0] + " has a honeypot installed. To uninstall this honeypot, select 'Uninstall Honeypot' command.", "red")
+                else: 
+                    removed = config.remove_option('HOSTS', host[0])
+
+                    if removed: 
+                        log(host[0] + " has been removed.", "green")
+                    else: 
+                        log(host[0] + " could not be removed.", "red")
+    
+
+
+@main.command()
+@click.pass_context
+def starthoneypot(ctx):
+    """
+    Start a honeypot
+    """
+
+    honeypots = hostselector("Which host(s) do you want to start a honeypot on?")
 
     if len(honeypots) == 0:
         log ("No host has been selected.", "red")
@@ -381,38 +416,46 @@ def starthoneypot(ctx):
         for host in hosts:
             if host[0] in honeypots:
                 host_data = json.loads(host[1].replace("\'", "\""))
-                user = host_data['user']
-                ip = host_data['ip']
-                ssh_key = host_data['ssh_key']
+                status = host_data['status']
 
-                password = prompt([
-                    {
-                        'type': 'password',
-                        'name': 'password',
-                        'message': ('Password for ' + user + "@" + ip + ":"),
-                    }
-                ], style=style)['password']
+                if status == "active": 
+                    log (host[0] + " is already running a honeypot.", "red")
+                else: 
+                    user = host_data['user']
+                    ip = host_data['ip']
+                    ssh_key = host_data['ssh_key']
 
-                # TODO: DELETE BEFORE PUTTING ON MASTER
-                print ("DEBUG VARIABLES (to be removed after tested)")
-                print ("============================================")
+                    password = prompt([
+                        {
+                            'type': 'password',
+                            'name': 'password',
+                            'message': ('Password for ' + user + "@" + ip + ":"),
+                        }
+                    ], style=style)['password']
 
-                print ("KEYPATH: " + ssh_key)
-                print ("REMOTEIP: " + ip)
-                print ("REMOTENAME: " + user)
-                print ("REMOTEPASS: " + password)
-                print ("REPOPATH: " + tar_file)
+                    # TODO: DELETE BEFORE PUTTING ON MASTER
+                    print ("DEBUG VARIABLES (to be removed after tested)")
+                    print ("============================================")
 
-                stdout, stderr = subprocess.Popen(['deployment/deploy.sh', ssh_key, ip, user, password, tar_file],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE).communicate()
+                    print ("KEYPATH: " + ssh_key)
+                    print ("REMOTEIP: " + ip)
+                    print ("REMOTENAME: " + user)
+                    print ("REMOTEPASS: " + password)
+                    print ("REPOPATH: " + tar_file)
 
-                print (("" + stdout.decode() + stderr.decode()))
+                    stdout, stderr = subprocess.Popen(['deployment/deploy.sh', ssh_key, ip, user, password, tar_file],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE).communicate()
 
-                # TODO: check for errors, do not label host as "active" if there were any errors with deployment
-                host_data['status'] = 'active'
-                host_value = str(host_data)
-                config.set('HOSTS', host[0], host_value)
+                    print (("" + stdout.decode() + stderr.decode()))
+
+                    # TODO: check for errors, do not label host as "active" if there were any errors with deployment
+                    host_data['status'] = 'active'
+                    host_data['installed'] = 'True'
+                    host_value = str(host_data)
+                    config.set('HOSTS', host[0], host_value)
+
+                    log (host[0] + " is now running a honeypot.", "green")
 
 
 @main.command()
@@ -421,8 +464,195 @@ def stophoneypot():
     Stop a honeypot
     """
 
-    # TODO
-    log("TODO", "red")
+    honeypots = hostselector("Which host(s) do you want to stop a honeypot on?")
+
+    if len(honeypots) == 0:
+        log ("No host has been selected.", "red")
+    else:
+
+        hosts = config.items('HOSTS')
+
+        for host in hosts:
+            if host[0] in honeypots:
+                host_data = json.loads(host[1].replace("\'", "\""))
+                status = host_data['status']
+
+                if status == "inactive": 
+                    log (host[0] + " was not running a honeypot.", "red")
+                else: 
+                    user = host_data['user']
+                    ip = host_data['ip']
+                    ssh_key = host_data['ssh_key']
+
+                    password = prompt([
+                        {
+                            'type': 'password',
+                            'name': 'password',
+                            'message': ('Password for ' + user + "@" + ip + ":"),
+                        }
+                    ], style=style)['password']
+
+                    # TODO: DELETE BEFORE PUTTING ON MASTER
+                    print ("DEBUG VARIABLES (to be removed after tested)")
+                    print ("============================================")
+
+                    print ("KEYPATH: " + ssh_key)
+                    print ("REMOTEIP: " + ip)
+                    print ("REMOTENAME: " + user)
+                    print ("REMOTEPASS: " + password)
+
+                    # TODO: call the stop script
+                    '''
+                    stdout, stderr = subprocess.Popen(['deployment/deploy.sh', ssh_key, ip, user, password, tar_file],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE).communicate()
+                    
+
+                    print (("" + stdout.decode() + stderr.decode()))
+                    '''
+                    print ("TODO - CALL A STOP SCRIPT WITH ABOVE VARIABLES")
+
+                    # TODO: check for errors, do not label host as "inactive" if there were any errors with shutdown 
+                    host_data['status'] = 'inactive'
+                    host_value = str(host_data)
+                    config.set('HOSTS', host[0], host_value)
+
+                    log ("The honeypot on " + host[0] + " is now stopped.", "red")
+
+
+@main.command()
+def uninstallhoneypot():
+    """
+    Stop and uninstall a honeypot
+    """
+
+    honeypots = hostselector("Which host(s) do you want to uninstall a honeypot on?")
+
+    if len(honeypots) == 0:
+        log ("No host has been selected.", "red")
+    else:
+
+        hosts = config.items('HOSTS')
+
+        for host in hosts:
+            if host[0] in honeypots:
+                host_data = json.loads(host[1].replace("\'", "\""))
+                installed = host_data['installed']
+
+                if installed == "False": 
+                    log (host[0] + " did not have an installed honeypot.", "red")
+                else: 
+                    user = host_data['user']
+                    ip = host_data['ip']
+                    ssh_key = host_data['ssh_key']
+
+                    password = prompt([
+                        {
+                            'type': 'password',
+                            'name': 'password',
+                            'message': ('Password for ' + user + "@" + ip + ":"),
+                        }
+                    ], style=style)['password']
+
+                    # TODO: DELETE BEFORE PUTTING ON MASTER
+                    print ("DEBUG VARIABLES (to be removed after tested)")
+                    print ("============================================")
+
+                    print ("KEYPATH: " + ssh_key)
+                    print ("REMOTEIP: " + ip)
+                    print ("REMOTENAME: " + user)
+                    print ("REMOTEPASS: " + password)
+
+                    # TODO: call the uninstall script
+                    '''
+                    stdout, stderr = subprocess.Popen(['deployment/deploy.sh', ssh_key, ip, user, password, tar_file],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE).communicate()
+                    
+
+                    print (("" + stdout.decode() + stderr.decode()))
+                    '''
+                    print ("TODO - CALL AN UNINSTALL SCRIPT WITH ABOVE VARIABLES")
+
+                    # TODO: check for errors, do not label host as uninstalled if there were any errors with uninstall 
+                    host_data['installed'] = 'False'
+                    host_value = str(host_data)
+                    config.set('HOSTS', host[0], host_value)
+
+                    log ("The honeypot on " + host[0] + " is now uninstalled.", "green")
+
+
+@main.command()
+def reinstallhoneypot():
+    """
+    Reinstall and restart a honeypot 
+    """
+
+    honeypots = hostselector("Which host(s) do you want to reinstall a honeypot on?")
+
+    if len(honeypots) == 0:
+        log ("No host has been selected.", "red")
+    else:
+
+        tar_file = prompt([
+            {
+                'type': 'input',
+                'name': 'tar_file',
+                'message': 'Tar File:',
+                'validate': FilePathValidator
+            }
+        ], style=style)['tar_file']
+
+        hosts = config.items('HOSTS')
+
+        for host in hosts:
+            if host[0] in honeypots:
+                host_data = json.loads(host[1].replace("\'", "\""))
+                installed = host_data['installed']
+
+                if installed == "False": 
+                    # TODO: may not be necessary depending on reinstall script 
+                    log (host[0] + " did not have an installed honeypot.", "red")
+                else: 
+                    user = host_data['user']
+                    ip = host_data['ip']
+                    ssh_key = host_data['ssh_key']
+
+                    password = prompt([
+                        {
+                            'type': 'password',
+                            'name': 'password',
+                            'message': ('Password for ' + user + "@" + ip + ":"),
+                        }
+                    ], style=style)['password']
+
+                    # TODO: DELETE BEFORE PUTTING ON MASTER
+                    print ("DEBUG VARIABLES (to be removed after tested)")
+                    print ("============================================")
+
+                    print ("KEYPATH: " + ssh_key)
+                    print ("REMOTEIP: " + ip)
+                    print ("REMOTENAME: " + user)
+                    print ("REMOTEPASS: " + password)
+                    print ("REPOPATH: " + tar_file)
+
+                    # TODO: call the reinstall script
+                    '''
+                    stdout, stderr = subprocess.Popen(['deployment/deploy.sh', ssh_key, ip, user, password, tar_file],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE).communicate()
+
+                    print (("" + stdout.decode() + stderr.decode()))
+                    '''
+
+                    print ("TODO - CALL A REINSTALL SCRIPT WITH ABOVE VARIABLES")
+
+                    # TODO: check for errors, do not label host as "active" if there were any errors with redeployment
+                    host_data['status'] = 'active'
+                    host_value = str(host_data)
+                    config.set('HOSTS', host[0], host_value)
+
+                    log ("The honeypot on " + host[0] + " is now reinstalled.", "green")
 
 
 def askSSHKEY():
