@@ -247,50 +247,55 @@ def choices(ctx):
                     'name': 'choice',
                     'message': 'What do you need to do?',
                     'choices':
-                    ['Add Host',
-                     'Remove Host',
-                     'Start Honeypot',
-                     'Stop Honeypot',
-                     'Uninstall Honeypot', 
-                     'Reinstall Honeypot', 
-                     'Check Status',
-                     'Open Config',
+                    ['Add Host', #TODO: done, to be tested
+                     'Remove Host', #TODO: done, to be tested
+                     'Start Honeypot', #TODO: script error handling
+                     'Stop Honeypot', #TODO: integrate script
+                     'Uninstall Honeypot', #TODO: integrate script
+                     'Reinstall Honeypot', #TODO: integrate script
+                     'Communicate', #TODO: MC
+                     'Check Status', #TODO: fix
+                     'Open Config', #TODO: fix/remove
                      'Exit'],
                     'filter': lambda val: val.lower()
+                    # TODO: git wiki
                 }
             ], style=style)['choice']
         except KeyError:
             os.kill(os.getpid(), signal.SIGINT)
 
         if choice == 'add host':
-            ctx.invoke(addhost) #done, to be tested
+            ctx.invoke(addhost)
 
         elif choice == 'remove host':
-            ctx.invoke(removehost) #done, to be tested
+            ctx.invoke(removehost) 
 
         elif choice == 'start honeypot':
-            ctx.invoke(starthoneypot) #done, to be tested
+            ctx.invoke(starthoneypot)
 
         elif choice == 'stop honeypot':
-            ctx.invoke(stophoneypot) #wip
+            ctx.invoke(stophoneypot) 
 
         elif choice == 'uninstall honeypot':
-            ctx.invoke(uninstallhoneypot) #wip
+            ctx.invoke(uninstallhoneypot) 
 
         elif choice == 'reinstall honeypot':
-            ctx.invoke(reinstallhoneypot) #wip
+            ctx.invoke(reinstallhoneypot) 
+
+        elif choice == 'communicate':
+            ctx.invoke(communicate)
 
         elif choice == 'check status':
-            ctx.invoke(checkstatus) #wip
+            ctx.invoke(checkstatus) 
 
-        elif choice == 'open config': #wip
+        elif choice == 'open config': 
             log("Opening Config file...", "green")
             subprocess.Popen(['nano', CONF_PATH]).wait()
             log("Reloading Edited Config file", "green")
             config = configparser.ConfigParser()
             setupConfig()
 
-        elif choice == 'exit': #done
+        elif choice == 'exit': 
             os.kill(os.getpid(), signal.SIGINT)
 
 
@@ -432,16 +437,6 @@ def starthoneypot(ctx):
                             'message': ('Password for ' + user + "@" + ip + ":"),
                         }
                     ], style=style)['password']
-
-                    # TODO: DELETE BEFORE PUTTING ON MASTER
-                    print ("DEBUG VARIABLES (to be removed after tested)")
-                    print ("============================================")
-
-                    print ("KEYPATH: " + ssh_key)
-                    print ("REMOTEIP: " + ip)
-                    print ("REMOTENAME: " + user)
-                    print ("REMOTEPASS: " + password)
-                    print ("REPOPATH: " + tar_file)
 
                     stdout, stderr = subprocess.Popen(['deployment/deploy.sh', ssh_key, ip, user, password, tar_file],
                         stdout=subprocess.PIPE,
@@ -653,6 +648,47 @@ def reinstallhoneypot():
                     config.set('HOSTS', host[0], host_value)
 
                     log ("The honeypot on " + host[0] + " is now reinstalled.", "green")
+
+
+@main.command()
+def communicate():
+    """
+    Communicate to a honeypot through the ConfigTunnel
+    """
+
+    honeypots = hostselector("Which host(s) do you want to communicate with?")
+
+    if len(honeypots) == 0:
+        log ("No host has been selected.", "red")
+    else:
+
+        command = prompt([
+            {
+                'type': 'input',
+                'name': 'command',
+                'message': "What command would you like to run?",
+            }
+        ], style=style)['command']
+
+        hosts = config.items('HOSTS')
+
+        for host in hosts:
+            if host[0] in honeypots:
+                host_data = json.loads(host[1].replace("\'", "\""))
+                ip = host_data['ip']
+
+                tunnel = ConfigTunnel('client', host=ip)
+                tunnel.start()
+                time.sleep(2)
+                
+                if not tunnel.ready: 
+                    log ("Could not connect to " + host[0], "red")
+                else: 
+                    tunnel.send(command)
+                    log ("Ran " + command + " on " + host[0], "green")
+
+                tunnel.stop()
+                tunnel.join()
 
 
 def askSSHKEY():
