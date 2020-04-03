@@ -23,8 +23,6 @@ import io
 
 dhg = 2
 dhp = 0x00cc81ea8157352a9e9a318aac4e33ffba80fc8da3373fb44895109e4c3ff6cedcc55c02228fccbd551a504feb4346d2aef47053311ceaba95f6c540b967b9409e9f0502e598cfc71327c5a455e2e807bede1e0b7d23fbea054b951ca964eaecae7ba842ba1fc6818c453bf19eb9c5c86e723e69a210d4b72561cab97b3fb3060b
-configFilePath = r'../config/properties.cfg'
-
 
 def fast_power(base, power):
     """
@@ -105,7 +103,7 @@ class ConfigTunnel(Thread):
         Runs the loop for listening and parsing input
         """
         self.input = [s]
-        is_server = self.mode is "server"
+        is_server = self.mode == "server"
         input_size = (1 if is_server else 0)
 
         while self.running:
@@ -161,9 +159,9 @@ class ConfigTunnel(Thread):
         """
         print('Starting ', self.mode, ' mainloop in thread')
 
-        if self.mode is "server":
+        if self.mode == "server":
             self.listen()
-        elif self.mode is "client":
+        elif self.mode == "client":
             self.connect()
 
     def stop(self):
@@ -199,7 +197,7 @@ class ConfigTunnel(Thread):
         """
         Encrypt and send stdin over socket connection
         """
-        if given_line is "":
+        if given_line == "":
             line = sys.stdin.buffer.readline(1024)
         else:
             line = io.StringIO(given_line + '\n').readline(1024)
@@ -269,7 +267,7 @@ class ConfigTunnel(Thread):
         Perform a dh exchange to arrive at compatible keys
         """
         my_secret = int.from_bytes(os.urandom(1), byteorder='little')
-        is_server = self.mode is "server"
+        is_server = self.mode == "server"
         x = None
 
         def recvit():
@@ -277,7 +275,7 @@ class ConfigTunnel(Thread):
             if ((data is not None) and (len(data) > 0) and data != b''):
                 return data
             return None
-        is_server = self.mode is "server"
+        is_server = self.mode == "server"
         if is_server:
             # Server sends A = g^a mod p to client
             s.sendall(str((fast_power(dhg, my_secret)) %
