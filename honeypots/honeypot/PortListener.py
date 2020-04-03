@@ -24,9 +24,9 @@ class PortListener(Thread):
     Args:
       portObj: port object with communication info
     """
-    def portListener(self):
+    def run(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind(("", self.port))
+        sock.bind(("", int(self.port)))
         sock.listen(1)
         while self.isRunning:
             print("Listening on port " + str(self.port))
