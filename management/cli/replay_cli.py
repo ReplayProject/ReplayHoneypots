@@ -253,9 +253,8 @@ def choices(ctx):
                      'Stop Honeypot', #TODO: integrate script
                      'Uninstall Honeypot', #TODO: integrate script
                      'Reinstall Honeypot', #TODO: integrate script
-                     'Communicate', #TODO: MC
-                     'Check Status', #TODO: fix
-                     'Open Config', #TODO: fix/remove
+                     'Configure Honeypot', #TODO: done, to be tested
+                     'Check Status', #TODO: done, to be tested
                      'Exit'],
                     'filter': lambda val: val.lower()
                     # TODO: git wiki
@@ -282,18 +281,11 @@ def choices(ctx):
         elif choice == 'reinstall honeypot':
             ctx.invoke(reinstallhoneypot) 
 
-        elif choice == 'communicate':
-            ctx.invoke(communicate)
+        elif choice == 'configure honeypot':
+            ctx.invoke(configurehoneypot)
 
         elif choice == 'check status':
             ctx.invoke(checkstatus) 
-
-        elif choice == 'open config': 
-            log("Opening Config file...", "green")
-            subprocess.Popen(['nano', CONF_PATH]).wait()
-            log("Reloading Edited Config file", "green")
-            config = configparser.ConfigParser()
-            setupConfig()
 
         elif choice == 'exit': 
             os.kill(os.getpid(), signal.SIGINT)
@@ -651,12 +643,12 @@ def reinstallhoneypot():
 
 
 @main.command()
-def communicate():
+def configurehoneypot():
     """
-    Communicate to a honeypot through the ConfigTunnel
+    Configure a honeypot through a live ConfigTunnel connection 
     """
 
-    honeypots = hostselector("Which host(s) do you want to communicate with?")
+    honeypots = hostselector("Which host(s) do you want to configure?")
 
     if len(honeypots) == 0:
         log ("No host has been selected.", "red")
@@ -664,11 +656,23 @@ def communicate():
 
         command = prompt([
             {
-                'type': 'input',
+                'type': 'list',
                 'name': 'command',
-                'message': "What command would you like to run?",
+                'message': 'What do you need to do?',
+                'choices': 
+                ['Reconfigure Sniffer', 
+                 'Reconfigure Ports', 
+                 'Reconfigure Sniffer and Ports'], 
+                'filter': lambda val: val.lower()
             }
         ], style=style)['command']
+
+        if command == "reconfigure sniffer": 
+            message = "reconfigure sniff"
+        elif command == "reconfigure ports": 
+            message = "reconfigure ports"
+        elif command == "reconfigure sniffer and ports": 
+            message = "reconfigure sniff ports"
 
         hosts = config.items('HOSTS')
 
@@ -684,26 +688,11 @@ def communicate():
                 if not tunnel.ready: 
                     log ("Could not connect to " + host[0], "red")
                 else: 
-                    tunnel.send(command)
-                    log ("Ran " + command + " on " + host[0], "green")
+                    tunnel.send(message)
+                    log ("Ran '" + message + "' on " + host[0], "green")
 
                 tunnel.stop()
                 tunnel.join()
-
-
-def askSSHKEY():
-    """
-    prompts user for their SSH Keyfile
-    """
-    questions = [
-        {
-            'type': 'input',
-            'name': 'ssh_key',
-            'message': 'Enter path to SSHKEY for use with remote hosts',
-            'validate': FilePathValidator,
-        },
-    ]
-    return prompt(questions, style=style).get("ssh_key")
 
 
 @main.command()
@@ -714,70 +703,31 @@ def checkstatus(ctx, key_file):
     Check the status of hosts
     """
 
-    if len(config.items("HOSTS")) is 0:
-        log("No hosts have been added yet. To add a host, select 'Add Host' command.", "red")
-        ctx.invoke(choices)
+    selected_hosts = hostselector("Which host(s) do you want to check?")
 
-    ssh_key = None
-    if config.has_option("GENERAL", "ssh_key"):
-        ssh_key = conf.get("ssh_key")
+    if len(selected_hosts) == 0:
+        log ("No host has been selected.", "red")
     else:
-        if key_file is not None:
 
-            # TODO: figure out manual validation
-            # SSHKEYValidator().validate({text:key_file})
+        all_hosts = config.items('HOSTS')
 
-            conf["ssh_key"] = ssh_key
-            ssh_key = conf.get("ssh_key")
-        else:
-            ssh_key = askSSHKEY()
-            if ssh_key is None:
-                os.kill(os.getpid(), signal.SIGINT)
-            conf["ssh_key"] = ssh_key
-        writeConfig("SSHKEY Saved")
+        for host in all_hosts:
+            if host[0] in selected_hosts:
+                host_data = json.loads(host[1].replace("\'", "\""))
+                user = host_data['user']
+                ip = host_data['ip']
+                ssh_key = host_data['ssh_key']
 
-    host_choices = [Separator('== Honeypots =='), ]
+                cmd = 'ssh -i ' + ssh_key + ' ' + user + '@' + ip + ' "uname -a"'
+                
+                stdout, stderr = subprocess.Popen(['ssh', '-i', ssh_key, (user + '@' + ip), 'uname -a'],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE).communicate()
 
-    for x in list(config['HOSTS']):
-        host_choices.append({
-            'name': x + ' - ' + config['HOSTS'][x]
-        })
+                if stderr: 
+                    log ("Error while connecting to " + user + "@" + ip + " using SSH key " + ssh_key + ": " + stderr.decode(), "red")
 
-    answers = prompt([
-        {
-            'type': 'checkbox',
-            # 'qmark': '😃',
-            'message': 'Which Devices do you want to check on?',
-            'name': 'devices',
-            'choices': host_choices,
-            'validate': lambda answer: 'You must choose at least one host.'
-            if len(answer) == 0 else False
-        }
-    ], style=style)
-
-    # TODO: pick at least 1 not currently working
-    print('\n\n')
-    for device in answers['devices']:
-        half = device.split('-')
-
-        log("==== Output for " + half[0] + "====", "green")
-        info = half[1].rstrip().split(':')
-
-        cmd = 'ssh' + info[0] + "@" + info[1] + \
-            " -p " + info[2] + ' "uname -a"'
-
-        output = os.popen(cmd)
-        pprint(output.read())
-        print('\n\n')
-        output.close()
-
-    log("Work In Progress", color="blue")
+                log (stdout.decode(), "green")
 
 if __name__ == '__main__':
     main()
-
-# New Command Template
-# @main.command()
-# @click.argument('option')
-# def test(debug, option=""):
-#     pass
