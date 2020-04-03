@@ -17,7 +17,8 @@ from PortListener import PortListener
 from ConfigTunnel import ConfigTunnel
 
 # default location that PortThreadManager will look for config options
-CONFIG_FILE_PATH = r'../config/properties.cfg'
+# TODO: this should for sure be made into an env variable (to switch from docker to local config)
+CONFIG_FILE_PATH = r'/properties.cfg'
 """
 Handles the port threads to run the honeypot
 """

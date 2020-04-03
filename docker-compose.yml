@@ -21,7 +21,7 @@ services:
       - '9100:9100'
     volumes:
       # - couchdb_data:/bitnami/couchdb # make data persistant here
-      - ${PWD}/local.ini:/opt/bitnami/couchdb/etc/local.d/cutom-local.ini
+      - ${PWD}/config/couch_defaults.ini:/opt/bitnami/couchdb/etc/local.d/cutom-local.ini
 
   # Optional service to interact with database visually
   fauxton:
@@ -55,6 +55,9 @@ services:
           - 'node.role==manager'
       restart_policy:
         condition: on-failure
+
+  # replay-honeypot:
+  #   image: cloud.canister.io:5000/seth/replay-honeypot:latest
 
   # Service to get ready to run a honeypot is in ./service_deploy.sh
 

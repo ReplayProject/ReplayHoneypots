@@ -1,19 +1,27 @@
 #! /bin/bash
+# Script to deploy the honeypot service(s), $1 is the replicas you want
+# The env variable $TAG should be set with latest config revision
+# Also, if given DB endpoints, those endpoints must be reachable fromt he honeypot
 
 echo "Deploying Honeypots with config revision: $TAG"
+
+if [ -z "$TAG" ]; then
+    echo "ERROR: \$TAG is not set (run \". create_configs.sh\")"
+    exit
+fi
 
 docker service create \
    --with-registry-auth \
    --env DB_URL="http://honeypots:securehoneypassword@192.168.23.50:5984" \
    --replicas "${1:-1}" \
    --replicas-max-per-node 1 \
-   --constraint node.role==worker \
+   --constraint node.role==manager \
    --placement-pref spread=node.id \
    --restart-condition on-failure \
    --network host \
    --name replay-honeypot \
-   --config src="honey-cfg-$TAG",target="/usr/src/app/honeypot/config/properties.cfg"\
-   --config src="honey-data-$TAG",target="/usr/src/app/honeypot/data/senddata.json"\
+   --config src="honey-cfg-$TAG",target="/properties.cfg"\
+   --config src="honey-data-$TAG",target="/senddata.json"\
    cloud.canister.io:5000/seth/replay-honeypot:latest
 
 
