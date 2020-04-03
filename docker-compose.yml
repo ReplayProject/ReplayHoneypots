@@ -1,4 +1,4 @@
-version: '3.4'
+version: '3.7'
 
 services:
   # Service to get a database up and running with CORS
@@ -20,7 +20,7 @@ services:
       - '4369:4369'
       - '9100:9100'
     volumes:
-      - couchdb_data:/bitnami/couchdb
+      # - couchdb_data:/bitnami/couchdb # make data persistant here
       - ${PWD}/local.ini:/opt/bitnami/couchdb/etc/local.d/cutom-local.ini
 
   # Optional service to interact with database visually
@@ -56,34 +56,15 @@ services:
       restart_policy:
         condition: on-failure
 
-  # Service to get ready to run a honeypot
-  # replay-honeypot:
-  #   image: cloud.canister.io:5000/seth/replay-honeypot:latest
-  #   ports:
-  #     - 1437:1437 # change to 1437 when running many honeypots
-  #   networks:
-  #     - default
-  #     - outside
-  #   # used to start honeypot after the manager container
-  #   # depends_on:
-  #   #   - replay-manager
-  #   deploy:
-  #     replicas: 1
-  #     placement:
-  #       constraints:
-  #         - 'node.role==worker'
-  #       preferences:
-  #         - spread: node.id
-  #     restart_policy:
-  #       condition: on-failure
+  # Service to get ready to run a honeypot is in ./service_deploy.sh
 
 networks:
   # Default network for container-container communication
   default:
-  # Lets a device adopt the network environment of the host machine
+  # (doesnt work) Lets a device adopt the network environment of the host machine
   outside:
-    external:
-      name: "host"
+    external: true
+    name: host
 
 volumes:
   replay-db:

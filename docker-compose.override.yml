@@ -1,6 +1,6 @@
 # This file is for development and will not work with stack deploy
 
-version: '3.4'
+version: '3.7'
 
 services:
   # Service to start a devault ubuntu container with ssh running
@@ -51,12 +51,10 @@ services:
       context: './honeypots'
       dockerfile: Dockerfile
     restart: "no"
-    # container_name: virtualpot
-    # hostname: virtualpot
-    # container_name: honeypot # Only works with one honeypot
-    # hostname: honeypot # Only works with one honeypot
-    # ports:
-      # - 5040:5040 # change to 5040 ^^
+    container_name: honeypot # Only works with one honeypot
+    hostname: honeypot # Only works with one honeypot
+    ports:
+      - 9998:9998 # change to 9998 ^^
     # volumes:
     #   - replay-src:/src
     # working_dir: /src/honeypots/honeypot # comment to use bundled source code (needs fresh image)

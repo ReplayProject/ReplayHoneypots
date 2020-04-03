@@ -1,13 +1,15 @@
 #! /bin/bash
 
 docker service create \
-   --replicas 1 \
    --with-registry-auth \
-   --network host \
    --env DB_URL="http://honeypots:securehoneypassword@192.168.23.50:5984" \
-   --name replay-honeypot \
+   --replicas "${1:-1}" \
+   --replicas-max-per-node 1 \
    --constraint node.role==worker \
    --placement-pref spread=node.id \
+   --restart-condition on-failure \
+   --network host \
+   --name replay-honeypot \
    cloud.canister.io:5000/seth/replay-honeypot:latest
 
 
