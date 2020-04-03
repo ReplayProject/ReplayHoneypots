@@ -125,8 +125,6 @@ class ConfigTunnel(Thread):
                 # Socket Message
                 elif len(self.input) > input_size:
                     self.readFromSocket(x)  # self.running =
-        if self.mode is "client" and self.needsTunnel:
-            self.server.stop()
 
     def listen(self):
         """
@@ -146,15 +144,7 @@ class ConfigTunnel(Thread):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             host = self.connectHost
             port = self.serverPort
-            if self.needsTunnel:
-                try:
-                    self.server.start()
-                    port = self.server.local_bind_port
-                    host = 'localhost'
-                # TODO: find out how to detect errors in mapping ports
-                except Exception:
-                    print("Tunnel unable to map service")
-                    sys.exit()
+
             s.connect((socket.gethostbyname(host), port))
 
             try:
