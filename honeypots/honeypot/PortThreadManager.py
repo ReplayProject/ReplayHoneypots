@@ -17,8 +17,10 @@ from PortListener import PortListener
 from ConfigTunnel import ConfigTunnel
 
 # default location that PortThreadManager will look for config options
-# TODO: this should for sure be made into an env variable (to switch from docker to local config)
-CONFIG_FILE_PATH = r'/properties.cfg'
+
+configpath = os.getenv('HONEY_CFG')  # will usually be '/properties.cfg'
+CONFIG_FILE_PATH = configpath if (
+    configpath and configpath.strip() != "") else r'../../config/honeypot.cfg'
 """
 Handles the port threads to run the honeypot
 """
@@ -102,8 +104,6 @@ class PortThreadManager:
                 portThread.daemon = True
                 portThread.start()
                 self.processList[port] = portThread
-            # for thread in self.processList.values():
-            #     thread.join()
 
         # Updating to new set of ports
         elif (updateOpenPorts == True):
@@ -120,8 +120,6 @@ class PortThreadManager:
                     portThread.daemon = True
                     portThread.start()
                     self.processList[p] = portThread
-
-        # self.snifferThread.join()
 
 
 if __name__ == '__main__':
