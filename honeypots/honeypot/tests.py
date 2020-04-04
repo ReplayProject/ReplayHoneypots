@@ -337,15 +337,15 @@ class TestCron(unittest.TestCase):
         self.assertEqual(
             restart_script.read(), "#!/bin/bash\n\n" +
             "var=$(pgrep -af PortThreadManager.py | wc -l)\n\n" +
-            "if [ $var -le 0 ]\n" + "then\n" +
-            "\techo $(date) 'Running: python3 " + script_file + " -c " +
+            "if [ $var -le 0 ]\n" + "then\n" + "\tcd " +
+            os.path.dirname(os.path.dirname(script_file)) +
+            " && pip3 install -r requirements.txt\n" +
+            "\techo $(date) 'Running: python3 " + script_file + " -n " +
             config_file + ".' >> " +
             os.path.dirname(os.path.dirname(script_file)) +
-            "/logs/cron.txt\n" + "\tcd " +
-            os.path.dirname(os.path.dirname(script_file)) +
-            " && pip3 install -r requirements.txt\n" + "\tcd " +
+            "/logs/cron.txt\n" +  "\tcd " +
             os.path.dirname(script_file) + " && python3 " + script_file +
-            " -c " + config_file + "\n" + "fi\n")
+            " -n " + config_file + "\n" + "fi\n")
         restart_script.close()
         process = subprocess.Popen(['crontab', '-l'],
                                    stdout=subprocess.PIPE,
