@@ -66,6 +66,11 @@ class PortThreadManager:
 
     """
     Start a thread for each port in the config file, connects to the database, runs sniffer class
+
+    Returns: 0 if no changes
+             1 if only Sniffer changed
+             2 if only sockets changed
+             3 if both changed
     """
 
     def activate(self,
@@ -76,6 +81,9 @@ class PortThreadManager:
 
         # Gets the info from config file initially
         self.getConfigData()
+
+        #Return code
+        retCode = 0
 
         #--- Sniffer Thread ---#
         if (self.snifferThread == None):
@@ -89,11 +97,15 @@ class PortThreadManager:
             self.snifferThread.daemon = True
             self.snifferThread.start()
         elif (updateSniffer == True):
+            oldHash = self.snifferThread.currentHash
+
             self.snifferThread.configUpdate(openPorts=list(
                 self.responseData.keys()),
                                             whitelist=self.whitelist,
                                             honeypotIP=self.HONEY_IP,
                                             managementIPs=self.MGMT_IPs)
+            if (not self.snifferThread.currentHash == oldHash):
+                retCode = 1
 
         #--- Open Sockets ---#
         # On initial run
@@ -107,12 +119,28 @@ class PortThreadManager:
 
         # Updating to new set of ports
         elif (updateOpenPorts == True):
+            #this value keeps track of if we've made changes
+            portsAltered = False
+
             updatedPorts = list(self.responseData.keys())
+            updatedPorts.sort()
             currentPorts = list(self.processList.keys())
+            currentPorts.sort()
+
+            #we'll change things if these don't match
+            if (not updatedPorts == currentPorts):
+                portsAltered = True
+                print("yikes")
 
             for p in currentPorts:
                 if (not p in updatedPorts):
                     self.processList[p].isRunning = False
+                    del self.processList[p]
+                elif (not self.processList[p].response == self.responseData[p]):
+                    #check if we need to alter response -- just change everything, might not matter
+                    self.processList[p].response = self.responseData[p]
+                    portsAltered = True
+
             for p in updatedPorts:
                 if (not p in currentPorts):
                     portThread = PortListener(p, self.responseData[p],
@@ -121,6 +149,11 @@ class PortThreadManager:
                     portThread.start()
                     self.processList[p] = portThread
 
+            if (portsAltered):
+                retCode += 2
+
+        #return the code here; 0 means no changes, 1 means only sniffer changed, 2 means only TCP ports were changed, 3 means both were changed
+        return retCode
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Deploy the honeypot')
