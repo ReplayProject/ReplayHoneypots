@@ -306,21 +306,13 @@ class TestCron(unittest.TestCase):
 
         with self.assertRaises(SystemExit):
             CronInstaller.main([])
-        with self.assertRaises(SystemExit):
-            CronInstaller.main(['-p', 'PortThreadManager.py'])
-        with self.assertRaises(SystemExit):
-            CronInstaller.main([
-                '-p', 'PortThreadManager.py', '-c',
-                '../config/new-config.json', '-n', '../nmap/default.nmap'
-            ])
+        with self.assertRaises(FileNotFoundError):
+            CronInstaller.main(['-p', 'badfilepath'])
         with self.assertRaises(FileNotFoundError):
             CronInstaller.main(
-                ['-p', 'badfilepath', '-c', '../config/new-config.json'])
-        with self.assertRaises(FileNotFoundError):
-            CronInstaller.main(
-                ['-p', 'PortThreadManager.py', '-c', 'badfilepath'])
+                ['-p', 'PortThreadManager.py', '-n', 'badfilepath'])
         CronInstaller.main(
-            ['-p', 'PortThreadManager.py', '-c', '../config/new-config.json'])
+            ['-p', 'PortThreadManager.py'])
         CronUninstaller.uninstall()
         CronInstaller.main(
             ['-p', 'PortThreadManager.py', '-n', '../nmap/default.nmap'])
@@ -336,12 +328,12 @@ class TestCron(unittest.TestCase):
         We expect the uninstaller to simply delete the Cron file.
         """
 
-        CronInstaller.install("PortThreadManager.py", "-c",
-                              "../config/new-config.json")
+        CronInstaller.install("PortThreadManager.py", "-n",
+                              "../nmap/default.nmap")
         self.assertTrue(os.path.exists("restart.sh"))
         restart_script = open("restart.sh", 'r')
         script_file = os.path.abspath("PortThreadManager.py")
-        config_file = os.path.abspath("../config/new-config.json")
+        config_file = os.path.abspath("../nmap/default.nmap")
         self.assertEqual(
             restart_script.read(), "#!/bin/bash\n\n" +
             "var=$(pgrep -af PortThreadManager.py | wc -l)\n\n" +
@@ -375,10 +367,10 @@ class TestCron(unittest.TestCase):
         We expect the installer to identify our job and not duplicate the Cron job.
         """
 
-        CronInstaller.install("PortThreadManager.py", "-c",
-                              "../config/new-config.json")
-        CronInstaller.install("PortThreadManager.py", "-c",
-                              "../config/new-config.json")
+        CronInstaller.install("PortThreadManager.py", "-n",
+                              "../nmap/default.nmap")
+        CronInstaller.install("PortThreadManager.py", "-n",
+                              "../nmap/default.nmap")
         process = subprocess.Popen(['crontab', '-l'],
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
@@ -409,8 +401,8 @@ class TestCron(unittest.TestCase):
                                    stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
         os.remove("not_honeypot")
-        CronInstaller.install("PortThreadManager.py", "-c",
-                              "../config/new-config.json")
+        CronInstaller.install("PortThreadManager.py", "-n",
+                              "../nmap/default.nmap")
         process = subprocess.Popen(['crontab', '-l'],
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)

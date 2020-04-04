@@ -15,32 +15,25 @@ class CronInstaller:
     def main(main_args): 
         parser = argparse.ArgumentParser(description='Installs Crontab and restart.sh')
         parser.add_argument('-p', '--python', help='python file of the honeypot', required=True)
-        parser.add_argument('-c', '--config', help='config file')
         parser.add_argument('-n', '--nmap', help='nmap file')
         args = parser.parse_args(main_args)
 
         if os.geteuid() != 0:
             print ("You must have root privileges to install Cron.")
             exit()
-        
-        if args.config and args.nmap or not (args.config or args.nmap): 
-            print ("Pass in exactly one of the following: nmap file or config file.")
-            exit()
 
         script_file = ""
         with open(args.python, "r") as pythonFile: 
             script_file = pythonFile.name
 
-        if args.config: 
-            with open(args.config, "r") as configFile:
-                config_file = configFile.name
-                CronInstaller.install(script_file, "-c", config_file)
-        else: 
+        if args.nmap: 
             with open(args.nmap, "r") as nmapFile: 
                 nmap_file = nmapFile.name
                 CronInstaller.install(script_file, "-n", nmap_file)
+        else: 
+            CronInstaller.install(script_file)
 
-    def install(script_file, mode, config_file): 
+    def install(script_file, mode="default", config_file="default"): 
         # Create the restart script
         restart_file = open("restart.sh", 'w')
 
