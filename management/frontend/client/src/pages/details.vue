@@ -8,40 +8,20 @@
   >
     <component-title>{{ $route.params.device | formatDBName }}</component-title>
     <hr class="o-20" />
-    <article v-if="dbInfo.host" data-name="slab-stat">
-      <dl class="dib mr5">
-        <dd class="f6 f5-ns b ml0">Adapter</dd>
-        <dd class="f3 f2-ns b ml0">{{ dbInfo.adapter }}</dd>
-      </dl>
-      <dl class="dib mr5">
-        <dd class="f6 f5-ns b ml0">Disk Size</dd>
-        <dd class="f3 f2-ns b ml0">{{ dbInfo.disk_size / 1000000 }} mb</dd>
-      </dl>
+    <article data-name="slab-stat">
       <dl class="dib mr5">
         <dd class="f6 f5-ns b ml0">Total Logs</dd>
-        <dd class="f3 f2-ns b ml0">{{ dbInfo.doc_count }}</dd>
+        <dd class="f3 f2-ns b ml0" v-if="isAggregate">
+          {{ $parent.totalLogs }}
+        </dd>
+        <dd class="f3 f2-ns b ml0" v-else>{{ totalRecords }}</dd>
       </dl>
       <dl class="dib mr5">
         <dd class="f6 f5-ns b ml0">Location</dd>
-        <dd class="f4 f3-ns b ml0">{{ dbInfo.host }}</dd>
-      </dl>
-    </article>
-    <article v-if="dbInfo.db_name == 'aggregate'">
-      <dl class="dib mr5">
-        <dd class="f6 f5-ns b ml0">Adapter</dd>
-        <dd class="f3 f2-ns b ml0">{{ dbInfo.adapter }}</dd>
-      </dl>
-      <dl class="dib mr5">
-        <dd class="f6 f5-ns b ml0">Total Logs</dd>
-        <dd class="f3 f2-ns b ml0">{{ dbInfo.doc_count }}</dd>
-      </dl>
-      <dl class="dib mr5">
-        <dd class="f6 f5-ns b ml0">Document Updates</dd>
-        <dd class="f3 f2-ns b ml0">{{ dbInfo.update_seq }}</dd>
+        <dd class="f4 f3-ns b ml0">/{{ $route.params.device }}</dd>
       </dl>
     </article>
     <hr class="o-20" />
-
     <div class="mt4 w-100">
       <vue-good-table
         ref="datatable"
@@ -52,7 +32,7 @@
         @on-per-page-change="onPerPageChange"
         @on-search="onSearch"
         :isLoading.sync="isLoading"
-        :columns="columns"
+        :columns="fancyColumns"
         :totalRows="totalRecords"
         :rows="rows"
         :fixed-header="true"
@@ -86,6 +66,8 @@ export default {
   },
   data () {
     return {
+      // TODO: make env var
+      dbURI: process.env.DB_URL + '/' + 'aggregate_logs',
       dbInfo: {},
       isLoading: false,
       totalRecords: 0,
@@ -106,10 +88,11 @@ export default {
         {
           label: 'Unique ID',
           field: '_id',
-          type: 'text'
+          type: 'text',
+          hidden: true
         },
         {
-          label: 'time',
+          label: 'Timestamp',
           field: 'timestamp',
           formatFn: x => {
             let s = new Date(x * 1000)
@@ -120,9 +103,10 @@ export default {
           type: 'text'
         },
         {
-          label: 'proto',
+          label: 'Proto',
           field: 'trafficType',
-          type: 'text'
+          type: 'text',
+          sortable: false
         },
         {
           label: 'sPort',
@@ -130,17 +114,17 @@ export default {
           type: 'text'
         },
         {
-          label: 'sIP',
+          label: 'sourceIP',
           field: 'sourceIPAddress',
           type: 'text'
         },
         {
-          label: 'dPort',
+          label: 'destPort',
           field: 'destPortNumber',
           type: 'text'
         },
         {
-          label: 'dIP',
+          label: 'destIP',
           field: 'destIPAddress',
           type: 'text'
         }
@@ -148,27 +132,35 @@ export default {
       rows: []
     }
   },
-  computed: {
-    dbURI () {
-      return (
-        (this.$route.params.device == 'aggregate'
-          ? ''
-          : process.env.DB_URL + '/') + this.$route.params.device
-      )
-    }
-  },
   async created () {
     this.loadItems()
-    this.dbInfo = await this.$databases[this.dbURI].info()
   },
   watch: {
+    '$parent.hostsInfo': function () {
+      this.updateTotal()
+    },
     '$route.params.device': async function (device) {
       this.loadItems()
-      this.dbInfo = await this.$databases[this.dbURI].info()
       this.resetParams()
     },
     currentPage () {
       this.loadItems()
+    }
+  },
+  computed: {
+    isAggregate () {
+      return this.$route.params.device === 'aggregate'
+    },
+    fancyColumns () {
+      return [
+        {
+          label: 'Host',
+          field: 'hostname',
+          type: 'text',
+          hidden: !this.isAggregate
+        },
+        ...this.columns
+      ]
     }
   },
   methods: {
@@ -176,9 +168,21 @@ export default {
     formatDate (x) {
       return $this.parseDateWithTime(x)
     },
+    updateTotal () {
+      let h = this.$parent.hostsInfo
+      let d = this.$route.params.device
+
+      if (this.isAggregate) {
+        this.totalRecords = this.$parent.totalLogs
+        return
+      }
+
+      if (h && h.length != 0) this.totalRecords = h.find(x => x.key === d).value
+    },
     // DOCS: https://xaksis.github.io/vue-good-table/guide/advanced/remote-workflow.html#provide-handlers-for-user-events
     // Handlers for DB TABLE
     updateParams (newProps) {
+      this.updateTotal()
       this.serverParams = Object.assign({}, this.serverParams, newProps)
     },
     resetParams () {
@@ -230,8 +234,12 @@ export default {
         ...Object.keys(this.serverParams.columnFilters),
         ...this.serverParams.sort.map(x => x.field)
       ]
+
+      if (!this.isAggregate) fields.push('hostname')
+
       fields.sort()
 
+      // Query index
       if (fields.length != 0) {
         let idx = await this.$pouch.createIndex(
           {
@@ -246,7 +254,11 @@ export default {
         }
       }
 
-      let selector = {}
+      let selector = this.isAggregate
+        ? {}
+        : {
+            hostname: { $eq: this.$route.params.device }
+          }
 
       // Column filters not working
       // Object.keys(this.serverParams.columnFilters).forEach(x => {
@@ -261,53 +273,29 @@ export default {
 
       // See if we are searching or filtering & setup params
       let searchTerm = this.serverParams.search.trim()
-      let skip = (this.serverParams.page - 1) * this.serverParams.perPage
-      let limit = this.serverParams.perPage
+      let skip = searchTerm
+        ? 0
+        : (this.serverParams.page - 1) * this.serverParams.perPage
+
+      this.updateTotal()
 
       // Actually do a query
-      let results =
-        searchTerm === ''
-          ? await this.$pouch.find(
-              {
-                selector,
-                sort,
-                skip,
-                limit,
-                execution_stats: true
-              },
-              this.dbURI
-            )
-          : await this.$pouch.query(
-              {
-                map: new Function(
-                  'doc',
-                  `
-                  let s = JSON.stringify(doc)
-                    .toLocaleLowerCase()
-                    .includes('${searchTerm}'.toLocaleLowerCase())
-                  if (s) {
-                    emit(doc._id, doc)
-                  }
-                `
-                )
-              },
-              {
-                skip,
-                limit
-              },
-              this.dbURI
-            )
-      // TODO: Get total count of matching documents when not "searching"
+      let results = await this.$pouch.find(
+        {
+          selector,
+          sort,
+          skip,
+          limit: searchTerm ? this.totalRecords : this.serverParams.perPage
+        },
+        this.dbURI
+      )
 
-      // Access responses from data
-      this.rows =
-        searchTerm === ''
-          ? results.docs
-          : results.total_rows != 0
-          ? results.rows.map(x => x.value)
-          : []
-      this.totalRecords =
-        searchTerm === '' ? this.dbInfo.doc_count : results.total_rows
+      // Apply local filter or just throw it on the page
+      let inc = x =>
+        JSON.stringify(x)
+          .toLocaleLowerCase()
+          .includes(searchTerm.toLocaleLowerCase())
+      this.rows = searchTerm != '' ? results.docs.filter(inc) : results.docs
 
       // Mark everything as done loading
       this.$Progress.finish()
