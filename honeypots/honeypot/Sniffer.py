@@ -38,6 +38,11 @@ class Sniffer(Thread):
 
         #set used for testing convenience
         self.RECORD = dict()
+        self.currentHash = hash(self.config)
+        self.currentHash += hash(tuple(self.openPorts))
+        self.currentHash += hash(tuple(self.whitelist))
+        self.currentHash += hash(honeypotIP)
+        self.currentHash += hash(tuple(managementIPs))
 
     """
     Runs the thread, begins sniffing
@@ -81,6 +86,11 @@ class Sniffer(Thread):
         self.honeypotIP = honeypotIP
         self.managementIPs = managementIPs
 
+        self.currentHash = hash(self.config)
+        self.currentHash += hash(tuple(self.openPorts))
+        self.currentHash += hash(tuple(self.whitelist))
+        self.currentHash += hash(honeypotIP)
+        self.currentHash += hash(tuple(managementIPs))
     """
     Function for recording a packet during sniff runtime
     packet = the packet passed through the sniff function
