@@ -725,7 +725,9 @@ def configurehoneypot():
                     # TODO: fix path
                     path = "~/dan/config"
 
-                    cmd = 'ssh -i {} -t {}@{} "cd {}; ls; echo "welcome, "exit" to exit"; bash"'.format(ssh_key, user, ip, path)
+                    cmd = 'ssh -i {} -t {}@{} "cd {}; ls; echo "Welcome to {}! Feel free to use your editor of choice to edit the above configuration files, and run exit to return to the CLI."; bash"'.format(ssh_key, user, ip, path, host[0])
+                    
+                    print('\n')
                     os.system(cmd)
 
         elif choice == "reconfigure": 
