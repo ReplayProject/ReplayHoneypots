@@ -50,10 +50,12 @@ Vue.use(VueProgressBar, {
 Vue.filter('formatDBName', value => {
   if (!value) return ''
   value = value.toString()
-  return value
-    .split('_')
-    .map(x => x.replace(/^\w/, c => c.toUpperCase()))
-    .join(' ')
+  return (
+    value
+      .split('_')
+      .map(x => x.replace(/^\w/, c => c.toUpperCase()))
+      .join(' ') + ' Logs'
+  )
 })
 
 // Setup for how dates work on the app
