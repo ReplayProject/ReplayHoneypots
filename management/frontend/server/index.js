@@ -60,5 +60,16 @@ app.use(
 // Serve application files
 app.use(require('serve-static')(dist, { index: ['index.html'] }))
 
+// Handling deserialization errors here.
+app.use(function(err, req, res, next) {
+    if (err) {
+      console.log("Cookie Invalidated")
+      req.logout()
+      return res.status(401).send('You are not authenticated, your cookie has been removed')
+    } else {
+        next();
+    }
+})
+
 // listen for frontend requests :)
 app.listen(port, () => log('Frontend listening on', port))
