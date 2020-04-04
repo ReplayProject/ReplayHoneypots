@@ -63,7 +63,7 @@ class TestLogs(unittest.TestCase):
     """
     def test_entry(self):
         entry = LogEntry("80", "192.1.1.1", "00-11-22-33-44-55", "81",
-                         "192.1.1.2", "AA-BB-CC-DD-EE-FF", "TCP", True)
+                         "192.1.1.2", "AA-BB-CC-DD-EE-FF", "TCP", True, "test_logs")
         self.assertEqual("80", entry.sourcePortNumber)
         self.assertTrue(type(entry.timestamp) is int)
 
@@ -310,17 +310,16 @@ class TestCron(unittest.TestCase):
             CronInstaller.main(['-p', 'PortThreadManager.py'])
         with self.assertRaises(SystemExit):
             CronInstaller.main([
-                '-p', 'PortThreadManager.py', '-c',
-                '../config/new-config.json', '-n', '../nmap/default.nmap'
+                '-p', 'PortThreadManager.py', '-n', '../nmap/default.nmap'
             ])
         with self.assertRaises(FileNotFoundError):
             CronInstaller.main(
-                ['-p', 'badfilepath', '-c', '../config/new-config.json'])
+                ['-p', 'badfilepath'])
         with self.assertRaises(FileNotFoundError):
             CronInstaller.main(
                 ['-p', 'PortThreadManager.py', '-c', 'badfilepath'])
         CronInstaller.main(
-            ['-p', 'PortThreadManager.py', '-c', '../config/new-config.json'])
+            ['-p', 'PortThreadManager.py'])
         CronUninstaller.uninstall()
         CronInstaller.main(
             ['-p', 'PortThreadManager.py', '-n', '../nmap/default.nmap'])
@@ -336,12 +335,11 @@ class TestCron(unittest.TestCase):
         We expect the uninstaller to simply delete the Cron file.
         """
 
-        CronInstaller.install("PortThreadManager.py", "-c",
-                              "../config/new-config.json")
+        CronInstaller.install("PortThreadManager.py")
         self.assertTrue(os.path.exists("restart.sh"))
         restart_script = open("restart.sh", 'r')
         script_file = os.path.abspath("PortThreadManager.py")
-        config_file = os.path.abspath("../config/new-config.json")
+        config_file = os.path.abspath("../testing_configs/new-config.json")
         self.assertEqual(
             restart_script.read(), "#!/bin/bash\n\n" +
             "var=$(pgrep -af PortThreadManager.py | wc -l)\n\n" +
@@ -376,9 +374,9 @@ class TestCron(unittest.TestCase):
         """
 
         CronInstaller.install("PortThreadManager.py", "-c",
-                              "../config/new-config.json")
+                              "../testing_configs/new-config.json")
         CronInstaller.install("PortThreadManager.py", "-c",
-                              "../config/new-config.json")
+                              "../testing_configs/new-config.json")
         process = subprocess.Popen(['crontab', '-l'],
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
@@ -410,7 +408,7 @@ class TestCron(unittest.TestCase):
         stdout, stderr = process.communicate()
         os.remove("not_honeypot")
         CronInstaller.install("PortThreadManager.py", "-c",
-                              "../config/new-config.json")
+                              "../testing_configs/new-config.json")
         process = subprocess.Popen(['crontab', '-l'],
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)

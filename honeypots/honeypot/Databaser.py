@@ -18,7 +18,8 @@ class Databaser():
         """
         Initialize
         """
-        self.db_name = socket.gethostname() + "_logs"
+        self.hostname = socket.gethostname()
+        self.db_name = 'aggregate' + '_logs'
         # Connect
         db_url = os.getenv('DB_URL')
         if (db_url and db_url.strip() != ""):
@@ -64,10 +65,7 @@ class Databaser():
         Create this device's log database
         """
         # Attempt DB creation
-        if self.db_name in self.couch:
-            db = self.couch[self.db_name]
-        else:
-            db = self.couch.create(self.db_name)
+        db = self.couch[self.db_name] if self.db_name in self.couch else self.couch.create(self.db_name)
 
     def save(self, json_raw):
         """

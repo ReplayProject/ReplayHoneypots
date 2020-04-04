@@ -109,11 +109,9 @@ class Sniffer(Thread):
         pair = (srcIP, destPort)
 
         if srcIP not in self.whitelist:
-            # TODO: make this more sensible
             trafficType = "TCP" if ipLayer.haslayer("TCP") else "UDP"
-            # TODO: IS PORT OPEN NOT WORKING
             log = LogEntry(srcPort, srcIP, sourceMAC, destPort, dstIP, destMAC,
-                           trafficType, destPort in self.openPorts)
+                           trafficType, destPort in self.openPorts, self.db.hostname)
 
             self.db.save(log.json())
 
