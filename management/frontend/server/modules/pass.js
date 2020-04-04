@@ -9,6 +9,10 @@ const users = [
   {
     username: 'admin',
     hash: 'admin'
+  },
+  {
+    username: 'seth',
+    hash: 'notseth'
   }
 ]
 
@@ -37,7 +41,7 @@ passport.serializeUser((user, cb) => {
 passport.deserializeUser((id, cb) => {
   authLog('retrieving user', id)
   let user = users.find(x => x.id == id) // fetch based on ID
-  if (!user) return cb({ message: 'NO USER, or some other issue' })
+  if (!user) return cb(new Error("no user found or user-id mismatch"), false, { message: 'User ID mismatch, or some other issue' })
   authLog('successful retrieval of user', id)
   cb(null, user)
 })
