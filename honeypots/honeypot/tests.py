@@ -63,7 +63,7 @@ class TestLogs(unittest.TestCase):
     """
     def test_entry(self):
         entry = LogEntry("80", "192.1.1.1", "00-11-22-33-44-55", "81",
-                         "192.1.1.2", "AA-BB-CC-DD-EE-FF", "TCP", True)
+                         "192.1.1.2", "AA-BB-CC-DD-EE-FF", "TCP", True, "test_logs")
         self.assertEqual("80", entry.sourcePortNumber)
         self.assertTrue(type(entry.timestamp) is int)
 
