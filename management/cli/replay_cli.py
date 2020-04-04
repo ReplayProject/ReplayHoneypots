@@ -240,6 +240,7 @@ def start(ctx, debug):
 def choices(ctx):
     # Main Loop to run the interactive menu
     while True:
+
         try:
             choice = prompt([
                 {
@@ -247,47 +248,91 @@ def choices(ctx):
                     'name': 'choice',
                     'message': 'What do you need to do?',
                     'choices':
-                    ['Add Host', #TODO: done, to be tested
-                     'Remove Host', #TODO: done, to be tested
-                     'Start Honeypot', #TODO: script error handling
-                     'Stop Honeypot', #TODO: integrate script
-                     'Uninstall Honeypot', #TODO: integrate script
-                     'Reinstall Honeypot', #TODO: integrate script
-                     'Configure Honeypot', #TODO: done, to be tested
-                     'Check Status', #TODO: done, to be tested
+                    ['Add/Update Host', 
+                     'View Host',
+                     'Remove Host', 
                      'Exit'],
                     'filter': lambda val: val.lower()
-                    # TODO: git wiki
                 }
             ], style=style)['choice']
         except KeyError:
             os.kill(os.getpid(), signal.SIGINT)
+        
+        if choice == 'add/update host':
+            try:
+                subchoice = prompt([
+                    {
+                        'type': 'list',
+                        'name': 'subchoice',
+                        'message': 'What do you need to do?',
+                        'choices':
+                        ['Add Host',
+                         'Start Honeypot',
+                         'Reinstall Honeypot',
+                         'Configure Honeypot'],
+                        'filter': lambda val: val.lower()
+                    }
+                ], style=style)['subchoice']
+            except KeyError:
+                os.kill(os.getpid(), signal.SIGINT)
 
-        if choice == 'add host':
-            ctx.invoke(addhost)
+            if subchoice == 'add host':
+                ctx.invoke(addhost)
+
+            elif subchoice == 'start honeypot':
+                ctx.invoke(starthoneypot)
+
+            elif subchoice == 'reinstall honeypot':
+                ctx.invoke(reinstallhoneypot) 
+
+            elif subchoice == 'configure honeypot':
+                ctx.invoke(configurehoneypot)
+
+        elif choice == 'view host':
+            try:
+                subchoice = prompt([
+                    {
+                        'type': 'list',
+                        'name': 'subchoice',
+                        'message': 'What do you need to do?',
+                        'choices':
+                        ['Check Status'],
+                        'filter': lambda val: val.lower()
+                    }
+                ], style=style)['subchoice']
+            except KeyError:
+                os.kill(os.getpid(), signal.SIGINT)
+
+            if subchoice == 'check status':
+                ctx.invoke(checkstatus) 
 
         elif choice == 'remove host':
-            ctx.invoke(removehost) 
+            try:
+                subchoice = prompt([
+                    {
+                        'type': 'list',
+                        'name': 'subchoice',
+                        'message': 'What do you need to do?',
+                        'choices':
+                        ['Remove Host',
+                         'Stop Honeypot', 
+                         'Uninstall Honeypot'],
+                        'filter': lambda val: val.lower()
+                    }
+                ], style=style)['subchoice']
+            except KeyError:
+                os.kill(os.getpid(), signal.SIGINT)
 
-        elif choice == 'start honeypot':
-            ctx.invoke(starthoneypot)
+            if subchoice == 'remove host':
+                ctx.invoke(removehost) 
 
-        elif choice == 'stop honeypot':
-            ctx.invoke(stophoneypot) 
+            elif subchoice == 'stop honeypot':
+                ctx.invoke(stophoneypot) 
 
-        elif choice == 'uninstall honeypot':
-            ctx.invoke(uninstallhoneypot) 
+            elif subchoice == 'uninstall honeypot':
+                ctx.invoke(uninstallhoneypot) 
 
-        elif choice == 'reinstall honeypot':
-            ctx.invoke(reinstallhoneypot) 
-
-        elif choice == 'configure honeypot':
-            ctx.invoke(configurehoneypot)
-
-        elif choice == 'check status':
-            ctx.invoke(checkstatus) 
-
-        elif choice == 'exit': 
+        elif choice == 'exit':
             os.kill(os.getpid(), signal.SIGINT)
 
 
@@ -562,6 +607,7 @@ def uninstallhoneypot():
                     print ("TODO - CALL AN UNINSTALL SCRIPT WITH ABOVE VARIABLES")
 
                     # TODO: check for errors, do not label host as uninstalled if there were any errors with uninstall 
+                    host_data['status'] = 'inactive'
                     host_data['installed'] = 'False'
                     host_value = str(host_data)
                     config.set('HOSTS', host[0], host_value)
@@ -654,45 +700,74 @@ def configurehoneypot():
         log ("No host has been selected.", "red")
     else:
 
-        command = prompt([
+        choice = prompt([
             {
                 'type': 'list',
-                'name': 'command',
+                'name': 'choice',
                 'message': 'What do you need to do?',
                 'choices': 
-                ['Reconfigure Sniffer', 
-                 'Reconfigure Ports', 
-                 'Reconfigure Sniffer and Ports'], 
+                ['Edit Configuration Files', 
+                 'Reconfigure'], 
                 'filter': lambda val: val.lower()
             }
-        ], style=style)['command']
+        ], style=style)['choice']
 
-        if command == "reconfigure sniffer": 
-            message = "reconfigure sniff"
-        elif command == "reconfigure ports": 
-            message = "reconfigure ports"
-        elif command == "reconfigure sniffer and ports": 
-            message = "reconfigure sniff ports"
+        if choice == "edit configuration files": 
+            hosts = config.items('HOSTS')
 
-        hosts = config.items('HOSTS')
+            for host in hosts:
+                if host[0] in honeypots:
+                    host_data = json.loads(host[1].replace("\'", "\""))
+                    user = host_data['user']
+                    ip = host_data['ip']
+                    ssh_key = host_data['ssh_key']
 
-        for host in hosts:
-            if host[0] in honeypots:
-                host_data = json.loads(host[1].replace("\'", "\""))
-                ip = host_data['ip']
+                    # TODO: fix path
+                    path = "~/dan/config"
 
-                tunnel = ConfigTunnel('client', host=ip)
-                tunnel.start()
-                time.sleep(2)
-                
-                if not tunnel.ready: 
-                    log ("Could not connect to " + host[0], "red")
-                else: 
-                    tunnel.send(message)
-                    log ("Ran '" + message + "' on " + host[0], "green")
+                    cmd = 'ssh -i {} -t {}@{} "cd {}; ls; echo "welcome, "exit" to exit"; bash"'.format(ssh_key, user, ip, path)
+                    os.system(cmd)
 
-                tunnel.stop()
-                tunnel.join()
+        elif choice == "reconfigure": 
+            subchoice = prompt([
+                {
+                    'type': 'list',
+                    'name': 'subchoice',
+                    'message': 'What do you need to do?',
+                    'choices': 
+                    ['Reconfigure Sniffer', 
+                     'Reconfigure Ports', 
+                     'Reconfigure Sniffer and Ports'], 
+                    'filter': lambda val: val.lower()
+                }
+            ], style=style)['subchoice']
+
+            if subchoice == "reconfigure sniffer": 
+                message = "reconfigure sniff"
+            elif subchoice == "reconfigure ports": 
+                message = "reconfigure ports"
+            elif subchoice == "reconfigure sniffer and ports": 
+                message = "reconfigure sniff ports"
+
+            hosts = config.items('HOSTS')
+
+            for host in hosts:
+                if host[0] in honeypots:
+                    host_data = json.loads(host[1].replace("\'", "\""))
+                    ip = host_data['ip']
+
+                    tunnel = ConfigTunnel('client', host=ip)
+                    tunnel.start()
+                    time.sleep(2)
+                    
+                    if not tunnel.ready: 
+                        log ("Could not connect to " + host[0], "red")
+                    else: 
+                        tunnel.send(message)
+                        log ("Ran '" + message + "' on " + host[0], "green")
+
+                    tunnel.stop()
+                    tunnel.join()
 
 
 @main.command()
@@ -718,8 +793,6 @@ def checkstatus(ctx, key_file):
                 ip = host_data['ip']
                 ssh_key = host_data['ssh_key']
 
-                cmd = 'ssh -i ' + ssh_key + ' ' + user + '@' + ip + ' "uname -a"'
-                
                 stdout, stderr = subprocess.Popen(['ssh', '-i', ssh_key, (user + '@' + ip), 'uname -a'],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE).communicate()
