@@ -2,7 +2,8 @@
   <div class="mw8 center pv4 ph3 mt-3" id="dashboard">
     <div class="flex-m flex-l nl3-m nr3-m nl3-l nr3-l">
       <component-nav></component-nav>
-      <router-view></router-view>
+      <!-- Waits to load views till we have hosts info -->
+      <router-view v-if="Object.keys(hostsInfo).length != 0"></router-view>
     </div>
     <vue-progress-bar></vue-progress-bar>
   </div>
@@ -45,16 +46,13 @@ export default {
 
     // save the design doc
     try {
-      try {
-        await this.$databases[db_url].put(ddoc)
-      } catch (err) {
-        if (err.name !== 'conflict') {
-          throw err
-        }
-        // ignore if doc already exists
-      }
-
-      var result = await this.$databases[db_url].query('hostname', {
+      await this.$databases[db_url].put(ddoc)
+    } catch (err) {
+      if (err.name !== 'conflict')
+        console.log('Design Document already exists: ', err.messge)
+    }
+    try {
+      let result = await this.$databases[db_url].query('hostname', {
         include_docs: false,
         reduce: true,
         group: true
@@ -62,7 +60,7 @@ export default {
 
       this.hostsInfo = result.rows
     } catch (err) {
-      console.log(err)
+      console.log('Something went wrong with fetching DB info: ', err)
     }
 
     //  [App.vue specific] When App.vue is finish loading finish the progress bar
