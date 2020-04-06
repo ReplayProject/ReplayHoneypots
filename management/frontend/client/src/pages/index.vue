@@ -40,13 +40,14 @@
     <div class="flex flex-wrap mt3 nl3 nr3">
       <div
         v-for="db in appRef.hostsInfo"
-        :key="db.key + '1'"
+        :key="db.key"
         class="w-50 w-33-l mb4 mb0-l relative flex flex-column ph3 mv2"
       >
         <sparkline
           :title="db.key"
           :class="pickColor(db.key)"
           :value="db.value"
+          :calc="true"
         ></sparkline>
       </div>
     </div>
