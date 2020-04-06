@@ -85,8 +85,6 @@
 </template>
 
 <script>
-import axios from 'axios'
-
 export default {
   name: 'Nav',
   computed: {
@@ -103,7 +101,7 @@ export default {
   },
   methods: {
     async logout (e) {
-      let res = await axios.get('/logout')
+      let res = await this.axios.get('/logout')
       this.$toasted.show('Logged out.')
       console.log(res) // TODO: decide if we need more logic on the backend here
       this.$router.push('/login') // TODO: redirect if logout is done on other pages
