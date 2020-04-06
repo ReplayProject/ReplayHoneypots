@@ -35,7 +35,7 @@
         :columns="fancyColumns"
         :totalRows="totalRecords"
         :rows="rows"
-        :fixed-header="true"
+        :fixed-header="false"
         :line-numbers="false"
         theme="default"
         :pagination-options="{
@@ -100,7 +100,8 @@ export default {
               .replace('/' + new Date().getFullYear(), '')
             return s.slice(0, s.indexOf(':', 9) + 3) + ' ' + s.split(' ')[2]
           },
-          type: 'text'
+          type: 'text',
+          width: '117px'
         },
         {
           label: 'Proto',
@@ -111,7 +112,8 @@ export default {
         {
           label: 'sPort',
           field: 'sourcePortNumber',
-          type: 'text'
+          type: 'text',
+          width: '77px'
         },
         {
           label: 'sourceIP',

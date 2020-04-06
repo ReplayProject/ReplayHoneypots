@@ -24,6 +24,10 @@ Vue.use(Toasted, {
   duration: 5000
 })
 
+import axios from 'axios'
+import VueAxios from 'vue-axios'
+Vue.use(VueAxios, axios)
+
 // https://github.com/MDSLKTR/pouch-vue
 Vue.use(PouchVue, {
   pouch: PouchDB, // optional if `PouchDB` is available on the global object
