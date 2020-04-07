@@ -16,6 +16,15 @@ function silentSsh {
     ssh -i $KEYPATH -tt $connectionString "$commands"
 }
 
+# catch errors
+trap 'catch $? $LINENO' ERR
+
+# if an error is caught print out the line number and exit
+function catch {
+    echo "Error $1 has occurred on line $2"
+    exit
+}
+
 # Copy the repo archive
 sudo scp -q -o LogLevel=QUIET -i $KEYPATH $REPOPATH $REMOTENAME@$REMOTEIP:~
 # run string of commands over ssh
@@ -24,5 +33,6 @@ mkdir -p repo_test
 tar --overwrite -xf ~/repo.tar.gz -C ~/repo_test
 cd ~/repo_test/honeypots/honeypot;
 echo $REMOTEPASS | sudo -kS -p "
-" python3 CronInstaller.py -p PortThreadManager.py -c ../config/new-config.json
+" python3 CronInstaller.py -p PortThreadManager.py
 ENDSSH
+echo "Deployment successful"
