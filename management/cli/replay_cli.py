@@ -364,7 +364,7 @@ def addhost():
         {
             'type': 'input',
             'name': 'ssh_key',
-            'message': 'SSH Key (Absolute Path):',
+            'message': 'SSH Key:',
             'validate': FilePathValidator,
         },
     ], style=style)
