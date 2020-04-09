@@ -1,5 +1,4 @@
 from LogEntry import LogEntry
-from requests import post
 from scapy.all import sniff
 from threading import Thread
 from Databaser import Databaser
@@ -19,6 +18,7 @@ class Sniffer(Thread):
                  config="base",
                  openPorts=[],
                  whitelist=[],
+                 portWhitelist=[],
                  honeypotIP=None,
                  managementIPs=None):
         Thread.__init__(self)
@@ -27,6 +27,7 @@ class Sniffer(Thread):
         self.openPorts = openPorts
         self.whitelist = whitelist
         self.honeypotIP = honeypotIP
+        self.portWhitelist = portWhitelist
         self.managementIPs = managementIPs
 
         # Setup DB
@@ -58,6 +59,8 @@ class Sniffer(Thread):
             #adding a variable number of management ips
             for ip in self.managementIPs:
                 fltr += "and not host {} ".format(ip)
+            for port in self.portWhitelist:
+                fltr += "and not dst port {} ".format(port)
 
             if (self.config == "testing"):
                 fltr = fltr + " and not (src port ssh or dst port ssh)"
@@ -79,10 +82,12 @@ class Sniffer(Thread):
     def configUpdate(self,
                      openPorts=[],
                      whitelist=[],
+                     portWhitelist = [],
                      honeypotIP=None,
                      managementIPs=None):
         self.openPorts = openPorts
         self.whitelist = whitelist
+        self.portWhitelist = portWhitelist
         self.honeypotIP = honeypotIP
         self.managementIPs = managementIPs
 

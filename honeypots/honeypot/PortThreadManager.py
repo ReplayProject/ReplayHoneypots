@@ -40,6 +40,7 @@ class PortThreadManager:
         # where the sniffer thread will be located
         self.snifferThread = None
         self.delay = None
+        self.portWhitelist = None
         self.whitelist = None
         self.keepRunning = True
         self.responseData = None
@@ -63,6 +64,7 @@ class PortThreadManager:
 
         self.delay = config.get('Attributes', 'delay')
         self.whitelist = json.loads(config.get("Whitelist", "addresses"))
+        self.portWhitelist = json.loads(config.get("Whitelist", "whitelistedPorts"))
 
     """
     Start a thread for each port in the config file, connects to the database, runs sniffer class
@@ -92,6 +94,7 @@ class PortThreadManager:
                                          openPorts=list(
                                              self.responseData.keys()),
                                          whitelist=self.whitelist,
+                                         portWhitelist = self.portWhitelist,
                                          honeypotIP=self.HONEY_IP,
                                          managementIPs=self.MGMT_IPs)
             self.snifferThread.daemon = True
@@ -102,6 +105,7 @@ class PortThreadManager:
             self.snifferThread.configUpdate(openPorts=list(
                 self.responseData.keys()),
                                             whitelist=self.whitelist,
+                                            portWhitelist = self.portWhitelist,
                                             honeypotIP=self.HONEY_IP,
                                             managementIPs=self.MGMT_IPs)
             if (not self.snifferThread.currentHash == oldHash):
