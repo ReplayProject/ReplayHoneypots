@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import MagicMock
 import json
-from requests import get
 from Port import Port
 from NmapParser import NmapParser
 from PortThreadManager import PortThreadManager
@@ -164,6 +163,7 @@ class TestSniffer(unittest.TestCase):
         s = Sniffer(config="onlyUDP",
                     openPorts=[],
                     whitelist=[],
+                    portWhitelist=[],
                     honeypotIP=host_ip,
                     managementIPs=("52.87.97.77", "54.80.228.0"))
         s.daemon = True
@@ -171,16 +171,19 @@ class TestSniffer(unittest.TestCase):
 
         self.assertTrue(len(s.openPorts) == 0)
         self.assertTrue(len(s.whitelist) == 0)
+        self.assertTrue(len(s.portWhitelist) == 0)
         self.assertTrue(s.config == "onlyUDP")
         self.assertTrue(len(s.managementIPs) == 2)
         self.assertTrue(s.honeypotIP == "192.168.42.51")
 
         s.configUpdate(openPorts=[80, 443],
                        whitelist=["8.8.8.8", "9.9.9.9"],
+                       portWhitelist=[777, 888, 999],
                        honeypotIP="192.168.42.42",
                        managementIPs="54.80.228.0")
         self.assertTrue(len(s.openPorts) == 2)
         self.assertTrue(len(s.whitelist) == 2)
+        self.assertTrue(len(s.portWhitelist) == 3)
         self.assertTrue(s.managementIPs == "54.80.228.0")
         self.assertTrue(s.honeypotIP == "192.168.42.42")
 

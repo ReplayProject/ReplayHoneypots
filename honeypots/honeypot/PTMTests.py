@@ -18,6 +18,7 @@ class TestRedeploy(unittest.TestCase):
         self.assertTrue(len(man.snifferThread.openPorts) == 13)
         self.assertTrue("192.2.2.1" in man.snifferThread.whitelist)
         self.assertTrue(man.snifferThread.honeypotIP == "192.168.42.51")
+        self.assertTrue(man.snifferThread.portWhitelist[1] == 9000)
 
         #Redeploying
         x = man.activate(r'../config/pt_altered.cfg',
@@ -34,6 +35,7 @@ class TestRedeploy(unittest.TestCase):
         self.assertTrue(len(man.snifferThread.openPorts) == 7)
         self.assertTrue("5.6.7.8" in man.snifferThread.whitelist)
         self.assertTrue(man.snifferThread.honeypotIP == "192.168.42.55")
+        self.assertTrue(man.snifferThread.portWhitelist[1] == 8000)
 
         x = man.activate(r'../config/pt.cfg',
                      updateSniffer=False, updateOpenPorts=True)
