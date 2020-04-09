@@ -18,8 +18,16 @@
       >
         <div class="w-50 w-50-m w-75-l center">
           <doughnut
-            :labels="['DB Docs', 'Total Docs']"
-            :data="[db.value, appRef.totalLogs - db.value]"
+            :chartData="{
+              labels: ['DB Docs', 'Total Docs'],
+              datasets: [
+                {
+                  data: [db.value, appRef.totalLogs - db.value],
+                  backgroundColor: ['#1BC98E', '#1CA8DD'],
+                  hoverBackgroundColor: ['#1BC98E', '#1CA8DD']
+                }
+              ]
+            }"
           ></doughnut>
         </div>
         <h4 class="dark-gray f3 fw3 mv0">{{ db.key }}</h4>
@@ -37,17 +45,43 @@
     <div class="divide tc relative">
       <h5 class="fw4 ttu mv0 dib bg-white ph3">Quick Stats</h5>
     </div>
+    <p class="tc center w-100">
+      Total device logs and a time distribution of last
+      <b>{{ numLogs }}</b> logs for each device
+    </p>
+
+    <div class="tc center w-100">
+      <div
+        @click="numLogs = 50"
+        class="pointer fw5 mv3 br2 ph3 pv2 dib ba b--blue blue"
+      >
+        Analyze Last 50
+      </div>
+      <div
+        @click="numLogs = 100"
+        class="pointer fw5 mv3 br2 ph3 pv2 dib ba b--blue blue"
+      >
+        Analyze Last 100
+      </div>
+      <div
+        @click="numLogs = 500"
+        class="pointer fw5 mv3 br2 ph3 pv2 dib ba b--blue blue"
+      >
+        Analyze Last 500
+      </div>
+    </div>
+
     <div class="flex flex-wrap mt3 nl3 nr3">
       <div
         v-for="db in appRef.hostsInfo"
         :key="db.key"
-        class="w-50 w-33-l mb4 mb0-l relative flex flex-column ph3 mv2"
+        class="w-100 w-50-m w-33-l mb4 mb0-l relative flex flex-column ph3 mv2"
       >
         <sparkline
           :title="db.key"
           :class="pickColor(db.key)"
           :value="db.value"
-          :calc="true"
+          :numLogs="numLogs"
         ></sparkline>
       </div>
     </div>
@@ -73,6 +107,11 @@ export default {
     componentTitle,
     doughnut,
     sparkline
+  },
+  data () {
+    return {
+      numLogs: 50
+    }
   },
   created () {},
   computed: {
