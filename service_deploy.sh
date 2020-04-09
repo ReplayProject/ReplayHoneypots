@@ -21,8 +21,8 @@ docker service create \
    --restart-condition on-failure \
    --network host \
    --name replay-honeypot \
-   --config src="honey-cfg-$TAG",target="/properties.cfg"\
-   --config src="honey-data-$TAG",target="/senddata.json"\
+   --config src="honey-cfg-$TAG",target="/properties.cfg" \
+   --config src="honey-data-$TAG",target="/senddata.json" \
    127.0.0.1:5000/seth/replay-honeypot:latest
 
 
