@@ -6,7 +6,7 @@
       'w-75-l': $route.name != 'overview'
     }"
   >
-    <component-title>Different Stats</component-title>
+    <component-title>At a Glance</component-title>
     <hr class="o-20" />
     <div class="divide tc relative mv4">
       <h5 class="fw4 ttu mv0 dib bg-white ph3">Fake Data</h5>
@@ -16,10 +16,10 @@
       <div class="w-100 w-50-l ph3 mb3 mb0-l">
         <div class="bt bl br b--black-10 br2">
           <div class="pa3 bb b--black-10">
-            <h4 class="mv0">Countries</h4>
+            <h4 class="mv0">Source IP Frequency</h4>
           </div>
           <metric-list-item
-            v-for="(country, index) in countryData"
+            v-for="(country, index) in srcIPData"
             :key="index"
             :show-bar="country.showBar"
             :name="country.name"
@@ -36,10 +36,10 @@
       <div class="w-100 w-50-l ph3 mb3 mb0-l">
         <div class="bt bl br b--black-10 br2">
           <div class="pa3 bb b--black-10">
-            <h4 class="mv0">Most Visited Pages</h4>
+            <h4 class="mv0">Destination IP Frequency</h4>
           </div>
           <metric-list-item
-            v-for="(page, index) in pageData"
+            v-for="(page, index) in destIPData"
             :key="index"
             :show-bar="page.showBar"
             :name="page.name"
@@ -82,7 +82,6 @@
 <script>
 import componentTitle from '../components/title'
 import metricListItem from '../components/metric-list-item'
-import { getAllLogs } from '../api'
 
 export default {
   name: 'about',
@@ -92,43 +91,8 @@ export default {
   },
   data () {
     return {
-      countryData: [
-        {
-          name: 'United States',
-          value: '62.4',
-          showBar: true
-        },
-        {
-          name: 'India',
-          value: '15',
-          showBar: true
-        },
-        {
-          name: 'United Kingdom',
-          value: '5',
-          showBar: true
-        },
-        {
-          name: 'Canada',
-          value: '5',
-          showBar: true
-        },
-        {
-          name: 'Russia',
-          value: '4.5',
-          showBar: true
-        },
-        {
-          name: 'Mexico',
-          value: '2.3',
-          showBar: true
-        },
-        {
-          name: 'Spain',
-          value: '1.7',
-          showBar: true
-        }
-      ],
+      dbURI: process.env.DB_URL + '/' + 'aggregate_logs',
+      data: null,
       pageData: [
         {
           name: '/ (Logged out)',
@@ -237,13 +201,122 @@ export default {
       error: null
     }
   },
+  computed: {
+    srcIPData () {
+      if (!this.data) return []
+
+      var groupBy = (xs, key) =>
+        xs.reduce((rv, x) => {
+          ;(rv[x[key]] = rv[x[key]] || []).push(x)
+          return rv
+        }, {})
+
+      /*
+      destIPAddress: (...)
+      destMAC: (...)
+      destPortNumber: (...)
+      hostname: (...)
+      isPortOpen: (...)
+      sourceIPAddress: (...)
+      sourceMAC: (...)
+      sourcePortNumber: (...)
+      timestamp: (...)
+      trafficType: (...)
+      */
+      let stats = groupBy(this.data, 'sourceIPAddress')
+
+      /*
+      {
+        name: 'United States',
+        value: '62.4',
+        showBar: true
+      }
+      */
+      let displayObj = Object.keys(stats).map(x => {
+        return {
+          name: x,
+          value: stats[x].length,
+          showBar: true
+        }
+      })
+
+      return displayObj.sort((a, b) => b.value - a.value)
+    },
+    destIPData () {
+      if (!this.data) return []
+
+      return {
+        name: 'United Gatesssss',
+        value: '62.4',
+        showBar: true
+      }
+    }
+  },
   methods: {
+    async loadData () {
+      this.$Progress.start()
+
+      let fields = ['hostname', 'timestamp']
+
+      // Query index
+      let idx = await this.$pouch.createIndex(
+        {
+          index: { fields }
+        },
+        this.dbURI
+      )
+      // Only log index creation if it was new
+      if (idx.result != 'exists') {
+        console.log('New Index created: ', idx)
+        this.$toasted.show('New query index created')
+      }
+
+      let selector = {
+        /*hostname: { $eq: this.title }*/
+      }
+      let sort = [{ timestamp: 'desc' }]
+      let skip = 0
+      // Actually do a query
+      let results = await this.$pouch.find(
+        {
+          selector,
+          sort,
+          skip,
+          fields: [],
+          limit: 400
+        },
+        this.dbURI
+      )
+      // // Apply local filter or just throw it on the page
+      // let mine = groupBy(results.docs, 'timestamp')
+      // // TODO: abstract this date logic from here and the details page
+      // this.labels = Object.keys(mine).map(x => {
+      //   let s = new Date(x * 1000)
+      //     .toLocaleString()
+      //     .replace('/' + new Date().getFullYear(), '')
+      //   return s.slice(0, s.indexOf(':', 9) + 3) + ' ' + s.split(' ')[2]
+      // })
+
+      // this.data = Object.values(mine).map(x => x.length)
+
+      // Lets do something with this data
+      this.data = results.docs
+      // Mark everything as done loading
+      this.$Progress.finish()
+    },
     setData (err, logs) {
       if (err) {
         this.error = err.toString()
       } else {
         this.logs = logs
       }
+    }
+  },
+  async mounted () {
+    try {
+      await this.loadData()
+    } catch (error) {
+      console.log(error)
     }
   }
 }

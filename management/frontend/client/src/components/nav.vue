@@ -20,6 +20,11 @@
         <router-link to="/about" class="block link dim blue">About</router-link>
       </li>
       <li class="mb2">
+        <router-link to="/alerts" class="block link dim blue"
+          >Alerts</router-link
+        >
+      </li>
+      <li class="mb2">
         <router-link to="/edit" class="block link dim blue">Edit</router-link>
       </li>
       <li class="mb2">
