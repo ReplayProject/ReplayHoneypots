@@ -24,6 +24,7 @@ import io
 dhg = 2
 dhp = 0x00cc81ea8157352a9e9a318aac4e33ffba80fc8da3373fb44895109e4c3ff6cedcc55c02228fccbd551a504feb4346d2aef47053311ceaba95f6c540b967b9409e9f0502e598cfc71327c5a455e2e807bede1e0b7d23fbea054b951ca964eaecae7ba842ba1fc6818c453bf19eb9c5c86e723e69a210d4b72561cab97b3fb3060b
 
+
 def fast_power(base, power):
     """
     Returns the result of a^b i.e. a**b
@@ -57,7 +58,6 @@ class ConfigTunnel(Thread):
     """
     Handles the creation/usage of the configuration tunnel
     """
-
     def __init__(self, mode, host=""):
         """
         Setup variables for the config tunnel to operate
@@ -114,9 +114,13 @@ class ConfigTunnel(Thread):
                 # New Client For Server
                 if is_server and x == s:
                     soc = s.accept()[0]
-                    self.input.append(soc)
-                    self.keyMaterial = self.DiffieHellam(soc)
-                    self.ready = True
+                    try:
+                        self.input.append(soc)
+                        self.keyMaterial = self.DiffieHellam(soc)
+                        self.ready = True
+                    except Exception as e:
+                        self.input.remove(soc)
+                        print("Error during CT connection", e)
                 # Stdin Message
                 elif x == sys.stdin and len(self.input) > input_size:
                     self.send()  # self.running =
@@ -149,7 +153,7 @@ class ConfigTunnel(Thread):
                 self.keyMaterial = self.DiffieHellam(s)
                 self.ready = True
             except TypeError:
-                print("You did a goof")
+                print("Something went wrong in client tunnel connection")
                 sys.exit()
             self.mainloop(s)
 
@@ -157,7 +161,7 @@ class ConfigTunnel(Thread):
         """
         Decide on how to start the tunnel
         """
-        print('Starting ', self.mode, ' mainloop in thread')
+        print('Starting ', self.mode, ' ConfigTunnel')
 
         if self.mode == "server":
             self.listen()
@@ -202,15 +206,15 @@ class ConfigTunnel(Thread):
         else:
             line = io.StringIO(given_line + '\n').readline(1024)
 
-        if(len(line) <= AES.block_size):
+        if (len(line) <= AES.block_size):
             if ((line is not None) and (len(line) > 0) and line != b''):
                 self.input[-1].sendall(self.en(line))
                 return True
         else:
             i = 0
-            while(i < len(line)):
+            while (i < len(line)):
                 i += 16
-                self.input[-1].sendall(self.en(line[i-16:i]))
+                self.input[-1].sendall(self.en(line[i - 16:i]))
             return True
         return False
 
@@ -230,7 +234,7 @@ class ConfigTunnel(Thread):
         # Pad It
         x = bytes(cleartext.encode("ascii"))
         length = 32 - (len(x) % 32)
-        x += bytes([length])*length
+        x += bytes([length]) * length
         # Encrypt It
         ciphertext = cipher.encrypt(x)
         # Add Verification
@@ -275,16 +279,15 @@ class ConfigTunnel(Thread):
             if ((data is not None) and (len(data) > 0) and data != b''):
                 return data
             return None
+
         is_server = self.mode == "server"
         if is_server:
             # Server sends A = g^a mod p to client
-            s.sendall(str((fast_power(dhg, my_secret)) %
-                          dhp).encode('utf-8'))
+            s.sendall(str((fast_power(dhg, my_secret)) % dhp).encode('utf-8'))
             x = recvit()
         else:
             x = recvit()
             # Client sends B = g^b mod p
-            s.sendall(str((fast_power(dhg, my_secret)) %
-                          dhp).encode('utf-8'))
+            s.sendall(str((fast_power(dhg, my_secret)) % dhp).encode('utf-8'))
         # Get the Shared Secret
         return self.sha256(str((fast_power(int(x), my_secret)) % dhp))
