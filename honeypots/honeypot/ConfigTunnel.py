@@ -7,9 +7,6 @@ Author: Seth Parrish
 from threading import Thread
 import configparser
 
-# https://pypi.org/project/sshtunnel/
-from sshtunnel import SSHTunnelForwarder
-
 # Crypto Imports
 from Crypto.Hash import SHA256
 from Crypto.Cipher import AES
@@ -26,7 +23,6 @@ import io
 
 dhg = 2
 dhp = 0x00cc81ea8157352a9e9a318aac4e33ffba80fc8da3373fb44895109e4c3ff6cedcc55c02228fccbd551a504feb4346d2aef47053311ceaba95f6c540b967b9409e9f0502e598cfc71327c5a455e2e807bede1e0b7d23fbea054b951ca964eaecae7ba842ba1fc6818c453bf19eb9c5c86e723e69a210d4b72561cab97b3fb3060b
-configFilePath = r'../config/properties.cfg'
 
 
 def fast_power(base, power):
@@ -62,7 +58,6 @@ class ConfigTunnel(Thread):
     """
     Handles the creation/usage of the configuration tunnel
     """
-
     def __init__(self, mode, host=""):
         """
         Setup variables for the config tunnel to operate
@@ -78,29 +73,6 @@ class ConfigTunnel(Thread):
         self.serverPort = 9998
         self.ready = False
         self.handlers = {}
-
-        # Reverse Tunnel Configuration (if connecting elsewhere)
-        # TODO: abstract this into config settings
-        if self.needsTunnel:
-            config = configparser.RawConfigParser()
-            config.read(configFilePath)
-            self.ssh_host = config.get('SSHTunnel', 'ssh_host')
-            self.ssh_port = config.get('SSHTunnel', 'ssh_port')
-            self.ssh_username = config.get('SSHTunnel', 'ssh_username')
-            self.ssh_pkey = config.get('SSHTunnel', 'ssh_pkey')
-
-        # Only the client needs to setup the SSH Tunnel
-        if self.mode is "server":
-            pass
-        elif self.mode is "client" and self.needsTunnel:
-            self.server = SSHTunnelForwarder(
-                (self.ssh_host, self.ssh_port),
-                ssh_username=self.ssh_username,
-                ssh_pkey=self.ssh_pkey,
-                ssh_private_key_password="",
-                remote_bind_address=('127.0.0.1', self.serverPort),
-                mute_exceptions=False
-            )
 
     def setHandler(self, trigger, handler):
         """
@@ -131,7 +103,7 @@ class ConfigTunnel(Thread):
         Runs the loop for listening and parsing input
         """
         self.input = [s]
-        is_server = self.mode is "server"
+        is_server = self.mode == "server"
         input_size = (1 if is_server else 0)
 
         while self.running:
@@ -142,17 +114,19 @@ class ConfigTunnel(Thread):
                 # New Client For Server
                 if is_server and x == s:
                     soc = s.accept()[0]
-                    self.input.append(soc)
-                    self.keyMaterial = self.DiffieHellam(soc)
-                    self.ready = True
+                    try:
+                        self.input.append(soc)
+                        self.keyMaterial = self.DiffieHellam(soc)
+                        self.ready = True
+                    except Exception as e:
+                        self.input.remove(soc)
+                        print("Error during CT connection", e)
                 # Stdin Message
                 elif x == sys.stdin and len(self.input) > input_size:
                     self.send()  # self.running =
                 # Socket Message
                 elif len(self.input) > input_size:
                     self.readFromSocket(x)  # self.running =
-        if self.mode is "client" and self.needsTunnel:
-            self.server.stop()
 
     def listen(self):
         """
@@ -172,22 +146,14 @@ class ConfigTunnel(Thread):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             host = self.connectHost
             port = self.serverPort
-            if self.needsTunnel:
-                try:
-                    self.server.start()
-                    port = self.server.local_bind_port
-                    host = 'localhost'
-                # TODO: find out how to detect errors in mapping ports
-                except Exception:
-                    print("Tunnel unable to map service")
-                    sys.exit()
+
             s.connect((socket.gethostbyname(host), port))
 
             try:
                 self.keyMaterial = self.DiffieHellam(s)
                 self.ready = True
             except TypeError:
-                print("You did a goof")
+                print("Something went wrong in client tunnel connection")
                 sys.exit()
             self.mainloop(s)
 
@@ -195,11 +161,11 @@ class ConfigTunnel(Thread):
         """
         Decide on how to start the tunnel
         """
-        print('Starting ', self.mode, ' mainloop in thread')
+        print('Starting ', self.mode, ' ConfigTunnel')
 
-        if self.mode is "server":
+        if self.mode == "server":
             self.listen()
-        elif self.mode is "client":
+        elif self.mode == "client":
             self.connect()
 
     def stop(self):
@@ -235,20 +201,20 @@ class ConfigTunnel(Thread):
         """
         Encrypt and send stdin over socket connection
         """
-        if given_line is "":
+        if given_line == "":
             line = sys.stdin.buffer.readline(1024)
         else:
             line = io.StringIO(given_line + '\n').readline(1024)
 
-        if(len(line) <= AES.block_size):
+        if (len(line) <= AES.block_size):
             if ((line is not None) and (len(line) > 0) and line != b''):
                 self.input[-1].sendall(self.en(line))
                 return True
         else:
             i = 0
-            while(i < len(line)):
+            while (i < len(line)):
                 i += 16
-                self.input[-1].sendall(self.en(line[i-16:i]))
+                self.input[-1].sendall(self.en(line[i - 16:i]))
             return True
         return False
 
@@ -268,7 +234,7 @@ class ConfigTunnel(Thread):
         # Pad It
         x = bytes(cleartext.encode("ascii"))
         length = 32 - (len(x) % 32)
-        x += bytes([length])*length
+        x += bytes([length]) * length
         # Encrypt It
         ciphertext = cipher.encrypt(x)
         # Add Verification
@@ -305,7 +271,7 @@ class ConfigTunnel(Thread):
         Perform a dh exchange to arrive at compatible keys
         """
         my_secret = int.from_bytes(os.urandom(1), byteorder='little')
-        is_server = self.mode is "server"
+        is_server = self.mode == "server"
         x = None
 
         def recvit():
@@ -313,16 +279,15 @@ class ConfigTunnel(Thread):
             if ((data is not None) and (len(data) > 0) and data != b''):
                 return data
             return None
-        is_server = self.mode is "server"
+
+        is_server = self.mode == "server"
         if is_server:
             # Server sends A = g^a mod p to client
-            s.sendall(str((fast_power(dhg, my_secret)) %
-                          dhp).encode('utf-8'))
+            s.sendall(str((fast_power(dhg, my_secret)) % dhp).encode('utf-8'))
             x = recvit()
         else:
             x = recvit()
             # Client sends B = g^b mod p
-            s.sendall(str((fast_power(dhg, my_secret)) %
-                          dhp).encode('utf-8'))
+            s.sendall(str((fast_power(dhg, my_secret)) % dhp).encode('utf-8'))
         # Get the Shared Secret
         return self.sha256(str((fast_power(int(x), my_secret)) % dhp))

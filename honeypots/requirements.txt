@@ -1,5 +1,4 @@
-coverage==4.5.4
-hpfeeds3==0.9.8
 requests==2.18.4
-sshtunnel==0.1.5
 scapy==2.4.3
+pycrypto==2.6.1
+CouchDB==1.2
