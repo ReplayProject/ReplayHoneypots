@@ -1,17 +1,21 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import test from 'ava'
-import index from '../../src/pages/index.vue'
+import index from '../../client/src/pages/index.vue'
+import sinon from 'sinon'
 
 // TODO: make more realistic testing suite
 
 test('index.vue', t => {
-  const h4Count = 3
-  const wrapper = shallow(index, {
+  const show = sinon.spy()
+
+  const wrapper = shallowMount(index, {
     mocks: {
       $route: {
         name: 'index'
-      }
+      },
+      $toasted: { show }
     }
   })
-  t.is(wrapper.findAll('h4').length, h4Count)
+  let html = wrapper.html()
+  t.truthy(html.includes('General Stats'))
 })

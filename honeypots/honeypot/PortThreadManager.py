@@ -13,22 +13,14 @@ import datetime
 import argparse
 from NmapParser import NmapParser
 from Sniffer import Sniffer
-from Databaser import Databaser
+from PortListener import PortListener
+from ConfigTunnel import ConfigTunnel
 
-config = configparser.RawConfigParser()
-configFilePath = r'../config/properties.cfg'
-config.read(configFilePath)
-dataFile = config.get('Attributes', 'pcap_data_file')
+# default location that PortThreadManager will look for config options
 
-HONEY_IP = config.get('IPs', 'honeypotIP')
-MGMT_IPs = json.loads(config.get("IPs", "managementIPs"))
-
-DATABASE_OPTIONS = [
-    config.get("Databaser", "port"),
-    config.get("Databaser", "dbconf"),
-    config.get("Databaser", "dbfolder"),
-    config.get("Databaser", "bindaddress"),
-    ]
+configpath = os.getenv('HONEY_CFG')  # will usually be '/properties.cfg'
+CONFIG_FILE_PATH = configpath if (
+    configpath and configpath.strip() != "") else r'../../config/honeypot.cfg'
 """
 Handles the port threads to run the honeypot
 """
@@ -41,122 +33,157 @@ class PortThreadManager:
     Args:
         portList: a list of int port numbers
     """
-
-    def __init__(self, portList):
-        global config
-        with open(dataFile, "r") as responseDataFile:
-            responseData = json.load(responseDataFile)
+    def __init__(self):
         self.portList = []
-        for port in portList:
-            try:
-                portData = responseData[str(port)]
-            except:
-                print("Couldn't find data for port " + str(port))
-                continue
-            self.portList.append(Port(port, portData))
         self.ip = str(get('https://api.ipify.org').text)
-        self.processList = []
-        # where the db thread will be located
-        self.databaserThread = None
+        self.processList = dict()
         # where the sniffer thread will be located
         self.snifferThread = None
-        self.delay = config.get('Attributes', 'delay')
-        
-        self.whitelist = json.loads(config.get("Whitelist", "addresses"))
+        self.delay = None
+        self.portWhitelist = None
+        self.whitelist = None
         self.keepRunning = True
+        self.responseData = None
+        self.configFilePath = None
 
     """
-    Send a response on a port
-
-    Args:
-      portObj: port object with communication info
-      conn: connection object to communicate on
+    Gets config information; ran when PortThreadManager configuration changes
     """
 
-    def portResponse(self, portObj, conn):
-        byteData = bytes.fromhex(portObj.response())
-        time.sleep(float(self.delay))
-        try:
-            conn.send(byteData)
-        except:
-            print("Connection reset on port " + str(portObj.port))
+    def getConfigData(self):
+        config = configparser.RawConfigParser()
+
+        config.read(self.configFilePath)
+        dataFile = config.get('Attributes', 'pcap_data_file')
+
+        self.HONEY_IP = config.get('IPs', 'honeypotIP')
+        self.MGMT_IPs = json.loads(config.get("IPs", "managementIPs"))
+
+        with open(dataFile, "r") as responseDataFile:
+            self.responseData = json.load(responseDataFile)
+
+        self.delay = config.get('Attributes', 'delay')
+        self.whitelist = json.loads(config.get("Whitelist", "addresses"))
+        self.portWhitelist = json.loads(config.get("Whitelist", "whitelistedPorts"))
 
     """
-    Listen and respond on the given port
+    Start a thread for each port in the config file, connects to the database, runs sniffer class
 
-    Args:
-      portObj: port object with communication info
+    Returns: 0 if no changes
+             1 if only Sniffer changed
+             2 if only sockets changed
+             3 if both changed
     """
 
-    def portListener(self, portObj):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind(("", portObj.port))
-        sock.listen(1)
-        while True:
-            print("Listening on port " + str(portObj.port))
-            conn, addr = sock.accept()
-            print(conn)
-            print(addr)
-            responseThread = Thread(
-                target=self.portResponse, args=[portObj, conn])
-            responseThread.daemon = True
-            responseThread.start()
-            if not self.keepRunning:
-                break
-        conn.close()
+    def activate(self,
+                 propertiesFile=CONFIG_FILE_PATH,
+                 updateSniffer=False,
+                 updateOpenPorts=False):
+        self.configFilePath = propertiesFile
 
-    """
-    Start a thread for each port in the config file
-    """
+        # Gets the info from config file initially
+        self.getConfigData()
 
-    def deploy(self):
-        # Setup the DB
-        self.databaserThread = Databaser(options=DATABASE_OPTIONS)
-        self.databaserThread.daemon = True
-        self.databaserThread.start()
+        #Return code
+        retCode = 0
 
-        # Wait for the DB to be ready
-        while not self.databaserThread.ready:
-          pass
+        #--- Sniffer Thread ---#
+        if (self.snifferThread == None):
+            # TODO: Switch config="testing" to "base" when in production
+            self.snifferThread = Sniffer(config="testing",
+                                         openPorts=list(
+                                             self.responseData.keys()),
+                                         whitelist=self.whitelist,
+                                         portWhitelist = self.portWhitelist,
+                                         honeypotIP=self.HONEY_IP,
+                                         managementIPs=self.MGMT_IPs)
+            self.snifferThread.daemon = True
+            self.snifferThread.start()
+        elif (updateSniffer == True):
+            oldHash = self.snifferThread.currentHash
 
-        # Normal run
-        #self.snifferThread = Sniffer()
+            self.snifferThread.configUpdate(openPorts=list(
+                self.responseData.keys()),
+                                            whitelist=self.whitelist,
+                                            portWhitelist = self.portWhitelist,
+                                            honeypotIP=self.HONEY_IP,
+                                            managementIPs=self.MGMT_IPs)
+            if (not self.snifferThread.currentHash == oldHash):
+                retCode = 1
 
-        # Testing configuration
-        self.snifferThread = Sniffer(config="testing", openPorts=self.portList, whitelist=self.whitelist,
-                                     db_url=self.databaserThread.db_url, honeypotIP=HONEY_IP, managementIPs=MGMT_IPs)
-        self.snifferThread.daemon = True
-        self.snifferThread.start()
+        #--- Open Sockets ---#
+        # On initial run
+        if (len(self.processList) == 0):
+            for port in self.responseData.keys():
+                portThread = PortListener(port, self.responseData[port],
+                                          self.delay)
+                portThread.daemon = True
+                portThread.start()
+                self.processList[port] = portThread
 
-        for port in self.portList:
-            portThread = Thread(target=self.portListener, args=[port])
-            portThread.daemon = True
-            portThread.start()
-            self.processList.append(portThread)
+        # Updating to new set of ports
+        elif (updateOpenPorts == True):
+            #this value keeps track of if we've made changes
+            portsAltered = False
 
-        for thread in self.processList:
-            thread.join()
+            updatedPorts = list(self.responseData.keys())
+            updatedPorts.sort()
+            currentPorts = list(self.processList.keys())
+            currentPorts.sort()
 
-        self.snifferThread.join()
-        self.databaserThread.join()
+            #we'll change things if these don't match
+            if (not updatedPorts == currentPorts):
+                portsAltered = True
+                print("yikes")
 
+            for p in currentPorts:
+                if (not p in updatedPorts):
+                    self.processList[p].isRunning = False
+                    del self.processList[p]
+                elif (not self.processList[p].response == self.responseData[p]):
+                    #check if we need to alter response -- just change everything, might not matter
+                    self.processList[p].response = self.responseData[p]
+                    portsAltered = True
+
+            for p in updatedPorts:
+                if (not p in currentPorts):
+                    portThread = PortListener(p, self.responseData[p],
+                                              self.delay)
+                    portThread.daemon = True
+                    portThread.start()
+                    self.processList[p] = portThread
+
+            if (portsAltered):
+                retCode += 2
+
+        #return the code here; 0 means no changes, 1 means only sniffer changed, 2 means only TCP ports were changed, 3 means both were changed
+        return retCode
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Deploy the honeypot')
-    parser.add_argument('-c', '--config', help='config file')
     parser.add_argument('-n', '--nmap', help='nmap file')
     args = parser.parse_args()
 
     portList = []
-    if args.config:
-        with open(args.config, "r") as configFile:
-            portList = json.load(configFile)
-    elif args.nmap:
-        parser = NmapParser(args.nmap) 
+    if args.nmap:
+        parser = NmapParser(args.nmap)
         portList = parser.getPorts()
-    else:
-        print("Need to pass in an nmap file or a config file. Use -h for help.")
-        exit()
 
-    manager = PortThreadManager(portList)
-    manager.deploy()
+    manager = PortThreadManager()
+    manager.activate()
+
+    def reconfigure(args):
+        manager.activate(updateSniffer='sniff' in args,
+                         updateOpenPorts='ports' in args)
+        print("Reconfiguring Replay Manager: ", args)
+
+    # Lets get cracking
+    stunnel = ConfigTunnel('server')
+    stunnel.setHandler("reconfigure", reconfigure)
+    stunnel.start()
+
+    print("Listening")
+
+    # keep main thread alive
+    while True:
+        time.sleep(5)

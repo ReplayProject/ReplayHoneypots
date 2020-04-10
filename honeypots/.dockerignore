@@ -45,7 +45,7 @@ __pycache__/
 honeypots/.vscode/settings.json
 honeypots/database/log.txt
 honeypots/config/dbconfig.json
-management/cli/honeycli.cfg
+# management/cli/honeycli.cfg
 
 # Frontend Stuff
 node_modules
@@ -56,7 +56,20 @@ dist
 .data
 
 #Configuration files
-properties.cfg
+# properties.cfg
 restart.sh
-management/cli/deployment/repo.tar.gz
-management/frontend/log.txt
+
+# Misc
+.coverage
+src_data
+pcap
+nmap
+
+# Frontend src
+client
+
+# Misc excludes
+src_data
+pcap
+nmap
+logs

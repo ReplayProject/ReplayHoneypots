@@ -13,7 +13,7 @@ class LogEntry:
 
     __name__ = "LogEntry"
 
-    def __init__(self, sourcePortNumber, sourceIPAddress, sourceMAC, destPortNumber, destIPAddress, destMAC, trafficType, isPortOpen):
+    def __init__(self, sourcePortNumber, sourceIPAddress, sourceMAC, destPortNumber, destIPAddress, destMAC, trafficType, isPortOpen, hostname):
         self.sourcePortNumber = sourcePortNumber
         self.sourceIPAddress = sourceIPAddress
         self.sourceMAC = sourceMAC
@@ -23,6 +23,7 @@ class LogEntry:
         self.timestamp = int(datetime.now().timestamp())
         self.trafficType = trafficType
         self.isPortOpen = isPortOpen
+        self.hostname = hostname
 
     def json(self):
         return json.dumps(self.__dict__)

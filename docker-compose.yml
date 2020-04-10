@@ -1,0 +1,75 @@
+version: '3.7'
+
+services:
+  # Service to get a database up and running with CORS
+  couchdb:
+    image: bitnami/couchdb:3
+    environment:
+      # TODO: change this
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=couchdb
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - 'node.role==manager'
+    networks:
+      default:
+    ports:
+      - '5984:5984'
+      - '4369:4369'
+      - '9100:9100'
+    volumes:
+      # - couchdb_data:/bitnami/couchdb # make data persistant here
+      - ${PWD}/config/couch_defaults.ini:/opt/bitnami/couchdb/etc/local.d/cutom-local.ini
+
+  # Optional service to interact with database visually
+  fauxton:
+    image: 3apaxicom/fauxton
+    networks:
+      default:
+    ports:
+      - '8000:8000'
+    command:
+      - sh
+      - "-c"
+      - "fauxton -c http://couchdb:5984"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - 'node.role==manager'
+
+  # Service to get manager up and running
+  replay-manager:
+    image: 127.0.0.1:5000/seth/replay-manager:latest
+    hostname: replay-manager
+    ports:
+      - 8080:8080
+    networks:
+      default:
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - 'node.role==manager'
+      restart_policy:
+        condition: on-failure
+
+  # replay-honeypot:
+    # image: 127.0.0.1:5000/seth/replay-honeypot:latest
+
+  # Service to get ready to run a honeypot is in ./service_deploy.sh
+
+networks:
+  # Default network for container-container communication
+  default:
+  # (doesnt work) Lets a device adopt the network environment of the host machine
+  # outside:
+  #   external: true
+  #   name: host
+
+volumes:
+  replay-db:
+  couchdb_data:
+    driver: local
