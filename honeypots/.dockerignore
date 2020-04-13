@@ -43,7 +43,7 @@ __pycache__/
 */htmlcov
 */.coverage
 honeypots/.vscode/settings.json
-honeypots/database/log.txt
+logs/database/log.txt
 honeypots/config/dbconfig.json
 # management/cli/honeycli.cfg
 
@@ -72,4 +72,4 @@ client
 src_data
 pcap
 nmap
-logs
+../logs/logs

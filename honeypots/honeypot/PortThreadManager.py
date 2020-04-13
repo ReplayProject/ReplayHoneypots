@@ -16,7 +16,7 @@ from Sniffer import Sniffer
 from PortListener import PortListener
 from ConfigTunnel import ConfigTunnel
 from Databaser import Databaser
-from Notification import Notification
+from Alert import Alert
 
 # default location that PortThreadManager will look for config options
 
@@ -138,7 +138,6 @@ class PortThreadManager:
             #we'll change things if these don't match
             if (not updatedPorts == currentPorts):
                 portsAltered = True
-                print("yikes")
 
             for p in currentPorts:
                 if (not p in updatedPorts):
@@ -162,11 +161,11 @@ class PortThreadManager:
 
         #return the code here; 0 means no changes, 1 means only sniffer changed, 2 means only TCP ports were changed, 3 means both were changed
         if (retCode == 1):
-            self.db.alert(Notification(variant="meta", message="Sniffer updated during runtime.", references=[]).json())
+            self.db.alert(Alert(variant="meta", message="Sniffer updated during runtime.", references=[]).json())
         elif (retCode == 2):
-            self.db.alert(Notification(variant="meta", message="TCP sockets updated during runtime.", references=[]).json())
+            self.db.alert(Alert(variant="meta", message="TCP sockets updated during runtime.", references=[]).json())
         elif (retCode == 3):
-            self.db.alert(Notification(variant="meta", message="TCP sockets and Sniffer updated during runtime.", references=[]).json())
+            self.db.alert(Alert(variant="meta", message="TCP sockets and Sniffer updated during runtime.", references=[]).json())
         return retCode
 
 if __name__ == '__main__':
@@ -181,7 +180,7 @@ if __name__ == '__main__':
 
     manager = PortThreadManager()
     manager.activate()
-    manager.db.alert(Notification(variant="meta", message="Honeypot startup.", references=[]).json())
+    manager.db.alert(Alert(variant="meta", message="Honeypot startup.", references=[]).json())
 
     def reconfigure(args):
         manager.activate(updateSniffer='sniff' in args,
