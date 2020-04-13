@@ -91,7 +91,7 @@ class Databaser():
 
     def alert(self, json_raw):
         """
-        Save a json document (that is a notification)
+        Save a json document (that is an alert)
         """
         # Logic for live mode vs testing mode
         try:

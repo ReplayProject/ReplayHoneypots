@@ -2,6 +2,7 @@ from LogEntry import LogEntry
 from scapy.all import sniff
 from threading import Thread
 from Databaser import Databaser
+import datetime
 import requests
 requests.adapters.DEFAULT_RETRIES = 0
 """
@@ -139,7 +140,7 @@ class Sniffer(Thread):
 
             self.db.save(log.json())
 
-            #storing UDP mini-logs for testing
+            #storing mini-logs for testing
             if (self.config == "testing"):
                 if (not srcIP in self.RECORD.keys()):
                     self.RECORD[srcIP] = [log]

@@ -52,7 +52,7 @@ class TestNmapParser(unittest.TestCase):
             parser = NmapParser("wrongfilename")
 
     def test_ports(self):
-        parser = NmapParser("../nmap/default.nmap")
+        parser = NmapParser("../../logs/nmap/default.nmap")
         self.assertTrue(5040 in parser.getPorts())
 
 
@@ -319,7 +319,7 @@ class TestCron(unittest.TestCase):
             ['-p', 'PortThreadManager.py'])
         CronUninstaller.uninstall()
         CronInstaller.main(
-            ['-p', 'PortThreadManager.py', '-n', '../nmap/default.nmap'])
+            ['-p', 'PortThreadManager.py', '-n', '../../logs/nmap/default.nmap'])
         CronUninstaller.uninstall()
         """
         Install Cron when there is no existing Cron file.
@@ -333,11 +333,11 @@ class TestCron(unittest.TestCase):
         """
 
         CronInstaller.install("PortThreadManager.py", "-n",
-                              "../nmap/default.nmap")
+                              "../../logs/nmap/default.nmap")
         self.assertTrue(os.path.exists("restart.sh"))
         restart_script = open("restart.sh", 'r')
         script_file = os.path.abspath("PortThreadManager.py")
-        config_file = os.path.abspath("../nmap/default.nmap")
+        config_file = os.path.abspath("../../logs/nmap/default.nmap")
         self.assertEqual(
             restart_script.read(), "#!/bin/bash\n\n" +
             "var=$(pgrep -af PortThreadManager.py | wc -l)\n\n" +
@@ -347,7 +347,7 @@ class TestCron(unittest.TestCase):
             "\techo $(date) 'Running: python3 " + script_file + " -n " +
             config_file + ".' >> " +
             os.path.dirname(os.path.dirname(script_file)) +
-            "/logs/cron.txt\n" +  "\tcd " +
+            "../logs/logs/cron.txt\n" +  "\tcd " +
             os.path.dirname(script_file) + " && python3 " + script_file +
             " -n " + config_file + "\n" + "fi\n")
         restart_script.close()
@@ -359,7 +359,7 @@ class TestCron(unittest.TestCase):
             stdout.decode(), "* * * * * /bin/bash " +
             os.path.dirname(os.path.abspath(__file__)) + "/restart.sh >> " +
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +
-            "/logs/restart.txt 2>&1\n")
+            "../logs/logs/restart.txt 2>&1\n")
         CronUninstaller.uninstall()
         process = subprocess.Popen(['crontab', '-l'],
                                    stdout=subprocess.PIPE,
@@ -372,9 +372,9 @@ class TestCron(unittest.TestCase):
         """
 
         CronInstaller.install("PortThreadManager.py", "-n",
-                              "../nmap/default.nmap")
+                              "../../logs/nmap/default.nmap")
         CronInstaller.install("PortThreadManager.py", "-n",
-                              "../nmap/default.nmap")
+                              "../../logs/nmap/default.nmap")
         process = subprocess.Popen(['crontab', '-l'],
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
@@ -383,7 +383,7 @@ class TestCron(unittest.TestCase):
             stdout.decode(), "* * * * * /bin/bash " +
             os.path.dirname(os.path.abspath(__file__)) + "/restart.sh >> " +
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +
-            "/logs/restart.txt 2>&1\n")
+            "../logs/logs/restart.txt 2>&1\n")
         CronUninstaller.uninstall()
         """
         Install Cron when there is already an existing Cron file, and that file does not contain our job.
@@ -406,7 +406,7 @@ class TestCron(unittest.TestCase):
         stdout, stderr = process.communicate()
         os.remove("not_honeypot")
         CronInstaller.install("PortThreadManager.py", "-n",
-                              "../nmap/default.nmap")
+                              "../../logs/nmap/default.nmap")
         process = subprocess.Popen(['crontab', '-l'],
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
@@ -415,7 +415,7 @@ class TestCron(unittest.TestCase):
             stdout.decode(), "* * * * * Hello World!\n* * * * * /bin/bash " +
             os.path.dirname(os.path.abspath(__file__)) + "/restart.sh >> " +
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +
-            "/logs/restart.txt 2>&1\n")
+            "../logs/logs/restart.txt 2>&1\n")
         CronUninstaller.uninstall()
         process = subprocess.Popen(['crontab', '-l'],
                                    stdout=subprocess.PIPE,

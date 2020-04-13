@@ -6,15 +6,15 @@ Stores information to be propagated to the management system
 """
 
 
-class Notification:
+class Alert:
     """
-    Initializes the notification with basic info
+    Initializes the alert with basic info
     variant - "admin", "meta", "alert"
     message - String giving more detail
-    timestamp - epoch time of notification
+    timestamp - epoch time of alert
     references - a list of related Traffic IDs, if applicable
     """
-    __name__ = "Notification"
+    __name__ = "Alert"
 
     def __init__(self, variant, message="", references=None):
         self.variant = variant
