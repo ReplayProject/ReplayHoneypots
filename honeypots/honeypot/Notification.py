@@ -16,12 +16,11 @@ class Notification:
     """
     __name__ = "Notification"
 
-    def __init__(self, variant, message="", references=None, db_url=None):
+    def __init__(self, variant, message="", references=None):
         self.variant = variant
         self.message = message
         self.timestamp = int(datetime.now().timestamp())
         self.references = references
-        self.db_url=None
 
     def json(self):
         return json.dumps({
@@ -30,14 +29,3 @@ class Notification:
             "timestamp": self.timestamp,
             "references": self.references
         })
-
-    def post(self, payload):
-        header = {"content-type": "application/json"}
-        try:
-            r = post(url=self.db_url, data=payload.json(),
-                     headers=header, verify=False)
-            log_id = r.json()["id"]
-            #differentiates between different object types
-            print("Notification created: %s" % log_id)
-        except Exception:
-            print("DB-Inactive: ", payload.json())
