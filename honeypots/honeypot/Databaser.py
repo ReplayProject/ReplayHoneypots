@@ -20,6 +20,7 @@ class Databaser():
         """
         self.hostname = socket.gethostname()
         self.db_name = 'aggregate' + '_logs'
+        self.alerts_name = 'alerts'
         # Connect
         db_url = os.getenv('DB_URL')
         if (db_url and db_url.strip() != ""):
@@ -64,8 +65,10 @@ class Databaser():
         """
         Create this device's log database
         """
-        # Attempt DB creation
-        db = self.couch[self.db_name] if self.db_name in self.couch else self.couch.create(self.db_name)
+        # Attempt Traffic DB creation
+        self.couch[self.db_name] if self.db_name in self.couch else self.couch.create(self.db_name)
+        # Attempt Alerting DB Creation
+        self.couch[self.alerts_name] if self.alerts_name in self.couch else self.couch.create(self.alerts_name)
 
     def save(self, json_raw):
         """
@@ -84,4 +87,23 @@ class Databaser():
             return None
         except AttributeError:
             print("Attr Warning:", json_raw)
+            return None
+
+    def alert(self, json_raw):
+        """
+        Save a json document (that is a notification)
+        """
+        # Logic for live mode vs testing mode
+        try:
+            # TODO: should put extra test here
+            db = self.couch[self.alerts_name]
+            doc_id, doc_rev = db.save(json.loads(json_raw))
+            print("Alert created: %s" % doc_id)
+            return doc_id
+        except Exception as e:
+            # print(str(e))
+            print("Alert DB Save Error:", json_raw)
+            return None
+        except AttributeError:
+            print("Alert Attr Warning:", json_raw)
             return None

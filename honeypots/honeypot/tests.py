@@ -130,7 +130,8 @@ class TestSniffer(unittest.TestCase):
                     openPorts=[],
                     whitelist=[],
                     honeypotIP="localhost",
-                    managementIPs=("52.87.97.77", "54.80.228.0"))
+                    managementIPs=("52.87.97.77", "54.80.228.0"),
+                    databaser=None)
         s.daemon = True
         s.start()
 

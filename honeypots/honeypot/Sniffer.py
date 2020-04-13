@@ -20,7 +20,8 @@ class Sniffer(Thread):
                  whitelist=[],
                  portWhitelist=[],
                  honeypotIP=None,
-                 managementIPs=None):
+                 managementIPs=None,
+                 databaser=None):
         Thread.__init__(self)
 
         self.config = config
@@ -29,9 +30,7 @@ class Sniffer(Thread):
         self.honeypotIP = honeypotIP
         self.portWhitelist = portWhitelist
         self.managementIPs = managementIPs
-
-        # Setup DB
-        self.db = Databaser()
+        self.db = databaser
 
         self.running = True
         #This number doesn't matter, this is used to stop the thread if a reset is necessary
