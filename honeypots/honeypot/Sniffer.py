@@ -2,7 +2,7 @@ from LogEntry import LogEntry
 from scapy.all import sniff
 from threading import Thread
 from Databaser import Databaser
-import datetime
+from datetime import datetime
 import requests
 requests.adapters.DEFAULT_RETRIES = 0
 """
@@ -36,6 +36,7 @@ class Sniffer(Thread):
         self.running = True
         #This number doesn't matter, this is used to stop the thread if a reset is necessary
         self.count = 1
+        self.portScanTimeout = None
 
         #set used for testing convenience
         self.RECORD = dict()
