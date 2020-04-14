@@ -48,10 +48,10 @@ class CronInstaller:
                         "\tcd " + os.path.dirname(os.path.dirname(script_file)) + " && pip3 install -r requirements.txt\n")
         
         if mode == "": 
-            restart_text += "\techo $(date) 'Running: python3 " + script_file + ".' >> " + os.path.dirname(os.path.dirname(script_file)) + "/logs/cron.txt\n"
+            restart_text += "\techo $(date) 'Running: python3 " + script_file + ".' >> " + os.path.dirname(os.path.dirname(script_file)) + "../logs/logs/cron.txt\n"
             restart_text += "\tcd " + os.path.dirname(script_file) + " && python3 " + script_file + "\n"
         else: 
-            restart_text += "\techo $(date) 'Running: python3 " + script_file + " " + mode + " " + config_file + ".' >> " + os.path.dirname(os.path.dirname(script_file)) + "/logs/cron.txt\n"
+            restart_text += "\techo $(date) 'Running: python3 " + script_file + " " + mode + " " + config_file + ".' >> " + os.path.dirname(os.path.dirname(script_file)) + "../logs/logs/cron.txt\n"
             restart_text += "\tcd " + os.path.dirname(script_file) + " && python3 " + script_file + " " + mode + " " + config_file + "\n"
 
         restart_text += "fi\n"
@@ -60,7 +60,7 @@ class CronInstaller:
         restart_file.close()
 
         job = "* * * * * /bin/bash " + os.path.dirname(script_file) + \
-            "/restart.sh >> " + os.path.dirname(os.path.dirname(script_file)) + "/logs/restart.txt 2>&1\n"
+            "/restart.sh >> " + os.path.dirname(os.path.dirname(script_file)) + "../logs/logs/restart.txt 2>&1\n"
 
         # Check current crontab file (if it exists)
         process = subprocess.Popen(['crontab', '-l'],
