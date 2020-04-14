@@ -2,6 +2,7 @@ from LogEntry import LogEntry
 from scapy.all import sniff
 from threading import Thread
 from Databaser import Databaser
+from datetime import datetime
 import requests
 requests.adapters.DEFAULT_RETRIES = 0
 """
@@ -20,7 +21,8 @@ class Sniffer(Thread):
                  whitelist=[],
                  portWhitelist=[],
                  honeypotIP=None,
-                 managementIPs=None):
+                 managementIPs=None,
+                 databaser=None):
         Thread.__init__(self)
 
         self.config = config
@@ -29,13 +31,12 @@ class Sniffer(Thread):
         self.honeypotIP = honeypotIP
         self.portWhitelist = portWhitelist
         self.managementIPs = managementIPs
-
-        # Setup DB
-        self.db = Databaser()
+        self.db = databaser
 
         self.running = True
         #This number doesn't matter, this is used to stop the thread if a reset is necessary
         self.count = 1
+        self.portScanTimeout = None
 
         #set used for testing convenience
         self.RECORD = dict()
@@ -106,6 +107,16 @@ class Sniffer(Thread):
         if (packet.haslayer("IP") == False):
             return
 
+        currentTime = int(datetime.now().timestamp())
+        if (self.portScanTimeout is None):
+            self.portScanTimeout = int(datetime.now().timestamp())
+
+        #how to tell if we need to reset our port scan record
+        if (currentTime > self.portScanTimeout + 60):
+            self.portScanTimeout = currentTime
+            self.RECORD = dict()
+
+
         sourceMAC = packet.src
         destMAC = packet.dst
 
@@ -130,7 +141,7 @@ class Sniffer(Thread):
 
             self.db.save(log.json())
 
-            #storing UDP mini-logs for testing
+            #storing mini-logs for testing
             if (self.config == "testing"):
                 if (not srcIP in self.RECORD.keys()):
                     self.RECORD[srcIP] = [log]

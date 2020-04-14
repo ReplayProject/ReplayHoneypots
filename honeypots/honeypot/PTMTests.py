@@ -6,7 +6,7 @@ import time
 class TestRedeploy(unittest.TestCase):
     def test_redeploy(self):
         man = PortThreadManager()
-        man.activate(r'../config/pt.cfg')
+        man.activate(r'../testing_configs/pt.cfg')
         #Need time to make sure everything initially deploys
         time.sleep(5)
 
@@ -21,7 +21,7 @@ class TestRedeploy(unittest.TestCase):
         self.assertTrue(man.snifferThread.portWhitelist[1] == 9000)
 
         #Redeploying
-        x = man.activate(r'../config/pt_altered.cfg',
+        x = man.activate(r'../testing_configs/pt_altered.cfg',
                      updateSniffer=True, updateOpenPorts=True)
 
         #changed both, should return a 3
@@ -37,16 +37,16 @@ class TestRedeploy(unittest.TestCase):
         self.assertTrue(man.snifferThread.honeypotIP == "192.168.42.55")
         self.assertTrue(man.snifferThread.portWhitelist[1] == 8000)
 
-        x = man.activate(r'../config/pt.cfg',
+        x = man.activate(r'../testing_configs/pt.cfg',
                      updateSniffer=False, updateOpenPorts=True)
         self.assertTrue(x == 2)
 
-        x = man.activate(r'../config/pt.cfg',
+        x = man.activate(r'../testing_configs/pt.cfg',
                      updateSniffer=True, updateOpenPorts=False)
         self.assertTrue(x == 1)
 
         #We tell it to update sniffer and open ports, but nothing changes. Should return 0.
-        x = man.activate(r'../config/pt.cfg',
+        x = man.activate(r'../testing_configs/pt.cfg',
                      updateSniffer=True, updateOpenPorts=True)
         self.assertTrue(x == 0)
 
