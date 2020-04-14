@@ -15,47 +15,48 @@ class CronInstaller:
     def main(main_args): 
         parser = argparse.ArgumentParser(description='Installs Crontab and restart.sh')
         parser.add_argument('-p', '--python', help='python file of the honeypot', required=True)
-        parser.add_argument('-c', '--config', help='config file')
         parser.add_argument('-n', '--nmap', help='nmap file')
         args = parser.parse_args(main_args)
 
         if os.geteuid() != 0:
             print ("You must have root privileges to install Cron.")
             exit()
-        
-        if args.config and args.nmap or not (args.config or args.nmap): 
-            print ("Pass in exactly one of the following: nmap file or config file.")
-            exit()
 
         script_file = ""
         with open(args.python, "r") as pythonFile: 
             script_file = pythonFile.name
 
-        if args.config: 
-            with open(args.config, "r") as configFile:
-                config_file = configFile.name
-                CronInstaller.install(script_file, "-c", config_file)
-        else: 
+        if args.nmap: 
             with open(args.nmap, "r") as nmapFile: 
                 nmap_file = nmapFile.name
-                CronInstaller.install(script_file, "-n", nmap_file)
+                CronInstaller.install(script_file, mode="-n", config_file=nmap_file)
+        else: 
+            CronInstaller.install(script_file)
 
-    def install(script_file, mode, config_file): 
+    def install(script_file, mode="", config_file=""): 
         # Create the restart script
         restart_file = open("restart.sh", 'w')
 
         # Write the restart script using input
         script_file = os.path.abspath(script_file)
         config_file = os.path.abspath(config_file)
-        restart_file.write("#!/bin/bash\n\n" +
+
+        restart_text = ("#!/bin/bash\n\n" +
                         "var=$(pgrep -af PortThreadManager.py | wc -l)\n\n" +
                         "if [ $var -le 0 ]\n" +
                         "then\n" +
-                        "\techo $(date) 'Running: python3 " + script_file + " " + mode + " " + config_file + ".' >> " + os.path.dirname(os.path.dirname(script_file)) + "/logs/cron.txt\n" +
-                        "\tcd " + os.path.dirname(os.path.dirname(script_file)) + " && pip3 install -r requirements.txt\n" +
-                        "\tcd " + os.path.dirname(script_file) + " && python3 " + script_file + " " + mode + " " + config_file + "\n" +
-                        "fi\n")
+                        "\tcd " + os.path.dirname(os.path.dirname(script_file)) + " && pip3 install -r requirements.txt\n")
+        
+        if mode == "": 
+            restart_text += "\techo $(date) 'Running: python3 " + script_file + ".' >> " + os.path.dirname(os.path.dirname(script_file)) + "/logs/cron.txt\n"
+            restart_text += "\tcd " + os.path.dirname(script_file) + " && python3 " + script_file + "\n"
+        else: 
+            restart_text += "\techo $(date) 'Running: python3 " + script_file + " " + mode + " " + config_file + ".' >> " + os.path.dirname(os.path.dirname(script_file)) + "/logs/cron.txt\n"
+            restart_text += "\tcd " + os.path.dirname(script_file) + " && python3 " + script_file + " " + mode + " " + config_file + "\n"
 
+        restart_text += "fi\n"
+
+        restart_file.write(restart_text)
         restart_file.close()
 
         job = "* * * * * /bin/bash " + os.path.dirname(script_file) + \

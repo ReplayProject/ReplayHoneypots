@@ -1,3 +1,3 @@
 #! /bin/bash
 
-tar -czvf repo.tar.gz ../../../honeypots/
+tar --exclude /shared/2020SpringTeam18/management --exclude /shared/2020SpringTeam18/.git -czvf repo.tar.gz /shared/2020SpringTeam18

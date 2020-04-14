@@ -53,6 +53,7 @@ npm-debug.log
 dist
 .cache
 .nyc_output
+.data
 
 #Configuration files
 # properties.cfg
@@ -63,3 +64,12 @@ restart.sh
 src_data
 pcap
 nmap
+
+# Frontend src
+client
+
+# Misc excludes
+src_data
+pcap
+nmap
+logs

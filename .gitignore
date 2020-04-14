@@ -58,3 +58,5 @@ dist
 #Configuration files
 properties.cfg
 restart.sh
+management/cli/deployment/repo.tar.gz
+management/frontend/log.txt

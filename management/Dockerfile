@@ -2,7 +2,7 @@
 FROM node:13-alpine
 
 # Create app directory
-WORKDIR /usr/src/app
+WORKDIR /usr/src/frontend
 
 # Install app dependencies
 COPY ./frontend/package*.json ./
@@ -12,7 +12,7 @@ COPY ./frontend/package*.json ./
 RUN apk --no-cache add --virtual native-deps \
   g++ gcc libgcc libstdc++ linux-headers make python && \
   npm install --quiet node-gyp -g &&\
-  npm install --quiet && \
+  npm install --quiet --only=production && \
   apk del native-deps
 
 # Copy source files
@@ -25,5 +25,4 @@ EXPOSE 8081
 # Image Env Variables
 ENV PARCEL_WORKERS 1
 
-# -q for quiet
-CMD [ "npm", "run", "start" ]
+CMD [ "npm", "run", "start-serve" ]

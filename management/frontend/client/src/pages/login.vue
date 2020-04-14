@@ -9,7 +9,7 @@
     <component-title>Sign In</component-title>
     <hr class="o-20" />
     <main class="black-80">
-      <form class="measure" @submit="login" autocomplete="off">
+      <form class="measure" @submit="login" autocomplete="off" ref="form">
         <fieldset id="sign_up" class="ba b--transparent ph0 mh0">
           <div class="mt3">
             <label class="db fw6 lh-copy f6" for="username">Username</label>
@@ -53,7 +53,6 @@
 
 <script>
 import componentTitle from '../components/title'
-import axios from 'axios'
 
 export default {
   name: 'Login',
@@ -76,13 +75,13 @@ export default {
       }
 
       try {
-        let res = await axios.post('/login', data)
+        let res = await this.axios.post('/login', data)
         console.log('Logged in')
         this.$toasted.show('Authenticated')
         this.$router.push('/dashboard')
       } catch (error) {
         this.$toasted.show('Failed to Login. Error: ' + error.message)
-        console.log('Cannot log in', error)
+        if (process.env.NODE_ENV != 'test') console.log('Cannot log in', error)
       }
     }
   }
