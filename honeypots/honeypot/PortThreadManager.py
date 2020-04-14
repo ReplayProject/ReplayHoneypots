@@ -93,7 +93,7 @@ class PortThreadManager:
         #--- Sniffer Thread ---#
         if (self.snifferThread == None):
             # TODO: Switch config="testing" to "base" when in production
-            self.snifferThread = Sniffer(config="testing",
+            self.snifferThread = Sniffer(config="base",
                                          openPorts=list(
                                              self.responseData.keys()),
                                          whitelist=self.whitelist,

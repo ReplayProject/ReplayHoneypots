@@ -2,7 +2,7 @@ from LogEntry import LogEntry
 from scapy.all import sniff
 from threading import Thread
 from Databaser import Databaser
-import datetime
+from datetime import datetime
 import requests
 requests.adapters.DEFAULT_RETRIES = 0
 """
@@ -33,9 +33,14 @@ class Sniffer(Thread):
         self.managementIPs = managementIPs
         self.db = databaser
 
+        #Used to tell if we should continue running sniffer
         self.running = True
-        #This number doesn't matter, this is used to stop the thread if a reset is necessary
-        self.count = 1
+        #Semaphore that tells us when we can restart the run method with new config details
+        self.ready = True
+
+        #used to detect port scans
+        self.portScanTimeout = None
+
 
         #set used for testing convenience
         self.RECORD = dict()
@@ -52,28 +57,31 @@ class Sniffer(Thread):
     def run(self):
         print("Sniffing")
 
-        #This loop, along with self.count allow us to effectively update values on the fly
-        while self.running:
-            #building the base filter
-            fltr = "not src host {} ".format(self.honeypotIP)
-            #adding a variable number of management ips
-            for ip in self.managementIPs:
-                fltr += "and not host {} ".format(ip)
-            for port in self.portWhitelist:
-                fltr += "and not dst port {} ".format(port)
+        #This acts as a semaphore
+        self.ready = False
 
-            if (self.config == "testing"):
-                fltr = fltr + " and not (src port ssh or dst port ssh)"
-                # this ignores the ssh spam you get when sending packets between two ssh terminals
-                sniff(filter=fltr, prn=self.save_packet, count=self.count)
-            elif (self.config == "base"):
-                sniff(filter=fltr, prn=self.save_packet, count=self.count)
-            elif (self.config == "onlyUDP"):
-                fltr = "udp"
-                sniff(filter=fltr,
-                      prn=self.save_packet,
-                      count=self.count,
-                      iface="lo")
+        #building the base filter
+        fltr = "not src host {} ".format(self.honeypotIP)
+        #adding a variable number of management ips
+        for ip in self.managementIPs:
+            fltr += "and not host {} ".format(ip)
+        for port in self.portWhitelist:
+            fltr += "and not dst port {} ".format(port)
+
+        if (self.config == "testing"):
+            fltr = fltr + " and not (src port ssh or dst port ssh)"
+            # this ignores the ssh spam you get when sending packets between two ssh terminals
+            sniff(filter=fltr, prn=self.save_packet, stop_filter=lambda p: not self.running)
+        elif (self.config == "base"):
+            fltr = fltr + " and not (src port ssh or dst port ssh)"
+            # this ignores the ssh spam you get when sending packets between two ssh terminals - TAKE THIS OUT IN PROD
+            sniff(filter=fltr, prn=self.save_packet, stop_filter=lambda p: not self.running)
+
+        elif (self.config == "onlyUDP"):
+            fltr = "udp"
+            sniff(filter=fltr, prn=self.save_packet, stop_filter=lambda p: not self.running)
+        
+        self.ready = True
 
     """
     Updates configuration options during runtime
@@ -85,6 +93,8 @@ class Sniffer(Thread):
                      portWhitelist = [],
                      honeypotIP=None,
                      managementIPs=None):
+        print("Sniffer updated")
+        self.running = False
         self.openPorts = openPorts
         self.whitelist = whitelist
         self.portWhitelist = portWhitelist
@@ -96,6 +106,12 @@ class Sniffer(Thread):
         self.currentHash += hash(tuple(self.whitelist))
         self.currentHash += hash(honeypotIP)
         self.currentHash += hash(tuple(managementIPs))
+
+        if (self.ready):
+            self.running = True
+            self.run()
+
+
     """
     Function for recording a packet during sniff runtime
     packet = the packet passed through the sniff function
@@ -135,13 +151,21 @@ class Sniffer(Thread):
 
         if srcIP not in self.whitelist:
             trafficType = "TCP" if ipLayer.haslayer("TCP") else "UDP"
+
+            #Testing config - does not utilize a database
+            if (self.config == "onlyUDP" or self.config == "testing"):
+                dbHostname = "N/A"
+            else:
+                dbHostname = self.db.hostname
+                
             log = LogEntry(srcPort, srcIP, sourceMAC, destPort, dstIP, destMAC,
-                           trafficType, destPort in self.openPorts, self.db.hostname)
+                       trafficType, destPort in self.openPorts, dbHostname)
 
-            self.db.save(log.json())
+            if (self.config == "base"):
+                self.db.save(log.json())
 
-            #storing mini-logs for testing
-            if (self.config == "testing"):
+            #storing mini-logs for onlyUDP
+            if (self.config == "onlyUDP" or self.config == "testing"):
                 if (not srcIP in self.RECORD.keys()):
                     self.RECORD[srcIP] = [log]
                 else:
