@@ -4,7 +4,6 @@ KEYPATH=$1
 REMOTEIP=$2
 REMOTENAME=$3
 REMOTEPASS=$4
-REPOPATH=$5
 
 function silentSsh {
     local connectionString="$1"
@@ -25,13 +24,12 @@ function catch {
     exit
 }
 
-# Copy the repo archive
-sudo scp -q -o LogLevel=QUIET -i $KEYPATH $REPOPATH $REMOTENAME@$REMOTEIP:~
 # run string of commands over ssh
 silentSsh $REMOTENAME@$REMOTEIP << ENDSSH
-mkdir -p repo_test
-tar --overwrite -xf ~/repo.tar.gz -C ~/repo_test
-cd ~/repo_test/shared/2020SpringTeam18/honeypots/honeypot;
-echo $REMOTEPASS | sudo -kS -p "" python3 CronInstaller.py -p PortThreadManager.py
+cd ~/repo_test/honeypots/honeypot;
+echo $REMOTEPASS | sudo -kS -p "
+" python3 CronUninstaller.py
+cd ~ 
+echo $REMOTEPASS | sudo rm -r -f repo_test
 ENDSSH
-echo "Deployment successful"
+echo "Honeypot uninstalled successfully"
