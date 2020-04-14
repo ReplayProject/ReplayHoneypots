@@ -215,6 +215,124 @@ class HostnameValidator(Validator):
 
 
 """
+#####
+Menus
+#####
+"""
+
+
+@click.pass_context
+def main_menu(ctx):
+    # Main Loop to run the interactive menu
+    while True:        
+        choice = prompt([
+            {
+                'type': 'list',
+                'name': 'choice',
+                'message': 'What do you need to do?',
+                'choices':
+                ['Add/Update Host', 
+                 'View Host',
+                 'Remove Host', 
+                 'Exit'],
+                'filter': lambda val: val.lower()
+            }
+        ], style=style)['choice']
+
+        if choice == 'add/update host':
+            ctx.invoke(add_submenu)
+
+        elif choice == 'view host':
+            ctx.invoke(view_submenu)
+
+        elif choice == 'remove host':
+            ctx.invoke(remove_submenu)
+
+        elif choice == 'exit':
+            os.kill(os.getpid(), signal.SIGINT)
+
+
+@click.pass_context
+def add_submenu(ctx):
+    try: 
+        subchoice = prompt([
+            {
+                'type': 'list',
+                'name': 'subchoice',
+                'message': 'What do you need to do?',
+                'choices':
+                ['Add Host',
+                 'Start Honeypot',
+                 'Reinstall Honeypot',
+                 'Configure Honeypot'],
+                'filter': lambda val: val.lower()
+            }
+        ], style=style)['subchoice']
+    except EOFError: 
+        ctx.invoke(main_menu)
+
+    if subchoice == 'add host':
+        ctx.invoke(addhost)
+
+    elif subchoice == 'start honeypot':
+        ctx.invoke(starthoneypot)
+
+    elif subchoice == 'reinstall honeypot':
+        ctx.invoke(reinstallhoneypot) 
+
+    elif subchoice == 'configure honeypot':
+        ctx.invoke(configurehoneypot)
+
+
+@click.pass_context
+def view_submenu(ctx): 
+    try: 
+        subchoice = prompt([
+            {
+                'type': 'list',
+                'name': 'subchoice',
+                'message': 'What do you need to do?',
+                'choices':
+                ['Check Status'],
+                'filter': lambda val: val.lower()
+            }
+        ], style=style)['subchoice']
+    except EOFError: 
+        ctx.invoke(main_menu)
+
+    if subchoice == 'check status':
+        ctx.invoke(checkstatus) 
+
+
+@click.pass_context
+def remove_submenu(ctx): 
+    try: 
+        subchoice = prompt([
+            {
+                'type': 'list',
+                'name': 'subchoice',
+                'message': 'What do you need to do?',
+                'choices':
+                ['Remove Host',
+                 'Stop Honeypot', 
+                 'Uninstall Honeypot'],
+                'filter': lambda val: val.lower()
+            }
+        ], style=style)['subchoice']
+    except EOFError: 
+        ctx.invoke(main_menu)
+
+    if subchoice == 'remove host':
+        ctx.invoke(removehost) 
+
+    elif subchoice == 'stop honeypot':
+        ctx.invoke(stophoneypot) 
+
+    elif subchoice == 'uninstall honeypot':
+        ctx.invoke(uninstallhoneypot) 
+
+
+"""
 ############
 CLI Commands
 ############
@@ -232,172 +350,83 @@ def start(ctx, debug):
     log("RePlay CLI", color="blue", figlet=True)
     log("Welcome to the RePlay CLI" +
         (" (DEBUGGING MODE)" if debug else ""), "green")
+    log("To go back from a submenu, use Ctrl+D", "yellow")
+    log("To force quit, use Ctrl+C", "red")
 
-    ctx.invoke(choices)
-
-
-@click.pass_context
-def choices(ctx):
-    # Main Loop to run the interactive menu
-    while True:
-
-        try:
-            choice = prompt([
-                {
-                    'type': 'list',
-                    'name': 'choice',
-                    'message': 'What do you need to do?',
-                    'choices':
-                    ['Add/Update Host', 
-                     'View Host',
-                     'Remove Host', 
-                     'Exit'],
-                    'filter': lambda val: val.lower()
-                }
-            ], style=style)['choice']
-        except KeyError:
-            os.kill(os.getpid(), signal.SIGINT)
-        
-        if choice == 'add/update host':
-            try:
-                subchoice = prompt([
-                    {
-                        'type': 'list',
-                        'name': 'subchoice',
-                        'message': 'What do you need to do?',
-                        'choices':
-                        ['Add Host',
-                         'Start Honeypot',
-                         'Reinstall Honeypot',
-                         'Configure Honeypot'],
-                        'filter': lambda val: val.lower()
-                    }
-                ], style=style)['subchoice']
-            except KeyError:
-                os.kill(os.getpid(), signal.SIGINT)
-
-            if subchoice == 'add host':
-                ctx.invoke(addhost)
-
-            elif subchoice == 'start honeypot':
-                ctx.invoke(starthoneypot)
-
-            elif subchoice == 'reinstall honeypot':
-                ctx.invoke(reinstallhoneypot) 
-
-            elif subchoice == 'configure honeypot':
-                ctx.invoke(configurehoneypot)
-
-        elif choice == 'view host':
-            try:
-                subchoice = prompt([
-                    {
-                        'type': 'list',
-                        'name': 'subchoice',
-                        'message': 'What do you need to do?',
-                        'choices':
-                        ['Check Status'],
-                        'filter': lambda val: val.lower()
-                    }
-                ], style=style)['subchoice']
-            except KeyError:
-                os.kill(os.getpid(), signal.SIGINT)
-
-            if subchoice == 'check status':
-                ctx.invoke(checkstatus) 
-
-        elif choice == 'remove host':
-            try:
-                subchoice = prompt([
-                    {
-                        'type': 'list',
-                        'name': 'subchoice',
-                        'message': 'What do you need to do?',
-                        'choices':
-                        ['Remove Host',
-                         'Stop Honeypot', 
-                         'Uninstall Honeypot'],
-                        'filter': lambda val: val.lower()
-                    }
-                ], style=style)['subchoice']
-            except KeyError:
-                os.kill(os.getpid(), signal.SIGINT)
-
-            if subchoice == 'remove host':
-                ctx.invoke(removehost) 
-
-            elif subchoice == 'stop honeypot':
-                ctx.invoke(stophoneypot) 
-
-            elif subchoice == 'uninstall honeypot':
-                ctx.invoke(uninstallhoneypot) 
-
-        elif choice == 'exit':
-            os.kill(os.getpid(), signal.SIGINT)
+    ctx.invoke(main_menu)
 
 
 @main.command()
-def addhost():
+@click.pass_context
+def addhost(ctx):
     """
     Add a host
     """
 
-    new_host = prompt([
-        {
-            'type': 'input',
-            'name': 'hostname',
-            'message': 'Hostname:',
-            'validate': HostnameValidator
-        },
-        {
-            'type': 'input',
-            'name': 'user',
-            'message': 'Username:',
-            'validate': EmptyValidator
-        },
-        {
-            'type': 'input',
-            'name': 'ip',
-            'message': 'IP Address:',
-            'validate': DeviceIPValidator
-        },
-        {
-            'type': 'input',
-            'name': 'ssh_key',
-            'message': 'SSH Key:',
-            'validate': FilePathValidator,
-        },
-    ], style=style)
+    try: 
+        new_host = prompt([
+            {
+                'type': 'input',
+                'name': 'hostname',
+                'message': 'Hostname:',
+                'validate': HostnameValidator
+            },
+            {
+                'type': 'input',
+                'name': 'user',
+                'message': 'Username:',
+                'validate': EmptyValidator
+            },
+            {
+                'type': 'input',
+                'name': 'ip',
+                'message': 'IP Address:',
+                'validate': DeviceIPValidator
+            },
+            {
+                'type': 'input',
+                'name': 'ssh_key',
+                'message': 'SSH Key:',
+                'validate': FilePathValidator,
+            },
+        ], style=style)
 
-    hostname = new_host.pop("hostname")
-    new_host["status"] = "inactive"
-    new_host["installed"] = "False"
-    host_value = str(new_host)
-    config.set('HOSTS', hostname, host_value)
-    writeConfig("New host " + hostname + " saved!")
+        hostname = new_host.pop("hostname")
+        new_host["status"] = "inactive"
+        new_host["installed"] = "False"
+        host_value = str(new_host)
+        config.set('HOSTS', hostname, host_value)
+        writeConfig("New host " + hostname + " saved!")
+    except EOFError: 
+        log("Action cancelled by user", "red")
 
 
 @click.pass_context
 def hostselector(ctx, message): 
     if len(config.items("HOSTS")) is 0:
-        log("No hosts have been added yet. To add a host, select 'Add Host' command.", "red")
-        ctx.invoke(choices)
+        log("No hosts have been added yet. To add a host, select 'Add/Update Host > Add Host' command.", "red")
+    else: 
+        host_choices = [Separator('== Honeypots =='), ]
 
-    host_choices = [Separator('== Honeypots =='), ]
+        for host in list(config['HOSTS']):
+            host_choices.append({
+                'name': host
+            })
 
-    for host in list(config['HOSTS']):
-        host_choices.append({
-            'name': host
-        })
+        try: 
+            return prompt([
+                {
+                    'type': 'checkbox',
+                    'name': 'hosts',
+                    'message': message,
+                    'choices': host_choices
+                }
+            ], style=style)['hosts']
+        except EOFError: 
+            log("Action cancelled by user", "red")
 
-    return prompt([
-        {
-            'type': 'checkbox',
-            'name': 'hosts',
-            'message': message,
-            'choices': host_choices
-        }
-    ], style=style)['hosts']
+    return []
+
 
 @main.command()
 @click.pass_context
@@ -410,8 +439,7 @@ def removehost(ctx):
 
     if len(honeypots) == 0:
         log ("No host has been selected.", "red")
-    else:
-
+    else: 
         hosts = config.items('HOSTS')
 
         for host in hosts: 
@@ -421,14 +449,14 @@ def removehost(ctx):
 
                 if installed == "True": 
                     log(host[0] + " has a honeypot installed. To uninstall this honeypot, select 'Uninstall Honeypot' command.", "red")
-                else: 
-                    removed = config.remove_option('HOSTS', host[0])
+                    continue
+                    
+                removed = config.remove_option('HOSTS', host[0])
 
-                    if removed: 
-                        log(host[0] + " has been removed.", "green")
-                    else: 
-                        log(host[0] + " could not be removed.", "red")
-    
+                if removed: 
+                    log(host[0] + " has been removed.", "green")
+                else: 
+                    log(host[0] + " could not be removed.", "red")
 
 
 @main.command()
@@ -442,56 +470,64 @@ def starthoneypot(ctx):
 
     if len(honeypots) == 0:
         log ("No host has been selected.", "red")
-    else:
+    else: 
+        try: 
+            tar_file = prompt([
+                {
+                    'type': 'input',
+                    'name': 'tar_file',
+                    'message': 'Tar File:',
+                    'validate': FilePathValidator
+                }
+            ], style=style)['tar_file']
 
-        tar_file = prompt([
-            {
-                'type': 'input',
-                'name': 'tar_file',
-                'message': 'Tar File:',
-                'validate': FilePathValidator
-            }
-        ], style=style)['tar_file']
+            hosts = config.items('HOSTS')
 
-        hosts = config.items('HOSTS')
+            for host in hosts:
+                if host[0] in honeypots:
+                    host_data = json.loads(host[1].replace("\'", "\""))
+                    status = host_data['status']
 
-        for host in hosts:
-            if host[0] in honeypots:
-                host_data = json.loads(host[1].replace("\'", "\""))
-                status = host_data['status']
-
-                if status == "active": 
-                    log (host[0] + " is already running a honeypot.", "red")
-                else: 
+                    if status == "active": 
+                        log (host[0] + " is already running a honeypot.", "red")
+                        continue
+                        
                     user = host_data['user']
                     ip = host_data['ip']
                     ssh_key = host_data['ssh_key']
 
-                    password = prompt([
-                        {
-                            'type': 'password',
-                            'name': 'password',
-                            'message': ('Password for ' + user + "@" + ip + ":"),
-                        }
-                    ], style=style)['password']
+                    try: 
+                        password = prompt([
+                            {
+                                'type': 'password',
+                                'name': 'password',
+                                'message': ('Password for ' + user + "@" + ip + ":"),
+                            }
+                        ], style=style)['password']
 
-                    stdout, stderr = subprocess.Popen(['deployment/deploy.sh', ssh_key, ip, user, password, tar_file],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE).communicate()
+                        stdout, stderr = subprocess.Popen(['deployment/deploy.sh', ssh_key, ip, user, password, tar_file],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE).communicate()
 
-                    print (("" + stdout.decode() + stderr.decode()))
+                        print (("" + stdout.decode() + stderr.decode()))
 
-                    # TODO: check for errors, do not label host as "active" if there were any errors with deployment
-                    host_data['status'] = 'active'
-                    host_data['installed'] = 'True'
-                    host_value = str(host_data)
-                    config.set('HOSTS', host[0], host_value)
+                        # TODO: check for errors, do not label host as "active" if there were any errors with deployment
+                        host_data['status'] = 'active'
+                        host_data['installed'] = 'True'
+                        host_value = str(host_data)
+                        config.set('HOSTS', host[0], host_value)
 
-                    log (host[0] + " is now running a honeypot.", "green")
+                        log (host[0] + " is now running a honeypot.", "green")
+                    except EOFError: 
+                        log("Action cancelled by user", "red")
+                        continue
+        except EOFError: 
+            log("Action cancelled by user", "red")        
 
 
 @main.command()
-def stophoneypot():
+@click.pass_context
+def stophoneypot(ctx):
     """
     Stop a honeypot
     """
@@ -500,8 +536,7 @@ def stophoneypot():
 
     if len(honeypots) == 0:
         log ("No host has been selected.", "red")
-    else:
-
+    else: 
         hosts = config.items('HOSTS')
 
         for host in hosts:
@@ -511,11 +546,13 @@ def stophoneypot():
 
                 if status == "inactive": 
                     log (host[0] + " was not running a honeypot.", "red")
-                else: 
-                    user = host_data['user']
-                    ip = host_data['ip']
-                    ssh_key = host_data['ssh_key']
+                    continue
+                    
+                user = host_data['user']
+                ip = host_data['ip']
+                ssh_key = host_data['ssh_key']
 
+                try: 
                     password = prompt([
                         {
                             'type': 'password',
@@ -549,11 +586,15 @@ def stophoneypot():
                     host_value = str(host_data)
                     config.set('HOSTS', host[0], host_value)
 
-                    log ("The honeypot on " + host[0] + " is now stopped.", "red")
+                    log ("The honeypot on " + host[0] + " is now stopped.", "green")
+                except EOFError: 
+                    log("Action cancelled by user", "red")
+                    continue
 
 
 @main.command()
-def uninstallhoneypot():
+@click.pass_context
+def uninstallhoneypot(ctx):
     """
     Stop and uninstall a honeypot
     """
@@ -562,8 +603,7 @@ def uninstallhoneypot():
 
     if len(honeypots) == 0:
         log ("No host has been selected.", "red")
-    else:
-
+    else: 
         hosts = config.items('HOSTS')
 
         for host in hosts:
@@ -573,11 +613,13 @@ def uninstallhoneypot():
 
                 if installed == "False": 
                     log (host[0] + " did not have an installed honeypot.", "red")
-                else: 
-                    user = host_data['user']
-                    ip = host_data['ip']
-                    ssh_key = host_data['ssh_key']
+                    continue
+                    
+                user = host_data['user']
+                ip = host_data['ip']
+                ssh_key = host_data['ssh_key']
 
+                try: 
                     password = prompt([
                         {
                             'type': 'password',
@@ -613,10 +655,14 @@ def uninstallhoneypot():
                     config.set('HOSTS', host[0], host_value)
 
                     log ("The honeypot on " + host[0] + " is now uninstalled.", "green")
+                except EOFError: 
+                    log("Action cancelled by user", "red")
+                    continue
 
 
 @main.command()
-def reinstallhoneypot():
+@click.pass_context
+def reinstallhoneypot(ctx):
     """
     Reinstall and restart a honeypot 
     """
@@ -625,71 +671,79 @@ def reinstallhoneypot():
 
     if len(honeypots) == 0:
         log ("No host has been selected.", "red")
-    else:
+    else: 
+        try: 
+            tar_file = prompt([
+                {
+                    'type': 'input',
+                    'name': 'tar_file',
+                    'message': 'Tar File:',
+                    'validate': FilePathValidator
+                }
+            ], style=style)['tar_file']
 
-        tar_file = prompt([
-            {
-                'type': 'input',
-                'name': 'tar_file',
-                'message': 'Tar File:',
-                'validate': FilePathValidator
-            }
-        ], style=style)['tar_file']
+            hosts = config.items('HOSTS')
 
-        hosts = config.items('HOSTS')
+            for host in hosts:
+                if host[0] in honeypots:
+                    host_data = json.loads(host[1].replace("\'", "\""))
+                    installed = host_data['installed']
 
-        for host in hosts:
-            if host[0] in honeypots:
-                host_data = json.loads(host[1].replace("\'", "\""))
-                installed = host_data['installed']
-
-                if installed == "False": 
-                    # TODO: may not be necessary depending on reinstall script 
-                    log (host[0] + " did not have an installed honeypot.", "red")
-                else: 
+                    if installed == "False": 
+                        # TODO: may not be necessary depending on reinstall script 
+                        log (host[0] + " did not have an installed honeypot.", "red")
+                        continue
+                        
                     user = host_data['user']
                     ip = host_data['ip']
                     ssh_key = host_data['ssh_key']
 
-                    password = prompt([
-                        {
-                            'type': 'password',
-                            'name': 'password',
-                            'message': ('Password for ' + user + "@" + ip + ":"),
-                        }
-                    ], style=style)['password']
+                    try: 
+                        password = prompt([
+                            {
+                                'type': 'password',
+                                'name': 'password',
+                                'message': ('Password for ' + user + "@" + ip + ":"),
+                            }
+                        ], style=style)['password']
 
-                    # TODO: DELETE BEFORE PUTTING ON MASTER
-                    print ("DEBUG VARIABLES (to be removed after tested)")
-                    print ("============================================")
+                        # TODO: DELETE BEFORE PUTTING ON MASTER
+                        print ("DEBUG VARIABLES (to be removed after tested)")
+                        print ("============================================")
 
-                    print ("KEYPATH: " + ssh_key)
-                    print ("REMOTEIP: " + ip)
-                    print ("REMOTENAME: " + user)
-                    print ("REMOTEPASS: " + password)
-                    print ("REPOPATH: " + tar_file)
+                        print ("KEYPATH: " + ssh_key)
+                        print ("REMOTEIP: " + ip)
+                        print ("REMOTENAME: " + user)
+                        print ("REMOTEPASS: " + password)
+                        print ("REPOPATH: " + tar_file)
 
-                    # TODO: call the reinstall script
-                    '''
-                    stdout, stderr = subprocess.Popen(['deployment/deploy.sh', ssh_key, ip, user, password, tar_file],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE).communicate()
+                        # TODO: call the reinstall script
+                        '''
+                        stdout, stderr = subprocess.Popen(['deployment/deploy.sh', ssh_key, ip, user, password, tar_file],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE).communicate()
 
-                    print (("" + stdout.decode() + stderr.decode()))
-                    '''
+                        print (("" + stdout.decode() + stderr.decode()))
+                        '''
 
-                    print ("TODO - CALL A REINSTALL SCRIPT WITH ABOVE VARIABLES")
+                        print ("TODO - CALL A REINSTALL SCRIPT WITH ABOVE VARIABLES")
 
-                    # TODO: check for errors, do not label host as "active" if there were any errors with redeployment
-                    host_data['status'] = 'active'
-                    host_value = str(host_data)
-                    config.set('HOSTS', host[0], host_value)
+                        # TODO: check for errors, do not label host as "active" if there were any errors with redeployment
+                        host_data['status'] = 'active'
+                        host_value = str(host_data)
+                        config.set('HOSTS', host[0], host_value)
 
-                    log ("The honeypot on " + host[0] + " is now reinstalled.", "green")
+                        log ("The honeypot on " + host[0] + " is now reinstalled.", "green")
+                    except EOFError: 
+                        log("Action cancelled by user", "red")
+                        continue
+        except EOFError: 
+            log("Action cancelled by user", "red")
 
 
 @main.command()
-def configurehoneypot():
+@click.pass_context
+def configurehoneypot(ctx):
     """
     Configure a honeypot through a live ConfigTunnel connection 
     """
@@ -698,78 +752,83 @@ def configurehoneypot():
 
     if len(honeypots) == 0:
         log ("No host has been selected.", "red")
-    else:
-
-        choice = prompt([
-            {
-                'type': 'list',
-                'name': 'choice',
-                'message': 'What do you need to do?',
-                'choices': 
-                ['Edit Configuration Files', 
-                 'Reconfigure'], 
-                'filter': lambda val: val.lower()
-            }
-        ], style=style)['choice']
-
-        if choice == "edit configuration files": 
-            hosts = config.items('HOSTS')
-
-            for host in hosts:
-                if host[0] in honeypots:
-                    host_data = json.loads(host[1].replace("\'", "\""))
-                    user = host_data['user']
-                    ip = host_data['ip']
-                    ssh_key = host_data['ssh_key']
-
-                    # TODO: fix path
-                    path = "~/dan/config"
-
-                    cmd = 'ssh -i {} -t {}@{} "cd {}; ls; echo "Welcome to {}! Feel free to use your editor of choice to edit the above configuration files, and run exit to return to the CLI."; bash"'.format(ssh_key, user, ip, path, host[0])
-                    
-                    print('\n')
-                    os.system(cmd)
-
-        elif choice == "reconfigure": 
-            subchoice = prompt([
+    else: 
+        try: 
+            choice = prompt([
                 {
                     'type': 'list',
-                    'name': 'subchoice',
+                    'name': 'choice',
                     'message': 'What do you need to do?',
                     'choices': 
-                    ['Reconfigure Sniffer', 
-                     'Reconfigure Ports', 
-                     'Reconfigure Sniffer and Ports'], 
+                    ['Edit Configuration Files', 
+                    'Reconfigure'], 
                     'filter': lambda val: val.lower()
                 }
-            ], style=style)['subchoice']
+            ], style=style)['choice']
 
-            if subchoice == "reconfigure sniffer": 
-                message = "reconfigure sniff"
-            elif subchoice == "reconfigure ports": 
-                message = "reconfigure ports"
-            elif subchoice == "reconfigure sniffer and ports": 
-                message = "reconfigure sniff ports"
+            if choice == "edit configuration files": 
+                hosts = config.items('HOSTS')
 
-            hosts = config.items('HOSTS')
+                for host in hosts:
+                    if host[0] in honeypots:
+                        host_data = json.loads(host[1].replace("\'", "\""))
+                        user = host_data['user']
+                        ip = host_data['ip']
+                        ssh_key = host_data['ssh_key']
 
-            for host in hosts:
-                if host[0] in honeypots:
-                    host_data = json.loads(host[1].replace("\'", "\""))
-                    ip = host_data['ip']
+                        # TODO: fix path
+                        path = "~/dan/config"
 
-                    tunnel = ConfigTunnel('client', host=ip)
-                    tunnel.start()
-                    time.sleep(2)
-                    
-                    if not tunnel.ready: 
-                        log ("Could not connect to " + host[0], "red")
-                    else: 
-                        tunnel.send(message)
-                        log ("Ran '" + message + "' on " + host[0], "green")
+                        cmd = 'ssh -i {} -t {}@{} "cd {}; ls; echo "Welcome to {}! Feel free to use your editor of choice to edit the above configuration files, and run exit to return to the CLI."; bash"'.format(ssh_key, user, ip, path, host[0])
+                        
+                        print('\n')
+                        os.system(cmd)
 
-                    tunnel.stop()
-                    tunnel.join()
+            elif choice == "reconfigure": 
+                try: 
+                    subchoice = prompt([
+                        {
+                            'type': 'list',
+                            'name': 'subchoice',
+                            'message': 'What do you need to do?',
+                            'choices': 
+                            ['Reconfigure Sniffer', 
+                                'Reconfigure Ports', 
+                                'Reconfigure Sniffer and Ports'], 
+                            'filter': lambda val: val.lower()
+                        }
+                    ], style=style)['subchoice']
+
+                    if subchoice == "reconfigure sniffer": 
+                        message = "reconfigure sniff"
+                    elif subchoice == "reconfigure ports": 
+                        message = "reconfigure ports"
+                    elif subchoice == "reconfigure sniffer and ports": 
+                        message = "reconfigure sniff ports"
+
+                    hosts = config.items('HOSTS')
+
+                    for host in hosts:
+                        if host[0] in honeypots:
+                            host_data = json.loads(host[1].replace("\'", "\""))
+                            ip = host_data['ip']
+
+                            tunnel = ConfigTunnel('client', host=ip)
+                            tunnel.start()
+                            time.sleep(2)
+                            
+                            if not tunnel.ready: 
+                                log ("Could not connect to " + host[0], "red")
+                            else: 
+                                tunnel.send(message)
+                                log ("Ran '" + message + "' on " + host[0], "green")
+
+                            tunnel.stop()
+                            tunnel.join()
+                except EOFError: 
+                    log("Action cancelled by user", "red")
+        except EOFError: 
+            log("Action cancelled by user", "red")
 
 
 @main.command()
@@ -805,4 +864,7 @@ def checkstatus(ctx, key_file):
                 log (stdout.decode(), "green")
 
 if __name__ == '__main__':
-    main()
+    try: 
+        main()
+    except KeyError: 
+        os.kill(os.getpid(), signal.SIGINT)
