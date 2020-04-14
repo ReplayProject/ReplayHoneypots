@@ -56,7 +56,7 @@ dist
 .data
 
 #Configuration files
-properties.cfg
+honeypot.cfg
 restart.sh
 management/cli/deployment/repo.tar.gz
 management/frontend/log.txt

@@ -48,7 +48,7 @@ export default {
         this.$toasted.show('New query index created')
       }
 
-      let dumb = x => parseFloat(Number(x).toPrecision(7))
+      let dumb = x => parseFloat(Number(x).toPrecision(9))
 
       var groupBy = (xs, key) =>
         xs.reduce((rv, x) => {
