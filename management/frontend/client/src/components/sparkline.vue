@@ -5,7 +5,7 @@
       <h2 class="mv0 f2 fw5 white">{{ value }}</h2>
     </div>
     <div class="pt2">
-      <canvas></canvas>
+      <line-chart ref="chart" :chartData="chartData" :options="options" />
     </div>
   </div>
 </template>
