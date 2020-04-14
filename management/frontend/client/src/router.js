@@ -3,10 +3,10 @@ import Router from 'vue-router'
 
 import PageIndex from './pages/index.vue'
 import PageAbout from './pages/about.vue'
+import PageAlerts from './pages/alerts.vue'
 import PageEdit from './pages/edit.vue'
 import PageOverview from './pages/overview.vue'
 import PageDetails from './pages/details.vue'
-import PageTerminal from './pages/terminal.vue'
 import PageLogin from './pages/login.vue'
 
 import axios from 'axios'
@@ -35,9 +35,9 @@ let routes = [
     component: PageDetails
   },
   {
-    path: '/terminal',
-    name: 'terminal',
-    component: PageTerminal
+    path: '/alerts',
+    name: 'alerts',
+    component: PageAlerts
   },
   {
     path: '/overview',

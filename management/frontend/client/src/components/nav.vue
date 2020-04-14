@@ -20,12 +20,12 @@
         <router-link to="/about" class="block link dim blue">About</router-link>
       </li>
       <li class="mb2">
-        <router-link to="/edit" class="block link dim blue">Edit</router-link>
+        <router-link to="/alerts" class="block link dim blue"
+          >Alerts</router-link
+        >
       </li>
       <li class="mb2">
-        <router-link to="/terminal" class="block link dim blue"
-          >Terminal</router-link
-        >
+        <router-link to="/edit" class="block link dim blue">Edit</router-link>
       </li>
       <li class="mb2">
         <div
@@ -45,14 +45,12 @@
           >Overview</router-link
         >
       </li>
-      <li v-for="db in $parent.dbInfo" :key="db.db_name" class="mb2">
-        <router-link
-          :to="'/details/' + db.db_name"
-          class="block link dim blue"
-          >{{ db.db_name | formatDBName }}</router-link
-        >
+      <li v-for="db in $parent.hostsInfo" :key="db.key" class="mb2">
+        <router-link :to="'/details/' + db.key" class="block link dim blue">{{
+          db.key | formatDBName
+        }}</router-link>
       </li>
-      <li v-if="$parent.dbInfo.length != 0" class="mb2">
+      <li v-if="$parent.aggInfo.doc_count != 0" class="mb2">
         <router-link to="/details/aggregate" class="block link dim blue">{{
           'aggregate' | formatDBName
         }}</router-link>
@@ -60,11 +58,6 @@
     </ul>
     <h2 class="ttu mt0 mb2 f6 fw5 silver">More</h2>
     <ul class="list pl0 mt0 mb2">
-      <!-- <li class="mb2">
-        <router-link to="/toolkitDocs" class="block link dim blue"
-          >Toolkit Docs</router-link
-        >
-      </li> -->
       <li class="mb2">
         <a
           :href="managementDBUrl + '/_utils'"
@@ -97,8 +90,6 @@
 </template>
 
 <script>
-import axios from 'axios'
-
 export default {
   name: 'Nav',
   computed: {
@@ -115,7 +106,7 @@ export default {
   },
   methods: {
     async logout (e) {
-      let res = await axios.get('/logout')
+      let res = await this.axios.get('/logout')
       this.$toasted.show('Logged out.')
       console.log(res) // TODO: decide if we need more logic on the backend here
       this.$router.push('/login') // TODO: redirect if logout is done on other pages

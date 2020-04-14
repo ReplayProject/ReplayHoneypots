@@ -1,102 +1,87 @@
 import os
-import subprocess
+import couchdb
 import socket
-import time
 import json
-from threading import Thread
-from requests import put, post
-from pathlib import Path
 
 
-class Databaser(Thread):
+# Couchdb Tutorial
+# https://gist.github.com/marians/8e41fc817f04de7c4a70
+# Actual Docs
+# https://couchdb-python.readthedocs.io/en/latest/
+class Databaser():
     """
     Use pouch db to run the database for logging
+    Uses env Variables:
+    DB_URL, and TARGET_ADDR
     """
-
-    def __init__(self, replication=False, options=[]):
+    def __init__(self):
         """
-        Constructor; takes a config keyword to see what mode to run it in
-        'testing' ignores ssh spam you get
+        Initialize
         """
-        Thread.__init__(self)
-        self.process = None
-        self.running = True
-        # Config Cariables
-        self.port = options[0]
-        self.conf = options[1]
-        self.dbfolder = options[2]
-        self.bindaddress = options[3]
-        self.targetaddress = options[4]
-        self.url = 'http://{}:{}/'.format(self.bindaddress, self.port)
-        self.db_name = socket.gethostname() + "_logs"
-        self.db_url = self.url + self.db_name
-        self.replication = replication
+        self.hostname = socket.gethostname()
+        self.db_name = 'aggregate' + '_logs'
+        # Connect
+        db_url = os.getenv('DB_URL')
+        if (db_url and db_url.strip() != ""):
+            self.couch = couchdb.Server(db_url)
+            self.createDB()  # create the logging db for this device's logs
 
-        self.ready = False
+            # Decide if we should be replicating
+            target = os.getenv("TARGET_ADDR")
+            if (target and target.strip() != ""):
+                self.startReplicate(target)
 
-    def createDatabase(self):
+            print("CouchDB Is connected with version ", self.couch.version())
+        else:
+            print("No DB_URL provided, logging to stdout only")
+
+    def startReplicate(self, target):
+        """
+        Attempt to setup replication
+        """
+        self.couch.replicate(self.db_name,
+                             target + "/" + self.db_name,
+                             options={
+                                 "continuous": True,
+                                 "create_target": True
+                             })
+
+        print("Replicating to:", target + self.db_name)
+
+    def listDbs(self):
+        """
+        Get list of dbs
+        """
+        return [dbname for dbname in self.couch]
+
+    def deleteDB(self):
+        """
+        Delete the database this host is bound to
+        """
+        del self.couch[self.db_name]
+
+    def createDB(self):
         """
         Create this device's log database
         """
-        header = {"content-type": "application/json"}
-        r = put(url=self.url + self.db_name,
-                headers=header, verify=False, timeout=3)
-        if (r.status_code != 201):
-            Exception("Database could not be created")
+        # Attempt DB creation
+        db = self.couch[self.db_name] if self.db_name in self.couch else self.couch.create(self.db_name)
 
-        # Optional step for continuous
-        header = {"content-type": "application/json"}
-
-        payload = {
-            "continuous": True,
-            "create_target": True,
-            "source": self.db_name,
-            "target": self.targetaddress + self.db_name
-        }
-
-        if self.replication:
-            res = post(url=self.url + '_replicate',
-                       data=json.dumps(payload), headers=header, verify=False)
-            print("Replication Status: \n%s" % res.json())
-
-        return r
-
-    def run(self):
+    def save(self, json_raw):
         """
-        Runs the thread, begins sniffing
+        Save a json document
         """
-        # Setup files needed to run db
-        # Path(self.dbfolder + '/log.txt').touch(mode=0o777, exist_ok=True)
-        Path(self.dbfolder + '/log.txt').touch(mode=0o777, exist_ok=True)
-        os.chmod(self.dbfolder + '/log.txt', 0o777)
-
-        # toggle --in-memory to save data
-        cmd = ["pouchdb-server", "--in-memory", "-n", "--dir", self.dbfolder,
-               "--port", self.port, "--host", self.bindaddress, "--config", self.conf]
-        self.process = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.dbfolder)
-
-        print("Waiting 5 seconds for DB to start")
-        time.sleep(5)
-
-        status = self.createDatabase()
-        print("Handling DB: " + self.url + "_utils")
-        print("Logging DB is: %s" % status.json())
-
-        self.ready = True
-
-        while self.running:
-            output = self.process.stdout.readline()
-            if output == '' and self.process.poll() is not None:
-                break
-            if output:
-                print(output.decode("utf-8"))
-        rc = self.process.poll()
-        return rc
-
-    def stop(self):
-        """
-        Toggles the running flag on the main loop
-        """
-        self.running = False
-        self.process.kill()
+        # Logic for live mode vs testing mode
+        try:
+            # TODO: should put extra test here
+            db = self.couch[self.db_name]
+            doc_id, doc_rev = db.save(json.loads(json_raw))
+            print("Log created: %s" % doc_id)
+            return doc_id
+        except Exception as e:
+            # print(str(e))
+            print("DB Save Error:", json_raw)
+            return None
+        except AttributeError:
+            print("Attr Warning:", json_raw)
+            return None

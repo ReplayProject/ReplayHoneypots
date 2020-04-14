@@ -19,7 +19,7 @@ export default {
     new Chart(this.ctx, {
       type: 'doughnut',
       options: {
-        cutoutPercentage: 80
+        cutoutPercentage: 70
       },
       data: {
         labels: self.labels,

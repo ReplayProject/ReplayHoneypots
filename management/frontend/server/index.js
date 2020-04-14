@@ -48,10 +48,6 @@ app.get('/test', authGuard(), (req, res) =>
   res.send('you passed the authentication check')
 )
 
-// Web Terminal
-var expressWs = require('express-ws')(app)
-app.use(require('./modules/terminal'))
-
 // Host the app's frontend on port 8080
 const path = require('path')
 const dist = path.join(__dirname, '../dist')
@@ -64,16 +60,18 @@ app.use(
 // Serve application files
 app.use(require('serve-static')(dist, { index: ['index.html'] }))
 
+// Handling deserialization errors here.
+app.use(function (err, req, res, next) {
+  if (err) {
+    console.log('Cookie Invalidated')
+    req.logout()
+    return res
+      .status(401)
+      .send('You are not authenticated, your cookie has been removed')
+  } else {
+    next()
+  }
+})
+
 // listen for frontend requests :)
 app.listen(port, () => log('Frontend listening on', port))
-
-// Start the database and host it on on next port from frontend
-
-const dbApp = express()
-
-dbApp.use(require('cors')())
-dbApp.use(require('helmet')())
-
-dbApp.use(require('./modules/database'))
-
-dbApp.listen(port + 1, () => log('DB listening on', port + 1))
