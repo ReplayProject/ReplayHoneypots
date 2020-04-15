@@ -346,11 +346,11 @@ class TestCron(unittest.TestCase):
             "if [ $var -le 0 ]\n" + "then\n" + "\tcd " +
             os.path.dirname(os.path.dirname(script_file)) +
             " && pip3 install -r requirements.txt\n" +
-            "\techo $(date) 'Running: python3 " + script_file + " -n " +
+            "\techo $(date) 'Running: sudo python3 " + script_file + " -n " +
             config_file + ".' >> " +
-            os.path.dirname(os.path.dirname(script_file)) +
-            "../logs/logs/cron.txt\n" +  "\tcd " +
-            os.path.dirname(script_file) + " && python3 " + script_file +
+            os.path.dirname(os.path.dirname(os.path.dirname(script_file))) +
+            "/logs/logs/cron.txt\n" +  "\tcd " +
+            os.path.dirname(script_file) + " && sudo python3 " + script_file +
             " -n " + config_file + "\n" + "fi\n")
         restart_script.close()
         process = subprocess.Popen(['crontab', '-l'],
@@ -360,8 +360,8 @@ class TestCron(unittest.TestCase):
         self.assertEqual(
             stdout.decode(), "* * * * * /bin/bash " +
             os.path.dirname(os.path.abspath(__file__)) + "/restart.sh >> " +
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +
-            "../logs/logs/restart.txt 2>&1\n")
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) +
+            "/logs/logs/restart.txt 2>&1\n")
         CronUninstaller.uninstall()
         process = subprocess.Popen(['crontab', '-l'],
                                    stdout=subprocess.PIPE,
@@ -384,8 +384,8 @@ class TestCron(unittest.TestCase):
         self.assertEqual(
             stdout.decode(), "* * * * * /bin/bash " +
             os.path.dirname(os.path.abspath(__file__)) + "/restart.sh >> " +
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +
-            "../logs/logs/restart.txt 2>&1\n")
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) +
+            "/logs/logs/restart.txt 2>&1\n")
         CronUninstaller.uninstall()
         """
         Install Cron when there is already an existing Cron file, and that file does not contain our job.
@@ -416,8 +416,8 @@ class TestCron(unittest.TestCase):
         self.assertEqual(
             stdout.decode(), "* * * * * Hello World!\n* * * * * /bin/bash " +
             os.path.dirname(os.path.abspath(__file__)) + "/restart.sh >> " +
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +
-            "../logs/logs/restart.txt 2>&1\n")
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) +
+            "/logs/logs/restart.txt 2>&1\n")
         CronUninstaller.uninstall()
         process = subprocess.Popen(['crontab', '-l'],
                                    stdout=subprocess.PIPE,
