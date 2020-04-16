@@ -59,7 +59,9 @@ class Databaser():
         """
         Delete the database this host is bound to
         """
-        del self.couch[self.db_name]
+        # TODO: decide if this is needed (remove testing logs from db)
+        print("Deletion like this disabled due to aggregate databases")
+        # del self.couch[self.db_name]
 
     def createDB(self):
         """
