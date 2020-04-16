@@ -66,8 +66,6 @@ export default {
   },
   data () {
     return {
-      // TODO: make env var
-      dbURI: process.env.DB_URL + '/' + 'aggregate_logs',
       dbInfo: {},
       isLoading: false,
       totalRecords: 0,

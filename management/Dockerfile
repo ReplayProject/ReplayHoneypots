@@ -16,7 +16,9 @@ RUN apk --no-cache add --virtual native-deps \
   apk del native-deps
 
 # Copy source files
-COPY ./frontend/ .
+COPY ./frontend/.env .
+COPY ./frontend/dist .
+COPY ./frontend/server .
 
 # Create Port Mappings for frontend & database
 EXPOSE 8080

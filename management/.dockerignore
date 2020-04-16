@@ -65,7 +65,7 @@ src_data
 pcap
 nmap
 
-# Frontend src
+# Frontend src and un needed files
 client
 
 # Misc excludes

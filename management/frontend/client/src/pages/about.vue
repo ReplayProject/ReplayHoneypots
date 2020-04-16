@@ -16,7 +16,7 @@
         'bg-white': entryLimit > 0,
         blue: entryLimit > 0
       }"
-      class="pointer fw5 mv3 br2 ph3 pv2 dib ba b--blue"
+      class="dib b mv3 br2 ph4 pv2 mh2 ba b--blue pointer shadow-hover"
     >
       Toggle All
     </div>
@@ -64,7 +64,6 @@ export default {
   },
   data () {
     return {
-      dbURI: process.env.DB_URL + '/' + 'aggregate_logs',
       data: null,
       logs: null,
       error: null,
