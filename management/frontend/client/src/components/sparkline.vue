@@ -5,28 +5,51 @@
       <h2 class="mv0 f2 fw5 white">{{ value }}</h2>
     </div>
     <div class="pt2">
-      <line-chart ref="chart" :chartData="chartData" :options="options" />
+      <line-chart
+        ref="chart"
+        :chartData="chartData"
+        :options="options"
+      />
     </div>
   </div>
 </template>
 
 <script>
-import Chart from 'chart.js'
+import LineChart from './lineChart'
 
 export default {
-  props: ['title', 'value', 'calc'],
+  components: { LineChart },
+  props: ['title', 'value', 'numLogs'],
   data () {
     return {
       dbURI: process.env.DB_URL + '/' + 'aggregate_logs',
-      ctx: null
+      chartData: null,
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        elements: {
+          point: {
+            radius: 3
+          }
+        },
+        scales: {
+          xAxes: [
+            {
+              display: false
+            }
+          ],
+          yAxes: [
+            {
+              display: false
+            }
+          ]
+        }
+      }
     }
   },
-  computed: {
-    cLabels () {
-      return this.labels || ['A', 'B', 'C', 'D', 'E', 'F']
-    },
-    cData () {
-      return this.data || [2, 4, 6, 4, 8, 10]
+  watch: {
+    numLogs: function () {
+      this.init()
     }
   },
   methods: {
@@ -66,71 +89,49 @@ export default {
           sort,
           skip,
           fields: [],
-          limit: 400
+          limit: this.numLogs
         },
         this.dbURI
       )
       // Apply local filter or just throw it on the page
       let mine = groupBy(results.docs, 'timestamp')
       // TODO: abstract this date logic from here and the details page
-      this.labels = Object.keys(mine).map(x => {
+
+      let labels = Object.keys(mine).map(x => {
         let s = new Date(x * 1000)
           .toLocaleString()
           .replace('/' + new Date().getFullYear(), '')
         return s.slice(0, s.indexOf(':', 9) + 3) + ' ' + s.split(' ')[2]
       })
 
-      this.data = Object.values(mine).map(x => x.length)
+      let data = Object.values(mine).map(x => x.length)
+
+      this.chartData = {
+        labels,
+        datasets: [
+          {
+            pointBackgroundColor: 'white',
+            borderWidth: 2,
+            borderColor: '#FFFFFF',
+            data
+          }
+        ]
+      }
 
       // Mark everything as done loading
       this.$Progress.finish()
+    },
+    async init () {
+      // Wait till we have first status
+      try {
+        await this.loadData()
+      } catch (error) {
+        console.log(error)
+      }
     }
   },
   async mounted () {
-    this.ctx = this.$el.querySelector('canvas').getContext('2d')
-    let sparklineGradient = this.ctx.createLinearGradient(0, 0, 0, 135)
-    sparklineGradient.addColorStop(0, 'rgba(255,255,255,0.35)')
-    sparklineGradient.addColorStop(1, 'rgba(255,255,255,0)')
-
-    try {
-      if (this.calc) await this.loadData()
-    } catch (error) {
-      console.log(error)
-    }
-
-    let data = {
-      labels: this.cLabels,
-      datasets: [
-        {
-          backgroundColor: sparklineGradient,
-          borderColor: '#FFFFFF',
-          data: this.cData || [2, 4, 6, 4, 8, 10]
-        }
-      ]
-    }
-
-    Chart.Line(this.ctx, {
-      data: data,
-      options: {
-        elements: {
-          point: {
-            radius: 3
-          }
-        },
-        scales: {
-          xAxes: [
-            {
-              display: false
-            }
-          ],
-          yAxes: [
-            {
-              display: false
-            }
-          ]
-        }
-      }
-    })
+    this.init()
   }
 }
 </script>
