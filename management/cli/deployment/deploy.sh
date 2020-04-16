@@ -5,6 +5,7 @@ REMOTEIP=$2
 REMOTENAME=$3
 REMOTEPASS=$4
 REPOPATH=$5
+DB=$6
 
 function silentSsh {
     local connectionString="$1"
@@ -32,6 +33,7 @@ silentSsh $REMOTENAME@$REMOTEIP << ENDSSH
 mkdir -p repo_test
 tar --overwrite -xf ~/repo.tar.gz -C ~/repo_test
 cd ~/repo_test/shared/2020SpringTeam18/honeypots/honeypot;
-echo $REMOTEPASS | sudo -kS -p "" python3 CronInstaller.py -p PortThreadManager.py
+echo $REMOTEPASS | sudo -kS -p "
+" python3 CronInstaller.py -p PortThreadManager.py -d $DB
 ENDSSH
 echo "Deployment successful"
