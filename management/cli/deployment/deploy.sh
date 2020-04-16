@@ -36,4 +36,4 @@ cd ~/repo_test/shared/2020SpringTeam18/honeypots/honeypot;
 echo $REMOTEPASS | sudo -kS -p "
 " python3 CronInstaller.py -p PortThreadManager.py -d $DB
 ENDSSH
-echo "Deployment successful"
+echo "Honeypot installed successfully"

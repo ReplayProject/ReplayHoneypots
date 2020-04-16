@@ -632,6 +632,7 @@ def uninstallhoneypot(ctx):
             user = host_data['user']
             ip = host_data['ip']
             ssh_key = host_data['ssh_key']
+            status = host_data['status']
 
             password = None
             try: 
@@ -646,7 +647,7 @@ def uninstallhoneypot(ctx):
                 log("Action cancelled by user", "red")
                 continue
 
-            stdout, stderr = subprocess.Popen(['deployment/uninstall.sh', ssh_key, ip, user, password],
+            stdout, stderr = subprocess.Popen(['deployment/uninstall.sh', ssh_key, ip, user, password, status],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
             
@@ -664,7 +665,7 @@ def uninstallhoneypot(ctx):
 @click.pass_context
 def reinstallhoneypot(ctx):
     """
-    Reinstall and restart a honeypot 
+    Stop and reinstall a honeypot 
     """
 
     honeypots = hostselector("Which host(s) do you want to reinstall a honeypot on?")
@@ -695,13 +696,13 @@ def reinstallhoneypot(ctx):
             installed = host_data['installed']
 
             if installed == "False": 
-                # TODO: may not be necessary depending on reinstall script 
                 log (host[0] + " did not have an installed honeypot.", "red")
                 continue
                 
             user = host_data['user']
             ip = host_data['ip']
             ssh_key = host_data['ssh_key']
+            status = host_data['status']
 
             password = None
             try: 
@@ -716,33 +717,17 @@ def reinstallhoneypot(ctx):
                 log("Action cancelled by user", "red")
                 continue
 
-            # TODO: DELETE BEFORE PUTTING ON MASTER
-            print ("DEBUG VARIABLES (to be removed after tested)")
-            print ("============================================")
-
-            print ("KEYPATH: " + ssh_key)
-            print ("REMOTEIP: " + ip)
-            print ("REMOTENAME: " + user)
-            print ("REMOTEPASS: " + password)
-            print ("REPOPATH: " + tar_file)
-
-            # TODO: call the reinstall script
-            '''
-            stdout, stderr = subprocess.Popen(['deployment/deploy.sh', ssh_key, ip, user, password, tar_file],
+            stdout, stderr = subprocess.Popen(['deployment/reinstall.sh', ssh_key, ip, user, password, tar_file, status],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
 
             print (("" + stdout.decode() + stderr.decode()))
-            '''
 
-            print ("TODO - CALL A REINSTALL SCRIPT WITH ABOVE VARIABLES")
-
-            # TODO: check for errors, do not label host as "active" if there were any errors with redeployment
-            host_data['status'] = 'active'
+            # TODO: check for errors, do not label host as "inactive" if there were any errors with redeployment
+            host_data['status'] = 'inactive'
             host_value = str(host_data)
             config.set('HOSTS', host[0], host_value)
-
-            log ("The honeypot on " + host[0] + " is now reinstalled.", "green")
+            writeConfig("The honeypot on " + host[0] + " is now reinstalled.")
     
 
 @main.command()
