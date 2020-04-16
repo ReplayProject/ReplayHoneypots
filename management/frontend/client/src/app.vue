@@ -4,6 +4,11 @@
       <component-nav></component-nav>
       <!-- Waits to load views till we have hosts info -->
       <router-view v-if="Object.keys(hostsInfo).length != 0"></router-view>
+      <main v-else class="w-100 ph3-m ph3-l">
+        <section class="mw1 center mt6 mt6-ns">
+          <PropagateLoader :size="20" color="#387ddb" />>
+        </section>
+      </main>
     </div>
     <vue-progress-bar></vue-progress-bar>
   </div>
@@ -13,10 +18,13 @@
 import componentNav from './components/nav'
 import Chart from 'chart.js'
 
+import { PropagateLoader } from '@saeris/vue-spinners'
+
 export default {
   name: 'App',
   components: {
-    componentNav
+    componentNav,
+    PropagateLoader
   },
   data () {
     return {
@@ -25,6 +33,17 @@ export default {
     }
   },
   async mounted () {
+    // Check for connection in a few seconds
+    setTimeout(() => {
+      if (this.hostsInfo.length === 0) {
+        console.warn(
+          'Database has no logs, or connection is being very slow.\n',
+          process.env.DB_URL + '/' + 'aggregate_logs'
+        )
+        this.$toasted.show('No management data found')
+      }
+    }, 5000)
+
     console.log('Setting up DB')
     let db_url = process.env.DB_URL + '/' + 'aggregate_logs'
 

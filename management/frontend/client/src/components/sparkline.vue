@@ -5,11 +5,7 @@
       <h2 class="mv0 f2 fw5 white">{{ value }}</h2>
     </div>
     <div class="pt2">
-      <line-chart
-        ref="chart"
-        :chartData="chartData"
-        :options="options"
-      />
+      <line-chart ref="chart" :chartData="chartData" :options="options" />
     </div>
   </div>
 </template>
@@ -22,7 +18,6 @@ export default {
   props: ['title', 'value', 'numLogs'],
   data () {
     return {
-      dbURI: process.env.DB_URL + '/' + 'aggregate_logs',
       chartData: null,
       options: {
         responsive: true,

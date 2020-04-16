@@ -9,9 +9,39 @@
     <component-title>General Stats</component-title>
     <hr class="o-20" />
     <div
-      class="flex-m flex-l flex-wrap items-center justify-between nl3 nr3 pt4 mb4"
+      class="flex-m flex-l flex-wrap items-center justify-between nl3 nr3 pt1 mb2"
     >
       <div
+        v-if="appRef.hostsInfo"
+        style="margin:auto"
+        class="w-100 w-50-l w-75-m ph3 tc mb4 mb0-l"
+      >
+        <div class="w-50 w-50-m w-75-l center">
+          <doughnut
+            :chartData="{
+              labels: piData[1],
+              datasets: [
+                {
+                  data: piData[0],
+                  backgroundColor: piData[2],
+                  hoverBackgroundColor: piData[2]
+                }
+              ]
+            }"
+          ></doughnut>
+        </div>
+        <h4 class="dark-gray f3 fw3 mv0">Log Distribution</h4>
+        <h3 class="mt2 f6 fw5 silver">
+          Disk Usage:<br />
+          <b
+            >{{
+              Number((appRef.aggInfo.sizes.file / 1000000).toPrecision(4))
+            }}
+            Mb</b
+          >
+        </h3>
+      </div>
+      <!-- <div
         v-for="db in appRef.hostsInfo"
         :key="db.key"
         class="w-100 w-50-m w-33-l ph3 tc mb4 mb0-l"
@@ -40,38 +70,28 @@
             %</b
           >
         </h3>
-      </div>
+      </div> -->
     </div>
     <div class="divide tc relative">
       <h5 class="fw4 ttu mv0 dib bg-white ph3">Quick Stats</h5>
     </div>
-    <p class="tc center w-100">
+    <p class="tc center w-100 mv1">
       Total device logs and a time distribution of last
       <b>{{ numLogs }}</b> logs for each device
     </p>
 
-    <div class="tc center w-100">
+    <div class="flex flex-wrap justify-center">
       <div
-        @click="numLogs = 50"
-        class="pointer fw5 mv3 br2 ph3 pv2 dib ba b--blue blue"
+        v-for="n in [50, 100, 500]"
+        :key="n"
+        @click="numLogs = n"
+        class="pointer b mv1 mh2 ph4 pv2 br2 ba b--blue blue hover-bg-blue hover-white shadow-hover"
       >
-        Analyze Last 50
-      </div>
-      <div
-        @click="numLogs = 100"
-        class="pointer fw5 mv3 br2 ph3 pv2 dib ba b--blue blue"
-      >
-        Analyze Last 100
-      </div>
-      <div
-        @click="numLogs = 500"
-        class="pointer fw5 mv3 br2 ph3 pv2 dib ba b--blue blue"
-      >
-        Analyze Last 500
+        Analyze Last {{ n }}
       </div>
     </div>
 
-    <div class="flex flex-wrap mt3 nl3 nr3">
+    <div class="flex flex-wrap mt2">
       <div
         v-for="db in appRef.hostsInfo"
         :key="db.key"
@@ -115,6 +135,14 @@ export default {
   },
   created () {},
   computed: {
+    piData () {
+      var l = this.appRef.hostsInfo.map(x => x.key)
+      return [
+        this.appRef.hostsInfo.map(x => x.value),
+        l,
+        l.map(x => this.pickColor(x).slice(3))
+      ]
+    },
     isNested () {
       return this.$route.name == 'overview'
     },

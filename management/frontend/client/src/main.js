@@ -80,6 +80,8 @@ Vue.prototype.$parseDateWithTime = x => {
   return s.slice(0, s.indexOf(':', 9) + 3) + ' ' + s.split(' ')[2]
 }
 
+Vue.prototype.dbURI = process.env.DB_URL + '/' + 'aggregate_logs'
+
 window.v = new Vue({
   el: '#app',
   router,
