@@ -30,4 +30,4 @@ cd ~/repo_test/shared/2020SpringTeam18/honeypots/honeypot;
 echo $REMOTEPASS | sudo -kS -p "
 " python3 CronUninstaller.py
 ENDSSH
-echo "Process stopped successfully"
+echo "Honeypot stopped successfully"
