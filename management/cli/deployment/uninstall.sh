@@ -26,10 +26,13 @@ function catch {
 
 # run string of commands over ssh
 silentSsh $REMOTENAME@$REMOTEIP << ENDSSH
-cd ~/repo_test/honeypots/honeypot;
+cd ~/repo_test/shared/2020SpringTeam18/honeypots/honeypot;
 echo $REMOTEPASS | sudo -kS -p "
 " python3 CronUninstaller.py
 cd ~ 
-echo $REMOTEPASS | sudo rm -r -f repo_test
+echo $REMOTEPASS | sudo -kS -p "
+" rm -r -f repo_test
+echo $REMOTEPASS | sudo -kS -p "
+" rm -r repo.tar.gz
 ENDSSH
 echo "Honeypot uninstalled successfully"
