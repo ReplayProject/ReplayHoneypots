@@ -1,10 +1,10 @@
 <script>
-import { Doughnut, mixins } from 'vue-chartjs'
+import { Line, mixins } from 'vue-chartjs'
 const { reactiveProp } = mixins
 
 export default {
-  name: 'DoughnutChart',
-  extends: Doughnut,
+  name: 'LineChart',
+  extends: Line,
   mixins: [reactiveProp],
   props: {
     chartData: {
@@ -17,9 +17,7 @@ export default {
     }
   },
   mounted () {
-    this.renderChart(this.chartData, {
-      cutoutPercentage: 70
-    })
+    this.renderChart(this.chartData, this.options)
   }
 }
 </script>
