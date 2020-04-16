@@ -262,6 +262,7 @@ def add_submenu(ctx):
                 'message': 'What do you need to do?',
                 'choices':
                 ['Add Host',
+                 'Install Honeypot', 
                  'Start Honeypot',
                  'Reinstall Honeypot',
                  'Configure Honeypot'],
@@ -273,6 +274,9 @@ def add_submenu(ctx):
 
     if subchoice == 'add host':
         ctx.invoke(addhost)
+
+    elif subchoice == 'install honeypot':
+        ctx.invoke(installhoneypot) 
 
     elif subchoice == 'start honeypot':
         ctx.invoke(starthoneypot)
@@ -457,11 +461,12 @@ def removehost(ctx):
             removed = config.remove_option('HOSTS', host[0])
 
             if removed: 
-                log(host[0] + " has been removed.", "green")
+                writeConfig(host[0] + " has been removed.")
             else: 
                 log(host[0] + " could not be removed.", "red")
 
 
+# TODO
 @main.command()
 @click.pass_context
 def starthoneypot(ctx):
@@ -494,27 +499,18 @@ def starthoneypot(ctx):
     if len(honeypots) == 0:
         log ("No host has been selected.", "red")
         return 
-        
-    tar_file = None
-    try: 
-        tar_file = prompt([
-            {
-                'type': 'input',
-                'name': 'tar_file',
-                'message': 'Tar File:',
-                'validate': FilePathValidator
-            }
-        ], style=style)['tar_file']
-    except EOFError: 
-        log("Action cancelled by user", "red") 
-        return 
 
     hosts = config.items('HOSTS')
 
     for host in hosts:
         if host[0] in honeypots:
             host_data = json.loads(host[1].replace("\'", "\""))
+            installed = host_data['installed']
             status = host_data['status']
+
+            if installed == "False": 
+                log (host[0] + " did not have an installed honeypot.", "red")
+                continue
 
             if status == "active": 
                 log (host[0] + " is already running a honeypot.", "red")
@@ -537,20 +533,20 @@ def starthoneypot(ctx):
                 log("Action cancelled by user", "red")
                 continue
 
-            stdout, stderr = subprocess.Popen(['deployment/deploy.sh', ssh_key, ip, user, password, tar_file, db],
+            stdout, stderr = subprocess.Popen(['deployment/start.sh', ssh_key, ip, user, password, db],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
 
             print (("" + stdout.decode() + stderr.decode()))
 
-            # TODO: check for errors, do not label host as "active" if there were any errors with deployment
+            # TODO: check for errors, do not label host as active if there were any errors with deployment
             host_data['status'] = 'active'
-            host_data['installed'] = 'True'
             host_value = str(host_data)
             config.set('HOSTS', host[0], host_value)
             writeConfig(host[0] + " is now running a honeypot.")
     
 
+# TODO
 @main.command()
 @click.pass_context
 def stophoneypot(ctx):
@@ -569,7 +565,12 @@ def stophoneypot(ctx):
     for host in hosts:
         if host[0] in honeypots:
             host_data = json.loads(host[1].replace("\'", "\""))
+            installed = host_data['installed']
             status = host_data['status']
+
+            if installed == "False": 
+                log (host[0] + " did not have an installed honeypot.", "red")
+                continue
 
             if status == "inactive": 
                 log (host[0] + " was not running a honeypot.", "red")
@@ -605,6 +606,76 @@ def stophoneypot(ctx):
             writeConfig("The honeypot on " + host[0] + " is now stopped.")       
 
 
+#TODO
+@main.command()
+@click.pass_context
+def installhoneypot(ctx): 
+    """
+    Install a honeypot
+    """
+
+    honeypots = hostselector("Which host(s) do you want to install a honeypot on?")
+
+    if len(honeypots) == 0:
+        log ("No host has been selected.", "red")
+        return 
+        
+    tar_file = None
+    try: 
+        tar_file = prompt([
+            {
+                'type': 'input',
+                'name': 'tar_file',
+                'message': 'Tar File:',
+                'validate': FilePathValidator
+            }
+        ], style=style)['tar_file']
+    except EOFError: 
+        log("Action cancelled by user", "red") 
+        return 
+
+    hosts = config.items('HOSTS')
+
+    for host in hosts:
+        if host[0] in honeypots:
+            host_data = json.loads(host[1].replace("\'", "\""))
+            installed = host_data['installed']
+
+            if installed == "True": 
+                log (host[0] + " already has an installed honeypot.", "red")
+                continue
+                
+            user = host_data['user']
+            ip = host_data['ip']
+            ssh_key = host_data['ssh_key']
+
+            password = None
+            try: 
+                password = prompt([
+                    {
+                        'type': 'password',
+                        'name': 'password',
+                        'message': ('Password for ' + user + "@" + ip + ":"),
+                    }
+                ], style=style)['password']
+            except EOFError: 
+                log("Action cancelled by user", "red")
+                continue
+
+            stdout, stderr = subprocess.Popen(['deployment/install.sh', ssh_key, ip, user, password, tar_file],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE).communicate()
+
+            print (("" + stdout.decode() + stderr.decode()))
+
+            # TODO: check for errors, do not label host as installed if there were any errors with install
+            host_data['installed'] = 'True'
+            host_value = str(host_data)
+            config.set('HOSTS', host[0], host_value)
+            writeConfig(host[0] + " now has an installed honeypot.")
+
+
+#TODO
 @main.command()
 @click.pass_context
 def uninstallhoneypot(ctx):
@@ -661,6 +732,7 @@ def uninstallhoneypot(ctx):
             writeConfig("The honeypot on " + host[0] + " is now uninstalled.")
             
 
+#TODO
 @main.command()
 @click.pass_context
 def reinstallhoneypot(ctx):
@@ -723,7 +795,7 @@ def reinstallhoneypot(ctx):
 
             print (("" + stdout.decode() + stderr.decode()))
 
-            # TODO: check for errors, do not label host as "inactive" if there were any errors with redeployment
+            # TODO: check for errors, do not label host as inactive if there were any errors with redeployment
             host_data['status'] = 'inactive'
             host_value = str(host_data)
             config.set('HOSTS', host[0], host_value)
