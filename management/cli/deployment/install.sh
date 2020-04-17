@@ -31,7 +31,5 @@ sudo scp -q -o LogLevel=QUIET -i $KEYPATH $REPOPATH $REMOTENAME@$REMOTEIP:~
 silentSsh $REMOTENAME@$REMOTEIP << ENDSSH
 mkdir -p repo_test
 tar --overwrite -xf ~/repo.tar.gz -C ~/repo_test
-cd ~/repo_test/shared/2020SpringTeam18/honeypots/honeypot;
-echo $REMOTEPASS | sudo -kS -p "" python3 CronInstaller.py -p PortThreadManager.py
 ENDSSH
-echo "Deployment successful"
+echo "Honeypot installed successfully"

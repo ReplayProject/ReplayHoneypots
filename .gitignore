@@ -58,5 +58,6 @@ dist
 #Configuration files
 honeypot.cfg
 restart.sh
+manager_rsa
 management/cli/deployment/repo.tar.gz
 management/frontend/log.txt
