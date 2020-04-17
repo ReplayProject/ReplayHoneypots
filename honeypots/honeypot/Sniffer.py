@@ -3,6 +3,7 @@ from scapy.all import sniff
 from threading import Thread
 from Databaser import Databaser
 from datetime import datetime
+from Alert import Alert
 import requests
 requests.adapters.DEFAULT_RETRIES = 0
 """
@@ -22,8 +23,7 @@ class Sniffer(Thread):
                  portWhitelist=[],
                  honeypotIP=None,
                  managementIPs=None,
-                 databaser=None,
-                 hostname=None):
+                 databaser=None):
         Thread.__init__(self)
 
         self.config = config
@@ -172,11 +172,11 @@ class Sniffer(Thread):
                 self.RECORD[srcIP] = [log]
 
                 self.PS_RECORD[srcIP] = set()
-                self.PS_RECORD[srcIP].add(log.destPort)
+                self.PS_RECORD[srcIP].add(log.destPortNumber)
             else:
                 self.RECORD[srcIP].append(log)
                 
-                self.PS_RECORD[srcIP].add(log.destPort)
+                self.PS_RECORD[srcIP].add(log.destPortNumber)
                 if (len(self.PS_RECORD[srcIP]) > 100):
                     self.db.alert(Alert(variant="", message="Port scan detected from IP {}".format(srcIP), references=[], hostname=self.db.hostname).json())
                     self.PS_RECORD[srcIP] = set()

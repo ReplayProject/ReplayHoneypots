@@ -100,8 +100,7 @@ class PortThreadManager:
                                          portWhitelist = self.portWhitelist,
                                          honeypotIP=self.HONEY_IP,
                                          managementIPs=self.MGMT_IPs,
-                                         databaser=self.db,
-                                         hostname=self.hostname)
+                                         databaser=self.db)
             self.snifferThread.daemon = True
             self.snifferThread.start()
         elif (updateSniffer == True):
