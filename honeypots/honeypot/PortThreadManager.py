@@ -47,6 +47,7 @@ class PortThreadManager:
         self.keepRunning = True
         self.responseData = None
         self.configFilePath = None
+        self.hostname = None
         self.db = Databaser()
 
     """
@@ -61,6 +62,7 @@ class PortThreadManager:
 
         self.HONEY_IP = config.get('IPs', 'honeypotIP')
         self.MGMT_IPs = json.loads(config.get("IPs", "managementIPs"))
+        self.hostname = config.get('IPs', 'hostname')
 
         with open(dataFile, "r") as responseDataFile:
             self.responseData = json.load(responseDataFile)
@@ -161,11 +163,11 @@ class PortThreadManager:
 
         #return the code here; 0 means no changes, 1 means only sniffer changed, 2 means only TCP ports were changed, 3 means both were changed
         if (retCode == 1):
-            self.db.alert(Alert(variant="meta", message="Sniffer updated during runtime.", references=[]).json())
+            self.db.alert(Alert(variant="meta", message="Sniffer updated during runtime.", references=[], hostname=self.hostname).json())
         elif (retCode == 2):
-            self.db.alert(Alert(variant="meta", message="TCP sockets updated during runtime.", references=[]).json())
+            self.db.alert(Alert(variant="meta", message="TCP sockets updated during runtime.", references=[], hostname=self.hostname).json())
         elif (retCode == 3):
-            self.db.alert(Alert(variant="meta", message="TCP sockets and Sniffer updated during runtime.", references=[]).json())
+            self.db.alert(Alert(variant="meta", message="TCP sockets and Sniffer updated during runtime.", references=[], hostname=self.hostname).json())
         return retCode
 
 if __name__ == '__main__':
@@ -180,7 +182,7 @@ if __name__ == '__main__':
 
     manager = PortThreadManager()
     manager.activate()
-    manager.db.alert(Alert(variant="meta", message="Honeypot startup.", references=[]).json())
+    manager.db.alert(Alert(variant="meta", message="Honeypot startup.", references=[], hostname=manager.hostname).json())
 
     def reconfigure(args):
         manager.activate(updateSniffer='sniff' in args,
