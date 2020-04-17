@@ -131,7 +131,8 @@ class TestSniffer(unittest.TestCase):
                     whitelist=[],
                     honeypotIP="localhost",
                     managementIPs=("52.87.97.77", "54.80.228.0"),
-                    databaser=None)
+                    databaser=None,
+                    hostname="Somehost")
         s.daemon = True
         s.start()
 
@@ -166,7 +167,8 @@ class TestSniffer(unittest.TestCase):
                     whitelist=[],
                     portWhitelist=[],
                     honeypotIP=host_ip,
-                    managementIPs=("52.87.97.77", "54.80.228.0"))
+                    managementIPs=("52.87.97.77", "54.80.228.0"),
+                    hostname="Somehost")
         s.daemon = True
         s.start()
 

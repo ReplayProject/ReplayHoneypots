@@ -22,7 +22,8 @@ class Sniffer(Thread):
                  portWhitelist=[],
                  honeypotIP=None,
                  managementIPs=None,
-                 databaser=None):
+                 databaser=None,
+                 hostname=None):
         Thread.__init__(self)
 
         self.config = config
@@ -32,6 +33,7 @@ class Sniffer(Thread):
         self.portWhitelist = portWhitelist
         self.managementIPs = managementIPs
         self.db = databaser
+        self.hostname = hostname
 
         #Used to tell if we should continue running sniffer
         self.running = True
@@ -40,10 +42,12 @@ class Sniffer(Thread):
 
         #used to detect port scans
         self.portScanTimeout = None
-
+        #also used to detect port scans
+        self.PS_RECORD = dict()
 
         #set used for testing convenience
         self.RECORD = dict()
+
         self.currentHash = hash(self.config)
         self.currentHash += hash(tuple(self.openPorts))
         self.currentHash += hash(tuple(self.whitelist))
@@ -129,7 +133,7 @@ class Sniffer(Thread):
         #how to tell if we need to reset our port scan record
         if (currentTime > self.portScanTimeout + 60):
             self.portScanTimeout = currentTime
-            self.RECORD = dict()
+            self.PS_RECORD = dict()
 
 
         sourceMAC = packet.src
@@ -165,8 +169,15 @@ class Sniffer(Thread):
                 self.db.save(log.json())
 
             #storing mini-logs for onlyUDP
-            if (self.config == "onlyUDP" or self.config == "testing"):
-                if (not srcIP in self.RECORD.keys()):
-                    self.RECORD[srcIP] = [log]
-                else:
-                    self.RECORD[srcIP].append(log)
+            if (not srcIP in self.RECORD.keys()):
+                self.RECORD[srcIP] = [log]
+
+                self.PS_RECORD[srcIP] = set()
+                self.PS_RECORD[srcIP].add(log.destPort)
+            else:
+                self.RECORD[srcIP].append(log)
+                
+                self.PS_RECORD[srcIP].add(log.destPort)
+                if (len(self.PS_RECORD[srcIP]) > 100):
+                    self.db.alert(Alert(variant="", message="Port scan detected from IP {}".format(srcIP), references=[], hostname=self.hostname).json())
+                    self.PS_RECORD[srcIP] = set()
