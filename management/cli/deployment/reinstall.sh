@@ -4,7 +4,8 @@ KEYPATH=$1
 REMOTEIP=$2
 REMOTENAME=$3
 REMOTEPASS=$4
-STATUS=$5
+REPOPATH=$5
+STATUS=$6
 
 function silentSsh {
     local connectionString="$1"
@@ -25,6 +26,8 @@ function catch {
     exit
 }
 
+# Copy the repo archive
+sudo scp -q -o LogLevel=QUIET -i $KEYPATH $REPOPATH $REMOTENAME@$REMOTEIP:~
 # run string of commands over ssh
 silentSsh $REMOTENAME@$REMOTEIP << ENDSSH
 if [ "$STATUS" = "active" ]
@@ -36,7 +39,7 @@ fi
 cd ~ 
 echo $REMOTEPASS | sudo -kS -p "
 " rm -r -f repo_test
-echo $REMOTEPASS | sudo -kS -p "
-" rm -r repo.tar.gz
+mkdir -p repo_test
+tar --overwrite -xf ~/repo.tar.gz -C ~/repo_test
 ENDSSH
-echo "Honeypot uninstalled successfully"
+echo "Honeypot reinstalled successfully"

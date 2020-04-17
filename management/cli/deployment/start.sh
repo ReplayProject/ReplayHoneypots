@@ -4,7 +4,7 @@ KEYPATH=$1
 REMOTEIP=$2
 REMOTENAME=$3
 REMOTEPASS=$4
-STATUS=$5
+DB=$5
 
 function silentSsh {
     local connectionString="$1"
@@ -27,16 +27,8 @@ function catch {
 
 # run string of commands over ssh
 silentSsh $REMOTENAME@$REMOTEIP << ENDSSH
-if [ "$STATUS" = "active" ]
-then
-    cd ~/repo_test/shared/2020SpringTeam18/honeypots/honeypot;
-    echo $REMOTEPASS | sudo -kS -p "
-    " python3 CronUninstaller.py
-fi
-cd ~ 
+cd ~/repo_test/shared/2020SpringTeam18/honeypots/honeypot;
 echo $REMOTEPASS | sudo -kS -p "
-" rm -r -f repo_test
-echo $REMOTEPASS | sudo -kS -p "
-" rm -r repo.tar.gz
+" python3 CronInstaller.py -p PortThreadManager.py -d $DB
 ENDSSH
-echo "Honeypot uninstalled successfully"
+echo "Honeypot started successfully"
