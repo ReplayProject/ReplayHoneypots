@@ -33,7 +33,6 @@ class Sniffer(Thread):
         self.portWhitelist = portWhitelist
         self.managementIPs = managementIPs
         self.db = databaser
-        self.hostname = hostname
 
         #Used to tell if we should continue running sniffer
         self.running = True
@@ -179,5 +178,5 @@ class Sniffer(Thread):
                 
                 self.PS_RECORD[srcIP].add(log.destPort)
                 if (len(self.PS_RECORD[srcIP]) > 100):
-                    self.db.alert(Alert(variant="", message="Port scan detected from IP {}".format(srcIP), references=[], hostname=self.hostname).json())
+                    self.db.alert(Alert(variant="", message="Port scan detected from IP {}".format(srcIP), references=[], hostname=self.db.hostname).json())
                     self.PS_RECORD[srcIP] = set()
