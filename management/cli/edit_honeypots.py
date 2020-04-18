@@ -3,6 +3,7 @@ from PyInquirer import prompt
 import click
 import json
 import subprocess
+import getpass
 import time
 import sys
 import os
@@ -27,9 +28,9 @@ def starthoneypot(ctx):
     Start a honeypot
     """
 
-    if not config.has_option("GENERAL", "db"): 
+    if not config.has_option("GENERAL", "db"):
         db = None
-        try: 
+        try:
             db = prompt([
                 {
                     'type': 'input',
@@ -38,9 +39,9 @@ def starthoneypot(ctx):
                     'validate': EmptyValidator
                 }
             ], style=style())['db']
-        except EOFError: 
-            log("Action cancelled by user", "red") 
-            return 
+        except EOFError:
+            log("Action cancelled by user", "red")
+            return
 
         config.set('GENERAL', 'db', db)
         writeConfig("Database URL " + db + " saved!")
@@ -51,7 +52,7 @@ def starthoneypot(ctx):
 
     if len(honeypots) == 0:
         log ("No host has been selected.", "red")
-        return 
+        return
 
     hosts = config.items('HOSTS')
 
@@ -61,20 +62,20 @@ def starthoneypot(ctx):
             installed = host_data['installed']
             status = host_data['status']
 
-            if installed == "False": 
+            if installed == "False":
                 log (host[0] + " did not have an installed honeypot.", "red")
                 continue
 
-            if status == "active": 
+            if status == "active":
                 log (host[0] + " is already running a honeypot.", "red")
                 continue
-                
+
             user = host_data['user']
             ip = host_data['ip']
             ssh_key = host_data['ssh_key']
 
             password = None
-            try: 
+            try:
                 password = prompt([
                     {
                         'type': 'password',
@@ -82,7 +83,7 @@ def starthoneypot(ctx):
                         'message': ('Password for ' + user + "@" + ip + ":"),
                     }
                 ], style=style())['password']
-            except EOFError: 
+            except EOFError:
                 log("Action cancelled by user", "red")
                 continue
 
@@ -97,7 +98,7 @@ def starthoneypot(ctx):
             host_value = str(host_data)
             config.set('HOSTS', host[0], host_value)
             writeConfig(host[0] + " is now running a honeypot.")
-    
+
 
 # TODO
 @main.command()
@@ -111,8 +112,8 @@ def stophoneypot(ctx):
 
     if len(honeypots) == 0:
         log ("No host has been selected.", "red")
-        return 
-    
+        return
+
     hosts = config.items('HOSTS')
 
     for host in hosts:
@@ -121,20 +122,20 @@ def stophoneypot(ctx):
             installed = host_data['installed']
             status = host_data['status']
 
-            if installed == "False": 
+            if installed == "False":
                 log (host[0] + " did not have an installed honeypot.", "red")
                 continue
 
-            if status == "inactive": 
+            if status == "inactive":
                 log (host[0] + " was not running a honeypot.", "red")
                 continue
-                
+
             user = host_data['user']
             ip = host_data['ip']
             ssh_key = host_data['ssh_key']
 
             password = None
-            try: 
+            try:
                 password = prompt([
                     {
                         'type': 'password',
@@ -142,7 +143,7 @@ def stophoneypot(ctx):
                         'message': ('Password for ' + user + "@" + ip + ":"),
                     }
                 ], style=style())['password']
-            except EOFError: 
+            except EOFError:
                 log("Action cancelled by user", "red")
                 continue
 
@@ -152,44 +153,44 @@ def stophoneypot(ctx):
 
             print (("" + stdout.decode() + stderr.decode()))
 
-            # TODO: check for errors, do not label host as "inactive" if there were any errors with shutdown 
+            # TODO: check for errors, do not label host as "inactive" if there were any errors with shutdown
             host_data['status'] = 'inactive'
             host_value = str(host_data)
             config.set('HOSTS', host[0], host_value)
-            writeConfig("The honeypot on " + host[0] + " is now stopped.")       
+            writeConfig("The honeypot on " + host[0] + " is now stopped.")
 
 
 @main.command()
 @click.pass_context
 def configurehoneypot(ctx):
     """
-    Configure a honeypot through a live ConfigTunnel connection 
+    Configure a honeypot through a live ConfigTunnel connection
     """
 
     honeypots = hostselector("Which host(s) do you want to configure?")
 
     if len(honeypots) == 0:
         log ("No host has been selected.", "red")
-        return 
+        return
 
     choice = None
-    try: 
+    try:
         choice = prompt([
             {
                 'type': 'list',
                 'name': 'choice',
                 'message': 'What do you need to do?',
-                'choices': 
-                ['Edit Configuration Files', 
-                 'Reconfigure'], 
+                'choices':
+                ['Edit Configuration Files',
+                 'Reconfigure'],
                 'filter': lambda val: val.lower()
             }
         ], style=style())['choice']
-    except EOFError: 
+    except EOFError:
         log("Action cancelled by user", "red")
-        return 
+        return
 
-    if choice == "edit configuration files": 
+    if choice == "edit configuration files":
         hosts = config.items('HOSTS')
 
         for host in hosts:
@@ -203,33 +204,33 @@ def configurehoneypot(ctx):
                 path = "~/dan/config"
 
                 cmd = 'ssh -i {} -t {}@{} "cd {}; ls; echo "Welcome to {}! Feel free to use your editor of choice to edit the above configuration files, and run exit to return to the CLI."; bash"'.format(ssh_key, user, ip, path, host[0])
-                
+
                 print('\n')
                 os.system(cmd)
 
-    elif choice == "reconfigure": 
-        try: 
+    elif choice == "reconfigure":
+        try:
             subchoice = prompt([
                 {
                     'type': 'list',
                     'name': 'subchoice',
                     'message': 'What do you need to do?',
-                    'choices': 
-                    ['Reconfigure Sniffer', 
-                     'Reconfigure Ports', 
-                     'Reconfigure Sniffer and Ports'], 
+                    'choices':
+                    ['Reconfigure Sniffer',
+                     'Reconfigure Ports',
+                     'Reconfigure Sniffer and Ports'],
                     'filter': lambda val: val.lower()
                 }
             ], style=style())['subchoice']
-        except EOFError: 
+        except EOFError:
             log("Action cancelled by user", "red")
             return
 
-        if subchoice == "reconfigure sniffer": 
+        if subchoice == "reconfigure sniffer":
             message = "reconfigure sniff"
-        elif subchoice == "reconfigure ports": 
+        elif subchoice == "reconfigure ports":
             message = "reconfigure ports"
-        elif subchoice == "reconfigure sniffer and ports": 
+        elif subchoice == "reconfigure sniffer and ports":
             message = "reconfigure sniff ports"
 
         hosts = config.items('HOSTS')
@@ -242,11 +243,11 @@ def configurehoneypot(ctx):
                 tunnel = ConfigTunnel('client', host=ip)
                 tunnel.start()
                 time.sleep(2)
-                
-                if not tunnel.ready: 
+
+                if not tunnel.ready:
                     log ("Could not connect to " + host[0], "red")
-                else: 
-                    tunnel.send(message)
+                else:
+                    tunnel.send(message + " user " + getpass.getuser())
                     log ("Ran '" + message + "' on " + host[0], "green")
 
                 tunnel.stop()

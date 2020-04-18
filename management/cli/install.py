@@ -14,7 +14,7 @@ def main(ctx):
 #TODO
 @main.command()
 @click.pass_context
-def installhoneypot(ctx): 
+def installhoneypot(ctx):
     """
     Install a honeypot
     """
@@ -23,10 +23,10 @@ def installhoneypot(ctx):
 
     if len(honeypots) == 0:
         log ("No host has been selected.", "red")
-        return 
-        
+        return
+
     tar_file = None
-    try: 
+    try:
         tar_file = prompt([
             {
                 'type': 'input',
@@ -35,9 +35,9 @@ def installhoneypot(ctx):
                 'validate': FilePathValidator
             }
         ], style=style())['tar_file']
-    except EOFError: 
-        log("Action cancelled by user", "red") 
-        return 
+    except EOFError:
+        log("Action cancelled by user", "red")
+        return
 
     hosts = config.items('HOSTS')
 
@@ -46,16 +46,16 @@ def installhoneypot(ctx):
             host_data = json.loads(host[1].replace("\'", "\""))
             installed = host_data['installed']
 
-            if installed == "True": 
+            if installed == "True":
                 log (host[0] + " already has an installed honeypot.", "red")
                 continue
-                
+
             user = host_data['user']
             ip = host_data['ip']
             ssh_key = host_data['ssh_key']
 
             password = None
-            try: 
+            try:
                 password = prompt([
                     {
                         'type': 'password',
@@ -63,7 +63,7 @@ def installhoneypot(ctx):
                         'message': ('Password for ' + user + "@" + ip + ":"),
                     }
                 ], style=style())['password']
-            except EOFError: 
+            except EOFError:
                 log("Action cancelled by user", "red")
                 continue
 
@@ -92,8 +92,8 @@ def uninstallhoneypot(ctx):
 
     if len(honeypots) == 0:
         log ("No host has been selected.", "red")
-        return 
-    
+        return
+
     hosts = config.items('HOSTS')
 
     for host in hosts:
@@ -101,17 +101,17 @@ def uninstallhoneypot(ctx):
             host_data = json.loads(host[1].replace("\'", "\""))
             installed = host_data['installed']
 
-            if installed == "False": 
+            if installed == "False":
                 log (host[0] + " did not have an installed honeypot.", "red")
                 continue
-                
+
             user = host_data['user']
             ip = host_data['ip']
             ssh_key = host_data['ssh_key']
             status = host_data['status']
 
             password = None
-            try: 
+            try:
                 password = prompt([
                     {
                         'type': 'password',
@@ -119,30 +119,30 @@ def uninstallhoneypot(ctx):
                         'message': ('Password for ' + user + "@" + ip + ":"),
                     }
                 ], style=style())['password']
-            except EOFError: 
+            except EOFError:
                 log("Action cancelled by user", "red")
                 continue
 
             stdout, stderr = subprocess.Popen(['deployment/uninstall.sh', ssh_key, ip, user, password, status],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
-            
+
             print (("" + stdout.decode() + stderr.decode()))
 
-            # TODO: check for errors, do not label host as uninstalled if there were any errors with uninstall 
+            # TODO: check for errors, do not label host as uninstalled if there were any errors with uninstall
             host_data['status'] = 'inactive'
             host_data['installed'] = 'False'
             host_value = str(host_data)
             config.set('HOSTS', host[0], host_value)
             writeConfig("The honeypot on " + host[0] + " is now uninstalled.")
-            
+
 
 #TODO
 @main.command()
 @click.pass_context
 def reinstallhoneypot(ctx):
     """
-    Stop and reinstall a honeypot 
+    Stop and reinstall a honeypot
     """
 
     honeypots = hostselector("Which host(s) do you want to reinstall a honeypot on?")
@@ -152,7 +152,7 @@ def reinstallhoneypot(ctx):
         return
 
     tar_file = None
-    try: 
+    try:
         tar_file = prompt([
             {
                 'type': 'input',
@@ -161,9 +161,9 @@ def reinstallhoneypot(ctx):
                 'validate': FilePathValidator
             }
         ], style=style())['tar_file']
-    except EOFError: 
+    except EOFError:
         log("Action cancelled by user", "red")
-        return 
+        return
 
     hosts = config.items('HOSTS')
 
@@ -172,17 +172,17 @@ def reinstallhoneypot(ctx):
             host_data = json.loads(host[1].replace("\'", "\""))
             installed = host_data['installed']
 
-            if installed == "False": 
+            if installed == "False":
                 log (host[0] + " did not have an installed honeypot.", "red")
                 continue
-                
+
             user = host_data['user']
             ip = host_data['ip']
             ssh_key = host_data['ssh_key']
             status = host_data['status']
 
             password = None
-            try: 
+            try:
                 password = prompt([
                     {
                         'type': 'password',
@@ -190,7 +190,7 @@ def reinstallhoneypot(ctx):
                         'message': ('Password for ' + user + "@" + ip + ":"),
                     }
                 ], style=style())['password']
-            except EOFError: 
+            except EOFError:
                 log("Action cancelled by user", "red")
                 continue
 
@@ -205,4 +205,3 @@ def reinstallhoneypot(ctx):
             host_value = str(host_data)
             config.set('HOSTS', host[0], host_value)
             writeConfig("The honeypot on " + host[0] + " is now reinstalled.")
-    
