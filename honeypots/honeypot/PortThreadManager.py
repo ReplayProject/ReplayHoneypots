@@ -93,7 +93,7 @@ class PortThreadManager:
         #--- Sniffer Thread ---#
         if (self.snifferThread == None):
             # TODO: Switch config="testing" to "base" when in production
-            self.snifferThread = Sniffer(config="testing",
+            self.snifferThread = Sniffer(config="base",
                                          openPorts=list(
                                              self.responseData.keys()),
                                          whitelist=self.whitelist,
@@ -161,11 +161,11 @@ class PortThreadManager:
 
         #return the code here; 0 means no changes, 1 means only sniffer changed, 2 means only TCP ports were changed, 3 means both were changed
         if (retCode == 1):
-            self.db.alert(Alert(variant="meta", message="Sniffer updated during runtime.", references=[]).json())
+            self.db.alert(Alert(variant="meta", message="Sniffer updated during runtime.", references=[], hostname=self.db.hostname).json())
         elif (retCode == 2):
-            self.db.alert(Alert(variant="meta", message="TCP sockets updated during runtime.", references=[]).json())
+            self.db.alert(Alert(variant="meta", message="TCP sockets updated during runtime.", references=[], hostname=self.db.hostname).json())
         elif (retCode == 3):
-            self.db.alert(Alert(variant="meta", message="TCP sockets and Sniffer updated during runtime.", references=[]).json())
+            self.db.alert(Alert(variant="meta", message="TCP sockets and Sniffer updated during runtime.", references=[], hostname=self.db.hostname).json())
         return retCode
 
 if __name__ == '__main__':
@@ -180,7 +180,7 @@ if __name__ == '__main__':
 
     manager = PortThreadManager()
     manager.activate()
-    manager.db.alert(Alert(variant="meta", message="Honeypot startup.", references=[]).json())
+    manager.db.alert(Alert(variant="meta", message="Honeypot startup.", references=[], hostname=manager.db.hostname).json())
 
     def reconfigure(args):
         manager.activate(updateSniffer='sniff' in args,
