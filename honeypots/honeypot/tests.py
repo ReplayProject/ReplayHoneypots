@@ -131,7 +131,8 @@ class TestSniffer(unittest.TestCase):
                     whitelist=[],
                     honeypotIP="localhost",
                     managementIPs=("52.87.97.77", "54.80.228.0"),
-                    databaser=None)
+                    databaser=None,
+                    hostname="Somehost")
         s.daemon = True
         s.start()
 
@@ -166,7 +167,8 @@ class TestSniffer(unittest.TestCase):
                     whitelist=[],
                     portWhitelist=[],
                     honeypotIP=host_ip,
-                    managementIPs=("52.87.97.77", "54.80.228.0"))
+                    managementIPs=("52.87.97.77", "54.80.228.0"),
+                    hostname="Somehost")
         s.daemon = True
         s.start()
 
@@ -182,13 +184,15 @@ class TestSniffer(unittest.TestCase):
                        portWhitelist=[777, 888, 999],
                        honeypotIP="192.168.42.42",
                        managementIPs="54.80.228.0")
+        
+        #used to flush the Sniffer
+        os.system("curl www.google.com 2>&1 >> /dev/null")
+
         self.assertTrue(len(s.openPorts) == 2)
         self.assertTrue(len(s.whitelist) == 2)
         self.assertTrue(len(s.portWhitelist) == 3)
         self.assertTrue(s.managementIPs == "54.80.228.0")
         self.assertTrue(s.honeypotIP == "192.168.42.42")
-
-        s.running = False
 
 
 class TestConfigTunnel(unittest.TestCase):
