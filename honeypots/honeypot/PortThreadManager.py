@@ -67,7 +67,8 @@ class PortThreadManager:
 
         self.delay = config.get('Attributes', 'delay')
         self.whitelist = json.loads(config.get("Whitelist", "addresses"))
-        self.portWhitelist = json.loads(config.get("Whitelist", "whitelistedPorts"))
+        self.portWhitelist = json.loads(
+            config.get("Whitelist", "whitelistedPorts"))
 
     """
     Start a thread for each port in the config file, connects to the database, runs sniffer class
@@ -81,7 +82,8 @@ class PortThreadManager:
     def activate(self,
                  propertiesFile=CONFIG_FILE_PATH,
                  updateSniffer=False,
-                 updateOpenPorts=False):
+                 updateOpenPorts=False,
+                 user=""):
         self.configFilePath = propertiesFile
 
         # Gets the info from config file initially
@@ -97,7 +99,7 @@ class PortThreadManager:
                                          openPorts=list(
                                              self.responseData.keys()),
                                          whitelist=self.whitelist,
-                                         portWhitelist = self.portWhitelist,
+                                         portWhitelist=self.portWhitelist,
                                          honeypotIP=self.HONEY_IP,
                                          managementIPs=self.MGMT_IPs,
                                          databaser=self.db)
@@ -109,7 +111,7 @@ class PortThreadManager:
             self.snifferThread.configUpdate(openPorts=list(
                 self.responseData.keys()),
                                             whitelist=self.whitelist,
-                                            portWhitelist = self.portWhitelist,
+                                            portWhitelist=self.portWhitelist,
                                             honeypotIP=self.HONEY_IP,
                                             managementIPs=self.MGMT_IPs)
             if (not self.snifferThread.currentHash == oldHash):
@@ -143,7 +145,8 @@ class PortThreadManager:
                 if (not p in updatedPorts):
                     self.processList[p].isRunning = False
                     del self.processList[p]
-                elif (not self.processList[p].response == self.responseData[p]):
+                elif (not self.processList[p].response == self.responseData[p]
+                      ):
                     #check if we need to alter response -- just change everything, might not matter
                     self.processList[p].response = self.responseData[p]
                     portsAltered = True
@@ -161,12 +164,35 @@ class PortThreadManager:
 
         #return the code here; 0 means no changes, 1 means only sniffer changed, 2 means only TCP ports were changed, 3 means both were changed
         if (retCode == 1):
-            self.db.alert(Alert(variant="meta", message="Sniffer updated during runtime.", references=[], hostname=self.db.hostname).json())
+            self.db.alert(
+                Alert(variant="meta",
+                      message="Sniffer updated during runtime. - " + user,
+                      references=[],
+                      hostname=self.db.hostname).json())
         elif (retCode == 2):
-            self.db.alert(Alert(variant="meta", message="TCP sockets updated during runtime.", references=[], hostname=self.db.hostname).json())
+            self.db.alert(
+                Alert(variant="meta",
+                      message="TCP sockets updated during runtime. - " + user,
+                      references=[],
+                      hostname=self.db.hostname).json())
         elif (retCode == 3):
-            self.db.alert(Alert(variant="meta", message="TCP sockets and Sniffer updated during runtime.", references=[], hostname=self.db.hostname).json())
+            self.db.alert(
+                Alert(
+                    variant="meta",
+                    message="TCP sockets and Sniffer updated during runtime. - "
+                    + user,
+                    references=[],
+                    hostname=self.db.hostname).json())
+        elif (retCode == 0):
+            self.db.alert(
+                Alert(
+                    variant="meta",
+                    message="Attempted configuration change during runtime. - "
+                    + user,
+                    references=[],
+                    hostname=self.db.hostname).json())
         return retCode
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Deploy the honeypot')
@@ -180,11 +206,16 @@ if __name__ == '__main__':
 
     manager = PortThreadManager()
     manager.activate()
-    manager.db.alert(Alert(variant="meta", message="Honeypot startup.", references=[], hostname=manager.db.hostname).json())
+    manager.db.alert(
+        Alert(variant="meta",
+              message="Honeypot startup.",
+              references=[],
+              hostname=manager.db.hostname).json())
 
     def reconfigure(args):
         manager.activate(updateSniffer='sniff' in args,
-                         updateOpenPorts='ports' in args)
+                         updateOpenPorts='ports' in args,
+                         user=args[-1] if 'user' in args else 'blank_user')
         print("Reconfiguring Replay Manager: ", args)
 
     # Lets get cracking
