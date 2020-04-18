@@ -14,7 +14,6 @@ from Crypto.Hash import HMAC
 from Crypto import Random
 
 # Refular imports
-import signal
 import select
 import socket
 import sys
