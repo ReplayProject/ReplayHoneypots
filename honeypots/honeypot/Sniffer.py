@@ -74,16 +74,22 @@ class Sniffer(Thread):
         if (self.config == "testing"):
             fltr = fltr + " and not (src port ssh or dst port ssh)"
             # this ignores the ssh spam you get when sending packets between two ssh terminals
-            sniff(filter=fltr, prn=self.save_packet, stop_filter=lambda p: not self.running)
+            sniff(filter=fltr,
+                  prn=self.save_packet,
+                  stop_filter=lambda p: not self.running)
         elif (self.config == "base"):
             fltr = fltr + " and not (src port ssh or dst port ssh)"
             # this ignores the ssh spam you get when sending packets between two ssh terminals - TAKE THIS OUT IN PROD
-            sniff(filter=fltr, prn=self.save_packet, stop_filter=lambda p: not self.running)
+            sniff(filter=fltr,
+                  prn=self.save_packet,
+                  stop_filter=lambda p: not self.running)
 
         elif (self.config == "onlyUDP"):
             fltr = "udp"
-            sniff(filter=fltr, prn=self.save_packet, stop_filter=lambda p: not self.running)
-        
+            sniff(filter=fltr,
+                  prn=self.save_packet,
+                  stop_filter=lambda p: not self.running)
+
         self.ready = True
 
     """
@@ -93,7 +99,7 @@ class Sniffer(Thread):
     def configUpdate(self,
                      openPorts=[],
                      whitelist=[],
-                     portWhitelist = [],
+                     portWhitelist=[],
                      honeypotIP=None,
                      managementIPs=None):
         print("Sniffer updated")
@@ -114,7 +120,6 @@ class Sniffer(Thread):
             self.running = True
             self.run()
 
-
     """
     Function for recording a packet during sniff runtime
     packet = the packet passed through the sniff function
@@ -133,7 +138,6 @@ class Sniffer(Thread):
         if (currentTime > self.portScanTimeout + 60):
             self.portScanTimeout = currentTime
             self.PS_RECORD = dict()
-
 
         sourceMAC = packet.src
         destMAC = packet.dst
@@ -160,9 +164,9 @@ class Sniffer(Thread):
                 dbHostname = "N/A"
             else:
                 dbHostname = self.db.hostname
-                
+
             log = LogEntry(srcPort, srcIP, sourceMAC, destPort, dstIP, destMAC,
-                       trafficType, destPort in self.openPorts, dbHostname)
+                           trafficType, destPort in self.openPorts, dbHostname)
 
             if (self.config == "base"):
                 self.db.save(log.json())
@@ -175,8 +179,18 @@ class Sniffer(Thread):
                 self.PS_RECORD[srcIP].add(log.destPortNumber)
             else:
                 self.RECORD[srcIP].append(log)
-                
+
+                if (not srcIP in self.PS_RECORD.keys()):
+                    self.PS_RECORD[srcIP] = set()
+
                 self.PS_RECORD[srcIP].add(log.destPortNumber)
+
                 if (len(self.PS_RECORD[srcIP]) > 100):
-                    self.db.alert(Alert(variant="", message="Port scan detected from IP {}".format(srcIP), references=[], hostname=self.db.hostname).json())
+                    # TODO: bekaloya, turn the list of references into a list of what db.save return on line 172 pls... -- frontend boys
+                    self.db.alert(
+                        Alert(variant="alert",
+                              message="Port scan detected from IP {}".format(
+                                  srcIP),
+                              references=list(self.PS_RECORD[srcIP]),
+                              hostname=self.db.hostname).json())
                     self.PS_RECORD[srcIP] = set()

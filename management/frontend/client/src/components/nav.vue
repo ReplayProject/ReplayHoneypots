@@ -45,12 +45,12 @@
           >Overview</router-link
         >
       </li>
-      <li v-for="db in $parent.hostsInfo" :key="db.key" class="mb2">
+      <li v-for="db in $store.state.hostsInfo" :key="db.key" class="mb2">
         <router-link :to="'/details/' + db.key" class="block link dim blue">{{
           db.key | formatDBName
         }}</router-link>
       </li>
-      <li v-if="$parent.aggInfo.doc_count != 0" class="mb2">
+      <li v-if="$store.state.aggInfo.doc_count != 0" class="mb2">
         <router-link to="/details/aggregate" class="block link dim blue">{{
           'aggregate' | formatDBName
         }}</router-link>
@@ -92,18 +92,6 @@
 <script>
 export default {
   name: 'Nav',
-  computed: {
-    navLinks () {
-      // let l = this.$parent.dbInfo.map(x => )
-      // <li v-for="db in $parent.dbInfo" :key="db.db_name" class="mb2">
-      //   <router-link
-      //     :to="'/details/' + db.db_name"
-      //     class="block link dim blue"
-      //     >{{ db.db_name | formatDBName }}</router-link
-      //   >
-      // </li>
-    }
-  },
   methods: {
     async logout (e) {
       let res = await this.axios.get('/logout')

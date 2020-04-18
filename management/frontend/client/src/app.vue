@@ -3,12 +3,7 @@
     <div class="flex-m flex-l nl3-m nr3-m nl3-l nr3-l">
       <component-nav></component-nav>
       <!-- Waits to load views till we have hosts info -->
-      <router-view v-if="Object.keys(hostsInfo).length != 0"></router-view>
-      <main v-else class="w-100 ph3-m ph3-l">
-        <section class="mw1 center mt6 mt6-ns">
-          <PropagateLoader :size="20" color="#387ddb" />>
-        </section>
-      </main>
+      <router-view></router-view>
     </div>
     <vue-progress-bar></vue-progress-bar>
   </div>
@@ -18,24 +13,15 @@
 import componentNav from './components/nav'
 import Chart from 'chart.js'
 
-import { PropagateLoader } from '@saeris/vue-spinners'
-
 export default {
   name: 'App',
   components: {
-    componentNav,
-    PropagateLoader
-  },
-  data () {
-    return {
-      aggInfo: {},
-      hostsInfo: []
-    }
+    componentNav
   },
   async mounted () {
     // Check for connection in a few seconds
     setTimeout(() => {
-      if (this.hostsInfo.length === 0) {
+      if (this.$store.state.hostsInfo.length === 0) {
         console.warn(
           'Database has no logs, or connection is being very slow.\n',
           process.env.DB_URL + '/' + 'aggregate_logs'
@@ -46,9 +32,8 @@ export default {
 
     console.log('Setting up DB')
     let db_url = process.env.DB_URL + '/' + 'aggregate_logs'
-
     let info = await this.$pouch.info(db_url)
-    this.aggInfo = info
+    this.$store.commit('setAggInfo', info)
 
     // create a design doc
     var ddoc = {
@@ -77,18 +62,13 @@ export default {
         group: true
       })
 
-      this.hostsInfo = result.rows
+      this.$store.commit('setHostsInfo', result.rows)
     } catch (err) {
       console.log('Something went wrong with fetching DB info: ', err)
     }
 
     //  [App.vue specific] When App.vue is finish loading finish the progress bar
     this.$Progress.finish()
-  },
-  computed: {
-    totalLogs () {
-      return this.hostsInfo.reduce((a, x) => (a += x.value), 0)
-    }
   },
   created () {
     Chart.defaults.global.legend.display = false

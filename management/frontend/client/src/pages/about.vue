@@ -8,51 +8,60 @@
   >
     <component-title>At a Glance</component-title>
     <hr class="o-20 mt2" />
-    <div
-      @click="entryLimit > 0 ? (entryLimit = -1) : (entryLimit = 5)"
-      :class="{
-        'bg-blue': entryLimit < 0,
-        white: entryLimit < 0,
-        'bg-white': entryLimit > 0,
-        blue: entryLimit > 0
-      }"
-      class="dib b mv3 br2 ph4 pv2 mh2 ba b--blue pointer shadow-hover"
+    <section
+      v-if="Object.keys($store.state.hostsInfo).length == 0"
+      class="mw1 center mt6 mt6-ns"
     >
-      Toggle All
-    </div>
-    <hr class="o-20 mt2" />
-    <div class="flex flex-wrap pt3 nl3 nr3">
+      <PropagateLoader :size="20" color="#387ddb" />
+    </section>
+    <section v-else>
       <div
-        v-for="(data, idx) in doshit([
-          'sourceIPData',
-          'destinationIPData',
-          'sourcePortData',
-          'destinationPortData',
-          'trafficData'
-        ])"
-        :key="idx"
-        class="w-100 w-50-l ph3 mb3 mb0-l"
+        @click="entryLimit > 0 ? (entryLimit = -1) : (entryLimit = 5)"
+        :class="{
+          'bg-blue': entryLimit < 0,
+          white: entryLimit < 0,
+          'bg-white': entryLimit > 0,
+          blue: entryLimit > 0
+        }"
+        class="dib b mv3 br2 ph4 pv2 mh2 ba b--blue pointer shadow-hover"
       >
-        <div class="bt bl br b--black-10 br2 mb3">
-          <div class="pa3 bb b--black-10">
-            <h4 class="mv0">{{ data.name }} Frequency</h4>
+        Toggle All
+      </div>
+      <hr class="o-20 mt2" />
+      <div class="flex flex-wrap pt3 nl3 nr3">
+        <div
+          v-for="(data, idx) in doshit([
+            'sourceIPData',
+            'destinationIPData',
+            'sourcePortData',
+            'destinationPortData',
+            'trafficData'
+          ])"
+          :key="idx"
+          class="w-100 w-50-l ph3 mb3 mb0-l"
+        >
+          <div class="bt bl br b--black-10 br2 mb3">
+            <div class="pa3 bb b--black-10">
+              <h4 class="mv0">{{ data.name }} Frequency</h4>
+            </div>
+            <metric-list-item
+              v-for="(entry, index) in data.source"
+              :key="index"
+              :show-bar="entry.showBar"
+              :name="entry.name"
+              :value="entry.value"
+              :percent="entry.percent"
+            >
+            </metric-list-item>
           </div>
-          <metric-list-item
-            v-for="(entry, index) in data.source"
-            :key="index"
-            :show-bar="entry.showBar"
-            :name="entry.name"
-            :value="entry.value"
-            :percent="entry.percent"
-          >
-          </metric-list-item>
         </div>
       </div>
-    </div>
+    </section>
   </main>
 </template>
 
 <script>
+import { PropagateLoader } from '@saeris/vue-spinners'
 import componentTitle from '../components/title'
 import metricListItem from '../components/metric-list-item'
 
@@ -60,6 +69,7 @@ export default {
   name: 'about',
   components: {
     componentTitle,
+    PropagateLoader,
     metricListItem
   },
   data () {
@@ -67,8 +77,6 @@ export default {
       data: null,
       logs: null,
       error: null,
-      // TODO: this will change
-      totalLogs: null,
       entryLimit: 5
     }
   },

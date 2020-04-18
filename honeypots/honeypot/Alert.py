@@ -17,7 +17,7 @@ class Alert:
     """
     __name__ = "Alert"
 
-    def __init__(self, variant, message="", references=None, hostname="DefaultHostname"):
+    def __init__(self, variant, message="", references=[], hostname="DefaultHostname"):
         self.variant = variant
         self.message = message
         self.timestamp = int(datetime.now().timestamp())

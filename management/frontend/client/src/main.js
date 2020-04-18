@@ -1,6 +1,7 @@
 import '@babel/polyfill'
 import Vue from 'vue'
 import app from './app.vue'
+import store from './store.js'
 import VueProgressBar from 'vue-progressbar'
 import router from './router'
 import Toasted from 'vue-toasted'
@@ -9,14 +10,6 @@ import 'tachyons/css/tachyons.min.css'
 import VueGoodTablePlugin from 'vue-good-table'
 import 'vue-good-table/dist/vue-good-table.css'
 Vue.use(VueGoodTablePlugin)
-
-import PouchVue from 'pouch-vue'
-import PouchDB from 'pouchdb-browser'
-import PouchdbFind from 'pouchdb-find'
-PouchDB.plugin(PouchdbFind)
-PouchDB.plugin(require('pouchdb-live-find'))
-// PouchDB.plugin(require('pouchdb-authentication'));
-// TODO: when we add database auth
 
 Vue.use(Toasted, {
   theme: 'toasted-primary',
@@ -27,23 +20,6 @@ Vue.use(Toasted, {
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 Vue.use(VueAxios, axios)
-
-// https://github.com/MDSLKTR/pouch-vue
-Vue.use(PouchVue, {
-  pouch: PouchDB, // optional if `PouchDB` is available on the global object
-  defaultDB: process.env.DB_URL + '/_all_dbs', // this is used as a default connect/disconnect database
-  optionsDB: {
-    // this is used to include a custom fetch() method (see TypeScript example)
-    fetch: function (url, opts) {
-      opts.credentials = 'omit'
-      // omit: Never send or receive cookies.
-      // same-origin: Send user credentials (cookies, basic http auth, etc..) if the URL is on the same origin as the calling script. This is the default value.
-      // include: Always send user credentials (cookies, basic http auth, etc..), even for cross-origin calls.
-      return PouchDB.fetch(url, opts)
-    }
-  }
-  // debug: "*" // optional - See `https://pouchdb.com/api.html#debug_mode` for valid settings (will be a separate Plugin in PouchDB 7.0)
-})
 
 Vue.use(VueProgressBar, {
   color: 'rgb(143, 255, 199)',
@@ -81,9 +57,11 @@ Vue.prototype.$parseDateWithTime = x => {
 }
 
 Vue.prototype.dbURI = process.env.DB_URL + '/' + 'aggregate_logs'
+Vue.prototype.alertsURI = process.env.DB_URL + '/' + 'alerts'
 
 window.v = new Vue({
   el: '#app',
   router,
+  store,
   render: h => h(app)
 })

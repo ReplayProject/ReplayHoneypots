@@ -165,31 +165,27 @@ class PortThreadManager:
         #return the code here; 0 means no changes, 1 means only sniffer changed, 2 means only TCP ports were changed, 3 means both were changed
         if (retCode == 1):
             self.db.alert(
-                Alert(variant="meta",
-                      message="Sniffer updated during runtime. - " + user,
-                      references=[],
+                Alert(variant="admin",
+                      message="Sniffer updated during runtime by " + user,
                       hostname=self.db.hostname).json())
         elif (retCode == 2):
             self.db.alert(
-                Alert(variant="meta",
-                      message="TCP sockets updated during runtime. - " + user,
-                      references=[],
+                Alert(variant="admin",
+                      message="TCP sockets updated during runtime by " + user,
                       hostname=self.db.hostname).json())
         elif (retCode == 3):
             self.db.alert(
                 Alert(
-                    variant="meta",
-                    message="TCP sockets and Sniffer updated during runtime. - "
+                    variant="admin",
+                    message="TCP sockets and Sniffer updated during runtime by "
                     + user,
-                    references=[],
                     hostname=self.db.hostname).json())
         elif (retCode == 0):
             self.db.alert(
                 Alert(
-                    variant="meta",
-                    message="Attempted configuration change during runtime. - "
+                    variant="admin",
+                    message="Attempted configuration change during runtime by "
                     + user,
-                    references=[],
                     hostname=self.db.hostname).json())
         return retCode
 
@@ -205,7 +201,7 @@ if __name__ == '__main__':
         portList = parser.getPorts()
 
     manager = PortThreadManager()
-    manager.activate()
+    manager.activate(user="system")
     manager.db.alert(
         Alert(variant="meta",
               message="Honeypot startup.",

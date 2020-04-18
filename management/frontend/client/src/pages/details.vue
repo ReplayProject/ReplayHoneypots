@@ -11,10 +11,9 @@
     <article data-name="slab-stat">
       <dl class="dib mr5">
         <dd class="f6 f5-ns b ml0">Total Logs</dd>
-        <dd class="f3 f2-ns b ml0" v-if="isAggregate">
-          {{ $parent.totalLogs }}
+        <dd class="f3 f2-ns b ml0">
+          {{ isAggregate ? $store.state.totalLogs : totalRecords }}
         </dd>
-        <dd class="f3 f2-ns b ml0" v-else>{{ totalRecords }}</dd>
       </dl>
       <dl class="dib mr5">
         <dd class="f6 f5-ns b ml0">Location</dd>
@@ -58,6 +57,7 @@
 
 <script>
 import componentTitle from '../components/title'
+import { mapState } from 'vuex'
 
 export default {
   name: 'deviceDetails',
@@ -132,14 +132,11 @@ export default {
       rows: []
     }
   },
-  async created () {
-    this.loadItems()
-  },
   watch: {
-    '$parent.hostsInfo': function () {
+    hostsInfo () {
       this.updateTotal()
     },
-    '$route.params.device': async function (device) {
+    '$route.params.device': function () {
       this.loadItems()
       this.resetParams()
     },
@@ -161,7 +158,8 @@ export default {
         },
         ...this.columns
       ]
-    }
+    },
+    ...mapState(['hostsInfo'])
   },
   methods: {
     // Format Datetime
@@ -169,11 +167,11 @@ export default {
       return $this.parseDateWithTime(x)
     },
     updateTotal () {
-      let h = this.$parent.hostsInfo
+      let h = this.$store.state.hostsInfo
       let d = this.$route.params.device
 
       if (this.isAggregate) {
-        this.totalRecords = this.$parent.totalLogs
+        this.totalRecords = this.$store.state.totalLogs
         return
       }
 
@@ -301,6 +299,9 @@ export default {
       this.$Progress.finish()
       this.isLoading = false
     }
+  },
+  async created () {
+    this.loadItems()
   }
 }
 </script>
