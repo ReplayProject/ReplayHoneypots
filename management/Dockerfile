@@ -13,12 +13,13 @@ RUN apk --no-cache add --virtual native-deps \
   g++ gcc libgcc libstdc++ linux-headers make python && \
   npm install --quiet node-gyp -g &&\
   npm install --quiet --only=production && \
+  npm install --quiet dotenv && \
   apk del native-deps
 
 # Copy source files
 COPY ./frontend/.env .
-COPY ./frontend/dist .
-COPY ./frontend/server .
+COPY ./frontend/dist ./dist
+COPY ./frontend/server ./server
 
 # Create Port Mappings for frontend & database
 EXPOSE 8080

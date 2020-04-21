@@ -5,15 +5,26 @@ const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
 
 // Configured user database
-const {salt, users} = require(process.env.PORT)
-const crypto = require('crypto');
-const hash = x => crypto.createHash('sha256').update( salt + x).digest('hex')
+const fs = require('fs')
+const useRootConfig = fs.existsSync(process.env.AUTH_FILE)
+
+authLog("using config: " + useRootConfig ? process.env.AUTH_FILE
+  : process.env.AUTH_FILE_FALLBACK)
+
+const { salt, users } = require(useRootConfig ? process.env.AUTH_FILE
+  : process.env.AUTH_FILE_FALLBACK)
+const crypto = require('crypto')
+const computeHash = x =>
+  crypto
+    .createHash('sha256')
+    .update(salt + x)
+    .digest('hex')
 
 /**
  * Function to Check local password and stored hash
  */
 function validPassword (attempt, hash) {
-  return hash(attempt) === hash
+  return computeHash(attempt) === hash
 }
 
 // Configure Passport authenticated session persistence.
