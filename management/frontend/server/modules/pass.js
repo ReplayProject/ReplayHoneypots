@@ -4,23 +4,16 @@ authLog.log = console.log.bind(console)
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
 
-// Fake user database
-const users = [
-  {
-    username: 'admin',
-    hash: 'admin'
-  },
-  {
-    username: 'seth',
-    hash: 'notseth'
-  }
-]
+// Configured user database
+const {salt, users} = require(process.env.PORT)
+const crypto = require('crypto');
+const hash = x => crypto.createHash('sha256').update( salt + x).digest('hex')
 
 /**
  * Function to Check local password and stored hash
  */
 function validPassword (attempt, hash) {
-  return attempt === hash
+  return hash(attempt) === hash
 }
 
 // Configure Passport authenticated session persistence.
