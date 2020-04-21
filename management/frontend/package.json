@@ -9,9 +9,9 @@
     "dev": "concurrently --kill-others \"npm run start-watch\" \"npm run build-watch\"",
     "dev2": "concurrently --kill-others \"npm run start-serve\" \"npm run build-watch\"",
     "format": "npx prettier-standard && npx sort-package-json ",
-    "start": "NODE_ENV=development npm run build && DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history node server/index.js",
-    "start-serve": "DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history node server/index.js",
-    "start-watch": "DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history nodemon --ignore config.json server/index.js",
+    "start": "NODE_ENV=development npm run build && DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history node -r dotenv/config server/index.js",
+    "start-serve": "DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history node -r dotenv/config server/index.js",
+    "start-watch": "DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history nodemon -r dotenv/config --ignore config.json server/index.js",
     "test": "npm run format && npx nyc ava test/specs/*"
   },
   "nodemonConfig": {
@@ -42,6 +42,7 @@
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "debug": "^4.1.1",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-session": "^1.17.0",
     "helmet": "^3.22.0",
