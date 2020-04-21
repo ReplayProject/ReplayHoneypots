@@ -148,7 +148,7 @@ class Sniffer(Thread):
         srcIP = ipLayer.src
         dstIP = ipLayer.dst
 
-        if (not ipLayer.haslayer("TCP") and not ipLayer.haslayer("UDP")):
+        if (not ipLayer.haslayer("TCP") and not ipLayer.haslayer("UDP") and not ipLayer.haslayer("ICMP")):
             return
 
         destPort = ipLayer.dport
@@ -156,8 +156,15 @@ class Sniffer(Thread):
         pair = (srcIP, destPort)
 
         if srcIP not in self.whitelist:
-            trafficType = "TCP" if ipLayer.haslayer("TCP") else "UDP"
+            #ICMP layer check first
+            if (ipLayer.haslayer("ICMP")):
+                trafficType = "ICMP"
+                log = LogEntry(None, srcIP, sourceMAC, None, dstIP, destMAC, trafficType, None, dbHostname)
+                self.db.save(log.json())
+                return            
 
+            #TCP/UDP section now
+            
             #Testing config - does not utilize a database
             if (self.config == "onlyUDP" or self.config == "testing"):
                 dbHostname = "N/A"
