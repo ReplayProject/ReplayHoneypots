@@ -148,7 +148,6 @@ class Sniffer(Thread):
         srcIP = ipLayer.src
         dstIP = ipLayer.dst
 
-        #TODO: add other types of packets
         if (not ipLayer.haslayer("TCP") and not ipLayer.haslayer("UDP")):
             return
 
@@ -169,28 +168,24 @@ class Sniffer(Thread):
                            trafficType, destPort in self.openPorts, dbHostname)
 
             if (self.config == "base"):
-                self.db.save(log.json())
+                dbID = self.db.save(log.json())
 
-            #storing mini-logs for onlyUDP
             if (not srcIP in self.RECORD.keys()):
                 self.RECORD[srcIP] = [log]
-
-                self.PS_RECORD[srcIP] = set()
-                self.PS_RECORD[srcIP].add(log.destPortNumber)
             else:
                 self.RECORD[srcIP].append(log)
 
-                if (not srcIP in self.PS_RECORD.keys()):
-                    self.PS_RECORD[srcIP] = set()
-
-                self.PS_RECORD[srcIP].add(log.destPortNumber)
+            if (not srcIP in self.PS_RECORD.keys()):
+                self.PS_RECORD[srcIP] = dict()
+                self.PS_RECORD[srcIP][log.destPortNumber] = dbID
+            else:
+                self.PS_RECORD[srcIP][log.destPortNumber] = dbID
 
                 if (len(self.PS_RECORD[srcIP]) > 100):
-                    # TODO: bekaloya, turn the list of references into a list of what db.save return on line 172 pls... -- frontend boys
                     self.db.alert(
                         Alert(variant="alert",
                               message="Port scan detected from IP {}".format(
                                   srcIP),
-                              references=list(self.PS_RECORD[srcIP]),
+                              references=list(self.PS_RECORD[srcIP].values()),
                               hostname=self.db.hostname).json())
-                    self.PS_RECORD[srcIP] = set()
+                    self.PS_RECORD[srcIP] = dict()
