@@ -389,6 +389,21 @@ class TestEditHoneypots(unittest.TestCase):
 
     
     """
+    Test stopping a honeypot on a valid host
+
+    Expected: 
+    - honeypot is stopped
+    """
+    def test_stop_honeypot_valid(self): 
+        self.test_start_honeypot_valid()
+        terminal = pexpect.spawn('python3 replay_cli.py stophoneypot --hosts yogi')
+        terminal.expect('Password for yogi@192.168.23.52:')
+        terminal.sendline('@HoneyYogi')
+        terminal.expect('The honeypot on yogi is now stopped.')
+        terminal.terminate()
+
+    
+    """
     Test starting a honeypot with the following invalid options: 
     - using a hostname that doesn't exist
     - using a host that didn't have a honeypot installed
@@ -427,6 +442,41 @@ class TestEditHoneypots(unittest.TestCase):
         terminal.expect('Password for yogi@192.168.23.52:')
         terminal.sendline('badpass')
         terminal.expect('yogi failed to start a honeypot.')
+        terminal.terminate()
+
+
+    """
+    Test stopping a honeypot with the following invalid options: 
+    - using a hostname that doesn't exist
+    - using a host that didn't have a honeypot installed
+    - using a host that was already stopped
+    - using an invalid password 
+
+    Expected: 
+    - honeypot is not stopped
+    """
+    def test_stop_honeypot_invalid(self): 
+        terminal = pexpect.spawn('python3 replay_cli.py stophoneypot --hosts unknown')
+        terminal.expect('Host unknown could not be found.')
+        terminal.terminate()
+
+        TestManageHosts.test_add_host_valid(self)
+        terminal = pexpect.spawn('python3 replay_cli.py stophoneypot --hosts yogi')
+        terminal.expect('yogi did not have an installed honeypot.')
+        terminal.terminate()
+
+        self.setUp()
+        self.test_stop_honeypot_valid()
+        terminal = pexpect.spawn('python3 replay_cli.py stophoneypot --hosts yogi')
+        terminal.expect('yogi was not running a honeypot.')
+        terminal.terminate()
+
+        self.setUp()
+        self.test_start_honeypot_valid()
+        terminal = pexpect.spawn('python3 replay_cli.py stophoneypot --hosts yogi')
+        terminal.expect('Password for yogi@192.168.23.52:')
+        terminal.sendline('badpass')
+        terminal.expect('The honeypot on yogi failed to stop.')
         terminal.terminate()
 
 
