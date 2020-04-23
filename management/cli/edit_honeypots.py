@@ -20,7 +20,7 @@ config = setupConfig()
 def main(ctx):
     ctx.ensure_object(dict)
 
-# TODO
+
 @main.command()
 @click.pass_context
 def starthoneypot(ctx):
@@ -91,16 +91,18 @@ def starthoneypot(ctx):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
 
-            print (("" + stdout.decode() + stderr.decode()))
+            output = str(stdout.decode() + stderr.decode())
+            log (output, "yellow")
 
-            # TODO: check for errors, do not label host as active if there were any errors with deployment
-            host_data['status'] = 'active'
-            host_value = str(host_data)
-            config.set('HOSTS', host[0], host_value)
-            writeConfig(host[0] + " is now running a honeypot.")
+            if "Honeypot started successfully" in output: 
+                host_data['status'] = 'active'
+                host_value = str(host_data)
+                config.set('HOSTS', host[0], host_value)
+                writeConfig(host[0] + " is now running a honeypot.")
+            else: 
+                log (host[0] + " failed to start a honeypot.", "red") 
 
 
-# TODO
 @main.command()
 @click.pass_context
 def stophoneypot(ctx):
@@ -151,13 +153,16 @@ def stophoneypot(ctx):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
 
-            print (("" + stdout.decode() + stderr.decode()))
+            output = str(stdout.decode() + stderr.decode())
+            log (output, "yellow")
 
-            # TODO: check for errors, do not label host as "inactive" if there were any errors with shutdown
-            host_data['status'] = 'inactive'
-            host_value = str(host_data)
-            config.set('HOSTS', host[0], host_value)
-            writeConfig("The honeypot on " + host[0] + " is now stopped.")
+            if "Honeypot stopped successfully" in output: 
+                host_data['status'] = 'inactive'
+                host_value = str(host_data)
+                config.set('HOSTS', host[0], host_value)
+                writeConfig("The honeypot on " + host[0] + " is now stopped.")
+            else: 
+                log ("The honeypot on " host[0] + " failed to stop.", "red")
 
 
 @main.command()

@@ -11,7 +11,7 @@ config = setupConfig()
 def main(ctx):
     ctx.ensure_object(dict)
 
-#TODO
+
 @main.command()
 @click.pass_context
 def installhoneypot(ctx):
@@ -54,33 +54,22 @@ def installhoneypot(ctx):
             ip = host_data['ip']
             ssh_key = host_data['ssh_key']
 
-            password = None
-            try:
-                password = prompt([
-                    {
-                        'type': 'password',
-                        'name': 'password',
-                        'message': ('Password for ' + user + "@" + ip + ":"),
-                    }
-                ], style=style())['password']
-            except EOFError:
-                log("Action cancelled by user", "red")
-                continue
-
-            stdout, stderr = subprocess.Popen(['deployment/install.sh', ssh_key, ip, user, password, tar_file],
+            stdout, stderr = subprocess.Popen(['deployment/install.sh', ssh_key, ip, user, tar_file],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
 
-            print (("" + stdout.decode() + stderr.decode()))
+            output = str(stdout.decode() + stderr.decode())
+            log (output, "yellow")
 
-            # TODO: check for errors, do not label host as installed if there were any errors with install
-            host_data['installed'] = 'True'
-            host_value = str(host_data)
-            config.set('HOSTS', host[0], host_value)
-            writeConfig(host[0] + " now has an installed honeypot.")
+            if "Honeypot installed successfully" in output: 
+                host_data['installed'] = 'True'
+                host_value = str(host_data)
+                config.set('HOSTS', host[0], host_value)
+                writeConfig(host[0] + " now has an installed honeypot.")
+            else: 
+                log (host[0] + " failed to install a honeypot.", "red")     
 
 
-#TODO
 @main.command()
 @click.pass_context
 def uninstallhoneypot(ctx):
@@ -127,17 +116,19 @@ def uninstallhoneypot(ctx):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
 
-            print (("" + stdout.decode() + stderr.decode()))
+            output = str(stdout.decode() + stderr.decode())
+            log (output, "yellow")
 
-            # TODO: check for errors, do not label host as uninstalled if there were any errors with uninstall
-            host_data['status'] = 'inactive'
-            host_data['installed'] = 'False'
-            host_value = str(host_data)
-            config.set('HOSTS', host[0], host_value)
-            writeConfig("The honeypot on " + host[0] + " is now uninstalled.")
+            if "Honeypot uninstalled successfully" in output: 
+                host_data['status'] = 'inactive'
+                host_data['installed'] = 'False'
+                host_value = str(host_data)
+                config.set('HOSTS', host[0], host_value)
+                writeConfig("The honeypot on " + host[0] + " is now uninstalled.")
+            else: 
+                log ("The honeypot on " host[0] + " failed to uninstall.", "red")
 
 
-#TODO
 @main.command()
 @click.pass_context
 def reinstallhoneypot(ctx):
@@ -198,10 +189,13 @@ def reinstallhoneypot(ctx):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
 
-            print (("" + stdout.decode() + stderr.decode()))
+            output = str(stdout.decode() + stderr.decode())
+            log (output, "yellow")
 
-            # TODO: check for errors, do not label host as inactive if there were any errors with redeployment
-            host_data['status'] = 'inactive'
-            host_value = str(host_data)
-            config.set('HOSTS', host[0], host_value)
-            writeConfig("The honeypot on " + host[0] + " is now reinstalled.")
+            if "Honeypot reinstalled successfully" in output: 
+                host_data['status'] = 'inactive'
+                host_value = str(host_data)
+                config.set('HOSTS', host[0], host_value)
+                writeConfig("The honeypot on " + host[0] + " is now reinstalled.")
+            else: 
+                log ("The honeypot on " host[0] + " failed to reinstall.", "red")
