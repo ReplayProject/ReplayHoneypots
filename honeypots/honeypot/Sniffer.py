@@ -47,6 +47,7 @@ class Sniffer(Thread):
         #set used for testing convenience
         self.RECORD = dict()
 
+        #Hash used to tell if we properly updated Sniffer class; probably a better way of making this hash
         self.currentHash = hash(self.config)
         self.currentHash += hash(tuple(self.openPorts))
         self.currentHash += hash(tuple(self.whitelist))
@@ -68,9 +69,11 @@ class Sniffer(Thread):
         #adding a variable number of management ips
         for ip in self.managementIPs:
             fltr += "and not host {} ".format(ip)
+        #adding things from the port list
         for port in self.portWhitelist:
             fltr += "and not dst port {} ".format(port)
 
+        #here's where the packet detection starts
         if (self.config == "testing"):
             fltr = fltr + " and not (src port ssh or dst port ssh)"
             # this ignores the ssh spam you get when sending packets between two ssh terminals
@@ -79,11 +82,11 @@ class Sniffer(Thread):
                   stop_filter=lambda p: not self.running)
         elif (self.config == "base"):
             fltr = fltr + " and not (src port ssh or dst port ssh)"
-            # this ignores the ssh spam you get when sending packets between two ssh terminals - TAKE THIS OUT IN PROD
+            # this above filter ignores the ssh spam you get when sending packets between two ssh terminals - TAKE THIS OUT IN PROD
             sniff(filter=fltr,
                   prn=self.save_packet,
                   stop_filter=lambda p: not self.running)
-
+        #this last config option is used in testing
         elif (self.config == "onlyUDP"):
             fltr = "udp"
             sniff(filter=fltr,
@@ -110,12 +113,14 @@ class Sniffer(Thread):
         self.honeypotIP = honeypotIP
         self.managementIPs = managementIPs
 
+        #updates hash
         self.currentHash = hash(self.config)
         self.currentHash += hash(tuple(self.openPorts))
         self.currentHash += hash(tuple(self.whitelist))
         self.currentHash += hash(honeypotIP)
         self.currentHash += hash(tuple(managementIPs))
 
+        #preps Sniffer
         if (self.ready):
             self.running = True
             self.run()
@@ -130,6 +135,7 @@ class Sniffer(Thread):
         if (packet.haslayer("IP") == False):
             return
 
+        #timestamp used for port scan detection
         currentTime = int(datetime.now().timestamp())
         if (self.portScanTimeout is None):
             self.portScanTimeout = int(datetime.now().timestamp())
@@ -139,22 +145,21 @@ class Sniffer(Thread):
             self.portScanTimeout = currentTime
             self.PS_RECORD = dict()
 
+        #A bunch of packet data, collected to be stored
         sourceMAC = packet.src
         destMAC = packet.dst
-
         ipLayer = packet.getlayer("IP")
-
         # IP where this came from
         srcIP = ipLayer.src
         dstIP = ipLayer.dst
-
-        if (not ipLayer.haslayer("TCP") and not ipLayer.haslayer("UDP") and not ipLayer.haslayer("ICMP")):
-            return
-
         destPort = ipLayer.dport
         srcPort = ipLayer.sport
         pair = (srcIP, destPort)
 
+        if (not ipLayer.haslayer("TCP") and not ipLayer.haslayer("UDP") and not ipLayer.haslayer("ICMP")):
+            return
+
+        #Whitelist check
         if srcIP not in self.whitelist:
             #ICMP layer check first
             if (ipLayer.haslayer("ICMP")):
@@ -171,23 +176,28 @@ class Sniffer(Thread):
             else:
                 dbHostname = self.db.hostname
 
+            #Log Entry object we're saving
             log = LogEntry(srcPort, srcIP, sourceMAC, destPort, dstIP, destMAC,
                            trafficType, destPort in self.openPorts, dbHostname)
 
+            #saving the database ID in case of port scan detection
             if (self.config == "base"):
                 dbID = self.db.save(log.json())
 
+            #self.RECORD is where we save logs for easy testing
             if (not srcIP in self.RECORD.keys()):
                 self.RECORD[srcIP] = [log]
             else:
                 self.RECORD[srcIP].append(log)
 
+            #self.PS_RECORD is a separate dictionary used for port scan detection
             if (not srcIP in self.PS_RECORD.keys()):
                 self.PS_RECORD[srcIP] = dict()
                 self.PS_RECORD[srcIP][log.destPortNumber] = dbID
             else:
                 self.PS_RECORD[srcIP][log.destPortNumber] = dbID
-
+                
+                #Sending out the port scan alert
                 if (len(self.PS_RECORD[srcIP]) > 100):
                     self.db.alert(
                         Alert(variant="alert",

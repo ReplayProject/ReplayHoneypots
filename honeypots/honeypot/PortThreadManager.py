@@ -41,12 +41,18 @@ class PortThreadManager:
         self.processList = dict()
         # where the sniffer thread will be located
         self.snifferThread = None
+        #delay specified by config file
         self.delay = None
+        #whitelist of ports
         self.portWhitelist = None
+        #whitelist of IPs
         self.whitelist = None
+        #used to tell it to quit
         self.keepRunning = True
+        #list containing socket responses
         self.responseData = None
         self.configFilePath = None
+        #database interface object
         self.db = Databaser()
 
     """
@@ -57,18 +63,21 @@ class PortThreadManager:
         config = configparser.RawConfigParser()
 
         config.read(self.configFilePath)
-        dataFile = config.get('Attributes', 'pcap_data_file')
 
+        #A bunch of config options
         self.HONEY_IP = config.get('IPs', 'honeypotIP')
         self.MGMT_IPs = json.loads(config.get("IPs", "managementIPs"))
-
-        with open(dataFile, "r") as responseDataFile:
-            self.responseData = json.load(responseDataFile)
 
         self.delay = config.get('Attributes', 'delay')
         self.whitelist = json.loads(config.get("Whitelist", "addresses"))
         self.portWhitelist = json.loads(
             config.get("Whitelist", "whitelistedPorts"))
+
+        #Gets a separate file
+        dataFile = config.get('Attributes', 'pcap_data_file')
+        #Separate file contains socket response data
+        with open(dataFile, "r") as responseDataFile:
+            self.responseData = json.load(responseDataFile)
 
     """
     Start a thread for each port in the config file, connects to the database, runs sniffer class
@@ -202,6 +211,7 @@ if __name__ == '__main__':
 
     manager = PortThreadManager()
     manager.activate(user="system")
+    #initial creation alert
     manager.db.alert(
         Alert(variant="meta",
               message="Honeypot startup.",
@@ -214,7 +224,7 @@ if __name__ == '__main__':
                          user=args[-1] if 'user' in args else 'blank_user')
         print("Reconfiguring Replay Manager: ", args)
 
-    # Lets get cracking
+    # ConfigTunnel connection allows for live configuration options
     stunnel = ConfigTunnel('server')
     stunnel.setHandler("reconfigure", reconfigure)
     stunnel.start()
