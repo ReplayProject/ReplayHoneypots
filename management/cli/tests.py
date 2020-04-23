@@ -6,9 +6,9 @@ import pexpect
 import sys
 
 """
-Handles testing for the CLI
+Handles testing for the CLI's managehosts submenu
 """
-class TestCLI(unittest.TestCase):
+class TestManageHosts(unittest.TestCase):
 
 
     """
@@ -36,7 +36,7 @@ class TestCLI(unittest.TestCase):
         terminal.expect('No hosts have been added yet.')
         terminal.expect('No host has been selected.')
         terminal.terminate()
-    
+
 
     """
     Test adding a valid host
@@ -81,53 +81,6 @@ class TestCLI(unittest.TestCase):
         self.test_add_host_valid()
         terminal = pexpect.spawn('python3 replay_cli.py checkstatus --hosts yogi')
         terminal.expect('Linux yogi')
-        terminal.terminate()
-
-
-    """
-    Test installing a honeypot on a valid host
-
-    Expected: 
-    - honeypot is installed
-    """
-    def test_install_honeypot_valid(self): 
-        self.test_add_host_valid()
-        terminal = pexpect.spawn('python3 replay_cli.py installhoneypot --hosts yogi')
-        terminal.expect('Tar File:')
-        terminal.sendline('deployment/repo.tar.gz')
-        terminal.expect('yogi now has an installed honeypot.')
-        terminal.terminate()
-
-
-    """
-    Test uninstalling a honeypot on a valid host
-
-    Expected: 
-    - honeypot is uninstalled
-    """
-    def test_uninstall_honeypot_valid(self): 
-        self.test_install_honeypot_valid()
-        terminal = pexpect.spawn('python3 replay_cli.py uninstallhoneypot --hosts yogi')
-        terminal.expect('Password for yogi@192.168.23.52:')
-        terminal.sendline('@HoneyYogi')
-        terminal.expect('The honeypot on yogi is now uninstalled.')
-        terminal.terminate()
-
-
-    """
-    Test reinstalling a honeypot on a valid host
-
-    Expected: 
-    - honeypot is reinstalled
-    """
-    def test_reinstall_honeypot_valid(self): 
-        self.test_install_honeypot_valid()
-        terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts yogi')
-        terminal.expect('Tar File:')
-        terminal.sendline('deployment/repo.tar.gz')
-        terminal.expect('Password for yogi@192.168.23.52:')
-        terminal.sendline('@HoneyYogi')
-        terminal.expect('The honeypot on yogi is now reinstalled.')
         terminal.terminate()
 
 
@@ -204,7 +157,7 @@ class TestCLI(unittest.TestCase):
         terminal.expect('Host unknown could not be found.')
         terminal.terminate()
 
-        self.test_install_honeypot_valid()
+        TestInstall.test_install_honeypot_valid(self)
         terminal = pexpect.spawn('python3 replay_cli.py removehost --hosts yogi')
         terminal.expect('yogi has a honeypot installed.')
         terminal.terminate()
@@ -221,6 +174,72 @@ class TestCLI(unittest.TestCase):
     def test_check_status_invalid(self): 
         terminal = pexpect.spawn('python3 replay_cli.py checkstatus --hosts unknown')
         terminal.expect('Host unknown could not be found.')
+        terminal.terminate()
+
+
+"""
+Handles testing for the CLI's install submenu
+"""
+class TestInstall(unittest.TestCase):
+
+
+    """
+    Clear any previous CLI configurations
+    """
+    def setUp(self): 
+        # Confirm that the user has root access
+        self.assertEqual(os.geteuid(), 0)
+
+        try: 
+            os.remove('honeycli.cfg')
+        except OSError: 
+            pass
+
+
+    """
+    Test installing a honeypot on a valid host
+
+    Expected: 
+    - honeypot is installed
+    """
+    def test_install_honeypot_valid(self): 
+        TestManageHosts.test_add_host_valid(self)
+        terminal = pexpect.spawn('python3 replay_cli.py installhoneypot --hosts yogi')
+        terminal.expect('Tar File:')
+        terminal.sendline('deployment/repo.tar.gz')
+        terminal.expect('yogi now has an installed honeypot.')
+        terminal.terminate()
+
+
+    """
+    Test uninstalling a honeypot on a valid host
+
+    Expected: 
+    - honeypot is uninstalled
+    """
+    def test_uninstall_honeypot_valid(self): 
+        self.test_install_honeypot_valid()
+        terminal = pexpect.spawn('python3 replay_cli.py uninstallhoneypot --hosts yogi')
+        terminal.expect('Password for yogi@192.168.23.52:')
+        terminal.sendline('@HoneyYogi')
+        terminal.expect('The honeypot on yogi is now uninstalled.')
+        terminal.terminate()
+
+
+    """
+    Test reinstalling a honeypot on a valid host
+
+    Expected: 
+    - honeypot is reinstalled
+    """
+    def test_reinstall_honeypot_valid(self): 
+        self.test_install_honeypot_valid()
+        terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts yogi')
+        terminal.expect('Tar File:')
+        terminal.sendline('deployment/repo.tar.gz')
+        terminal.expect('Password for yogi@192.168.23.52:')
+        terminal.sendline('@HoneyYogi')
+        terminal.expect('The honeypot on yogi is now reinstalled.')
         terminal.terminate()
 
 
@@ -330,6 +349,84 @@ class TestCLI(unittest.TestCase):
         terminal.expect('Tar File:')
         terminal.sendline('deployment/repo.tar.gz')
         terminal.expect('yogi did not have an installed honeypot.')
+        terminal.terminate()
+
+
+"""
+Handles testing for the CLI's edithoneypots submenu
+"""
+class TestEditHoneypots(unittest.TestCase):
+
+
+    """
+    Clear any previous CLI configurations
+    """
+    def setUp(self): 
+        # Confirm that the user has root access
+        self.assertEqual(os.geteuid(), 0)
+
+        try: 
+            os.remove('honeycli.cfg')
+        except OSError: 
+            pass
+
+
+    """
+    Test starting a honeypot on a valid host
+
+    Expected: 
+    - honeypot is started
+    """
+    def test_start_honeypot_valid(self): 
+        TestInstall.test_install_honeypot_valid(self)
+        terminal = pexpect.spawn('python3 replay_cli.py starthoneypot --hosts yogi')
+        terminal.expect('Database URL:')
+        terminal.sendline('http://honeypots:securehoneypassword@192.168.23.50:5984')
+        terminal.expect('Password for yogi@192.168.23.52:')
+        terminal.sendline('@HoneyYogi')
+        terminal.expect('yogi is now running a honeypot.')
+        terminal.terminate()
+
+    
+    """
+    Test starting a honeypot with the following invalid options: 
+    - using a hostname that doesn't exist
+    - using a host that didn't have a honeypot installed
+    - using a host that was already started
+    - using an invalid password 
+
+    NOT TESTED: 
+    - using a valid string of an invalid database url 
+
+    Expected: 
+    - honeypot is not started
+    """
+    def test_start_honeypot_invalid(self): 
+        terminal = pexpect.spawn('python3 replay_cli.py starthoneypot --hosts unknown')
+        terminal.expect('Database URL:')
+        terminal.sendline('http://honeypots:securehoneypassword@192.168.23.50:5984')
+        terminal.expect('Host unknown could not be found.')
+        terminal.terminate()
+
+        TestManageHosts.test_add_host_valid(self)
+        terminal = pexpect.spawn('python3 replay_cli.py starthoneypot --hosts yogi')
+        terminal.expect('yogi did not have an installed honeypot.')
+        terminal.terminate()
+
+        self.setUp()
+        self.test_start_honeypot_valid()
+        terminal = pexpect.spawn('python3 replay_cli.py starthoneypot --hosts yogi')
+        terminal.expect('yogi is already running a honeypot.')
+        terminal.terminate()
+
+        self.setUp()
+        TestInstall.test_install_honeypot_valid(self)
+        terminal = pexpect.spawn('python3 replay_cli.py starthoneypot --hosts yogi')
+        terminal.expect('Database URL:')
+        terminal.sendline('http://honeypots:securehoneypassword@192.168.23.50:5984')
+        terminal.expect('Password for yogi@192.168.23.52:')
+        terminal.sendline('badpass')
+        terminal.expect('yogi failed to start a honeypot.')
         terminal.terminate()
 
 
