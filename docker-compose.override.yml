@@ -1,8 +1,10 @@
 # This file is for development and will not work with stack deploy
 
-version: '3.7'
+version: "3.7"
 
 services:
+  ### Optional Services ###
+
   # Service to start a devault ubuntu container with ssh running
   # newpot:
   #   image: linuxserver/openssh-server
@@ -27,39 +29,59 @@ services:
   #     - 2222:2222
   #   restart: unless-stopped
 
-  # Service to get manager up and running
+  # Service that performs a nmap scan against hosts(s)
+  # rogue:
+  #   command: "-n -A -p0-6666 couchdb"
+  #   image: instrumentisto/nmap
+
+  ### Build & Development Settings ###
+  couchdb:
+    logging:
+      driver: none
+
+  # Service to define how the manager gets built
   replay-manager:
+    command: "" # Toggle this link to disable the management frontend during development
     build:
-      context: './management'
+      context: "./management"
       dockerfile: Dockerfile
+    container_name: replay-manager
     restart: "no"
-    container_name: honeypot-manager
-    # used when we want a blank container for testing also
-    # depends_on:
-    #   - newpot
-    # volumes:
+    volumes:
+      - "./config/frontend_auth.json:/frontend_auth.json"
+    # Toggle the config below for "live mode" meaning code changes will sync into the container
     #   - replay-src:/src
+    #   - "./management/frontend/node_modules:/src/node_modules" # may need to check if dependencies map properly like this
+    # command: "npm run dev2"
     # working_dir: /src/management/frontend # comment to use bundled source code (needs fresh image)
     # environment:
     #   - NODE_ENV=development
 
-  # Service to get ready to run a honeypot
+  # Service to define how the honeypots get built
   replay-honeypot:
+    command: "" # toggle to disable sample honeypot during development
     image: 127.0.0.1:5000/seth/replay-honeypot:latest
-    build:
-      network: "host"
-      context: './honeypots'
-      dockerfile: Dockerfile
-    restart: "no"
     container_name: honeypot # Only works with one honeypot
     hostname: honeypot # Only works with one honeypot
     ports:
-      - 9998:9998 # change to 9998 ^^
-    # volumes:
-    #   - replay-src:/src
-    # working_dir: /src/honeypots/honeypot # comment to use bundled source code (needs fresh image)
-    # environment:
-    #   - NODE_ENV=development
+      - 9998:9998
+    build:
+      network: "host"
+      context: "./honeypots"
+      dockerfile: Dockerfile
+    depends_on:
+      - couchdb
+    restart: "no"
+    volumes:
+      - "./config/honeypot.cfg:/properties.cfg"
+      - "./config/senddata.json:/senddata.json"
+      - replay-src:/src # toggle this line for dev mode (bind source code)
+    environment:
+      - DB_URL=http://honeypots:securehoneypassword@couchdb:5984
+      # - HONEY_CFG=/properties.cfg
+      # Toggle below for dev
+      - NODE_ENV=development
+    working_dir: /src/honeypots/honeypot # comment to use bundled source code (needs fresh image)
 
 volumes:
   # This volume gives access to the source code for the system (runtime binding)
