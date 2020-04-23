@@ -1,4 +1,4 @@
-from utilities import log, style, hostselector, setupConfig, writeConfig, FilePathValidator
+from utilities import log, style, hostselector, setupConfig, writeConfig, hosts, hostdata, FilePathValidator
 from PyInquirer import prompt
 import click
 import json
@@ -13,17 +13,19 @@ def main(ctx):
 
 
 @main.command()
+@click.option('-h', '--hosts', 'selected_hosts', multiple=True)
 @click.pass_context
-def installhoneypot(ctx):
+def installhoneypot(ctx, selected_hosts=None):
     """
     Install a honeypot
     """
 
-    honeypots = hostselector("Which host(s) do you want to install a honeypot on?")
+    if len(selected_hosts) == 0: 
+        selected_hosts = hostselector("Which host(s) do you want to install a honeypot on?")
 
-    if len(honeypots) == 0:
-        log ("No host has been selected.", "red")
-        return
+        if len(selected_hosts) == 0: 
+            log ("No host has been selected.", "red")
+            return 
 
     tar_file = None
     try:
@@ -39,15 +41,15 @@ def installhoneypot(ctx):
         log("Action cancelled by user", "red")
         return
 
-    hosts = config.items('HOSTS')
+    all_hosts = hosts()
 
-    for host in hosts:
-        if host[0] in honeypots:
-            host_data = json.loads(host[1].replace("\'", "\""))
+    for host in selected_hosts: 
+        if host in all_hosts: 
+            host_data = hostdata(host)
             installed = host_data['installed']
 
             if installed == "True":
-                log (host[0] + " already has an installed honeypot.", "red")
+                log (host + " already has an installed honeypot.", "red")
                 continue
 
             user = host_data['user']
@@ -64,15 +66,17 @@ def installhoneypot(ctx):
             if "Honeypot installed successfully" in output: 
                 host_data['installed'] = 'True'
                 host_value = str(host_data)
-                config.set('HOSTS', host[0], host_value)
-                writeConfig(host[0] + " now has an installed honeypot.")
+                config.set('HOSTS', host, host_value)
+                writeConfig(host + " now has an installed honeypot.")
             else: 
-                log (host[0] + " failed to install a honeypot.", "red")     
+                log (host + " failed to install a honeypot.", "red") 
+        else: 
+            log("Host " + host + " could not be found.", "red")
 
 
 @main.command()
 @click.pass_context
-def uninstallhoneypot(ctx):
+def uninstallhoneypot(ctx, selected_hosts=None):
     """
     Stop and uninstall a honeypot
     """
@@ -131,7 +135,7 @@ def uninstallhoneypot(ctx):
 
 @main.command()
 @click.pass_context
-def reinstallhoneypot(ctx):
+def reinstallhoneypot(ctx, selected_hosts=None):
     """
     Stop and reinstall a honeypot
     """
