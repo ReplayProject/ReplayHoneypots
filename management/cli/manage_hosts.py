@@ -1,4 +1,4 @@
-from utilities import log, style, hostselector, setupConfig, writeConfig, DeviceIPValidator, EmptyValidator, FilePathValidator, HostnameValidator
+from utilities import log, style, hostselector, setupConfig, writeConfig, hosts, hostdata, DeviceIPValidator, EmptyValidator, FilePathValidator, HostnameValidator
 from PyInquirer import prompt
 import click
 import json
@@ -58,55 +58,61 @@ def addhost(ctx):
     writeConfig("New host " + hostname + " saved!")
     
 @main.command()
+@click.option('-h', '--hosts', 'selected_hosts', multiple=True)
 @click.pass_context
-def removehost(ctx):
+def removehost(ctx, selected_hosts=None):
     """
     Remove a host
     """
 
-    honeypots = hostselector("Which host(s) do you want to remove?")
+    if len(selected_hosts) == 0: 
+        selected_hosts = hostselector("Which host(s) do you want to remove?")
 
-    if len(honeypots) == 0:
-        log ("No host has been selected.", "red")
-        return 
-    
-    hosts = config.items('HOSTS')
+        if len(selected_hosts) == 0: 
+            log ("No host has been selected.", "red")
+            return 
 
-    for host in hosts: 
-        if host[0] in honeypots: 
-            host_data = json.loads(host[1].replace("\'", "\""))
+    all_hosts = hosts()
+
+    for host in selected_hosts: 
+        if host in all_hosts: 
+            host_data = hostdata(host)
             installed = host_data['installed']
 
             if installed == "True": 
-                log(host[0] + " has a honeypot installed. To uninstall this honeypot, select 'Uninstall Honeypot' command.", "red")
+                log(host + " has a honeypot installed. To uninstall this honeypot, select 'Uninstall Honeypot' command.", "red")
                 continue
                 
-            removed = config.remove_option('HOSTS', host[0])
+            removed = config.remove_option('HOSTS', host)
 
             if removed: 
-                writeConfig(host[0] + " has been removed.")
+                writeConfig(host + " has been removed.")
             else: 
-                log(host[0] + " could not be removed.", "red")
+                log(host + " could not be removed.", "red")
+        else: 
+            log("Host " + host + " could not be found.", "red")
+
 
 @main.command()
-@click.option('-i', '--identity', 'key_file', type=click.Path(exists=True, file_okay=True))
+@click.option('-h', '--hosts', 'selected_hosts', multiple=True)
 @click.pass_context
-def checkstatus(ctx, key_file):
+def checkstatus(ctx, selected_hosts=None):
     """
     Check the status of hosts
     """
 
-    selected_hosts = hostselector("Which host(s) do you want to check?")
+    if len(selected_hosts) == 0: 
+        selected_hosts = hostselector("Which host(s) do you want to check?")
 
-    if len(selected_hosts) == 0:
-        log ("No host has been selected.", "red")
-        return
+        if len(selected_hosts) == 0: 
+            log ("No host has been selected.", "red")
+            return 
 
-    all_hosts = config.items('HOSTS')
+    all_hosts = hosts()
 
-    for host in all_hosts:
-        if host[0] in selected_hosts:
-            host_data = json.loads(host[1].replace("\'", "\""))
+    for host in selected_hosts: 
+        if host in all_hosts: 
+            host_data = hostdata(host)
             user = host_data['user']
             ip = host_data['ip']
             ssh_key = host_data['ssh_key']
@@ -119,3 +125,5 @@ def checkstatus(ctx, key_file):
                 log ("Error while connecting to " + user + "@" + ip + " using SSH key " + ssh_key + ": " + stderr.decode(), "red")
 
             log (stdout.decode(), "green")
+        else: 
+            log("Host " + host + " could not be found.", "red")
