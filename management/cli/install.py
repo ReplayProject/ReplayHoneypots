@@ -75,27 +75,29 @@ def installhoneypot(ctx, selected_hosts=None):
 
 
 @main.command()
+@click.option('-h', '--hosts', 'selected_hosts', multiple=True)
 @click.pass_context
 def uninstallhoneypot(ctx, selected_hosts=None):
     """
     Stop and uninstall a honeypot
     """
 
-    honeypots = hostselector("Which host(s) do you want to uninstall a honeypot on?")
+    if len(selected_hosts) == 0: 
+        selected_hosts = hostselector("Which host(s) do you want to uninstall a honeypot on?")
 
-    if len(honeypots) == 0:
-        log ("No host has been selected.", "red")
-        return
+        if len(selected_hosts) == 0: 
+            log ("No host has been selected.", "red")
+            return 
 
-    hosts = config.items('HOSTS')
+    all_hosts = hosts()
 
-    for host in hosts:
-        if host[0] in honeypots:
-            host_data = json.loads(host[1].replace("\'", "\""))
+    for host in selected_hosts: 
+        if host in all_hosts: 
+            host_data = hostdata(host)
             installed = host_data['installed']
 
             if installed == "False":
-                log (host[0] + " did not have an installed honeypot.", "red")
+                log (host + " did not have an installed honeypot.", "red")
                 continue
 
             user = host_data['user']
@@ -127,24 +129,28 @@ def uninstallhoneypot(ctx, selected_hosts=None):
                 host_data['status'] = 'inactive'
                 host_data['installed'] = 'False'
                 host_value = str(host_data)
-                config.set('HOSTS', host[0], host_value)
-                writeConfig("The honeypot on " + host[0] + " is now uninstalled.")
+                config.set('HOSTS', host, host_value)
+                writeConfig("The honeypot on " + host + " is now uninstalled.")
             else: 
-                log ("The honeypot on " + host[0] + " failed to uninstall.", "red")
+                log ("The honeypot on " + host + " failed to uninstall.", "red")
+        else:
+            log("Host " + host + " could not be found.", "red")
 
 
 @main.command()
+@click.option('-h', '--hosts', 'selected_hosts', multiple=True)
 @click.pass_context
 def reinstallhoneypot(ctx, selected_hosts=None):
     """
     Stop and reinstall a honeypot
     """
 
-    honeypots = hostselector("Which host(s) do you want to reinstall a honeypot on?")
+    if len(selected_hosts) == 0: 
+        selected_hosts = hostselector("Which host(s) do you want to reinstall a honeypot on?")
 
-    if len(honeypots) == 0:
-        log ("No host has been selected.", "red")
-        return
+        if len(selected_hosts) == 0: 
+            log ("No host has been selected.", "red")
+            return 
 
     tar_file = None
     try:
@@ -160,15 +166,15 @@ def reinstallhoneypot(ctx, selected_hosts=None):
         log("Action cancelled by user", "red")
         return
 
-    hosts = config.items('HOSTS')
+    all_hosts = hosts()
 
-    for host in hosts:
-        if host[0] in honeypots:
-            host_data = json.loads(host[1].replace("\'", "\""))
+    for host in selected_hosts: 
+        if host in all_hosts: 
+            host_data = hostdata(host)
             installed = host_data['installed']
 
             if installed == "False":
-                log (host[0] + " did not have an installed honeypot.", "red")
+                log (host + " did not have an installed honeypot.", "red")
                 continue
 
             user = host_data['user']
@@ -199,7 +205,9 @@ def reinstallhoneypot(ctx, selected_hosts=None):
             if "Honeypot reinstalled successfully" in output: 
                 host_data['status'] = 'inactive'
                 host_value = str(host_data)
-                config.set('HOSTS', host[0], host_value)
-                writeConfig("The honeypot on " + host[0] + " is now reinstalled.")
+                config.set('HOSTS', host, host_value)
+                writeConfig("The honeypot on " + host + " is now reinstalled.")
             else: 
-                log ("The honeypot on " + host[0] + " failed to reinstall.", "red")
+                log ("The honeypot on " + host + " failed to reinstall.", "red")
+        else: 
+            log("Host " + host + " could not be found.", "red")

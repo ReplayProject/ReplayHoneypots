@@ -15,6 +15,9 @@ class TestCLI(unittest.TestCase):
     Clear any previous CLI configurations
     """
     def setUp(self): 
+        # Confirm that the user has root access
+        self.assertEqual(os.geteuid(), 0)
+
         try: 
             os.remove('honeycli.cfg')
         except OSError: 
@@ -97,11 +100,48 @@ class TestCLI(unittest.TestCase):
 
 
     """
+    Test uninstalling a honeypot on a valid host
+
+    Expected: 
+    - honeypot is uninstalled
+    """
+    def test_uninstall_honeypot_valid(self): 
+        self.test_install_honeypot_valid()
+        terminal = pexpect.spawn('python3 replay_cli.py uninstallhoneypot --hosts yogi')
+        terminal.expect('Password for yogi@192.168.23.52:')
+        terminal.sendline('@HoneyYogi')
+        terminal.expect('The honeypot on yogi is now uninstalled.')
+        terminal.terminate()
+
+
+    """
+    Test reinstalling a honeypot on a valid host
+
+    Expected: 
+    - honeypot is reinstalled
+    """
+    def test_reinstall_honeypot_valid(self): 
+        self.test_install_honeypot_valid()
+        terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts yogi')
+        terminal.expect('Tar File:')
+        terminal.sendline('deployment/repo.tar.gz')
+        terminal.expect('Password for yogi@192.168.23.52:')
+        terminal.sendline('@HoneyYogi')
+        terminal.expect('The honeypot on yogi is now reinstalled.')
+        terminal.terminate()
+
+
+    """
     Test adding a host with the following invalid options: 
     - using a hostname that already exists
     - using an IP address that already exists
-    - using a folder for the ssh key insted of a file
+    - using a folder for the ssh key instead of a file
     - using an invalid filepath for the ssh key
+
+    NOT TESTED: 
+    - using an invalid username for a valid IP address
+    - using a valid IP address for an inaccessible machine (e.g. no SSH, machine shut down)
+    - using a valid filepath of an invalid ssh key file
 
     Expected: 
     - user receives relevant error message
@@ -174,9 +214,6 @@ class TestCLI(unittest.TestCase):
     Test checking the status of a host with the following invalid options: 
     - using a hostname that doesn't exist
 
-    NOT TESTED: 
-    - valid but inaccessible host (e.g. no SSH, machine is shut down)
-
     Expected: 
     - user receives relevant error message
     - no status is output
@@ -190,12 +227,15 @@ class TestCLI(unittest.TestCase):
     """
     Test installing a honeypot with the following invalid options: 
     - using a hostname that doesn't exist
-    - using a folder for the tar file insted of a file
+    - using a folder for the tar file instead of a file
     - using an invalid filepath for the tar file
     - using a host that already has a honeypot installed
 
+    NOT TESTED: 
+    - using a valid filepath of an invalid tar file
+
     Expected: 
-    - honeypot is installed
+    - honeypot is not installed
     """
     def test_install_honeypot_invalid(self): 
         terminal = pexpect.spawn('python3 replay_cli.py installhoneypot --hosts unknown')
@@ -223,6 +263,75 @@ class TestCLI(unittest.TestCase):
         terminal.expect('yogi already has an installed honeypot.')
         terminal.terminate()
 
-        
+
+    """
+    Test uninstalling a honeypot with the following invalid options: 
+    - using a hostname that doesn't exist
+    - using a host that didn't have a honeypot installed
+    - using an invalid password 
+
+    Expected: 
+    - honeypot is not uninstalled
+    """
+    def test_uninstall_honeypot_invalid(self): 
+        terminal = pexpect.spawn('python3 replay_cli.py uninstallhoneypot --hosts unknown')
+        terminal.expect('Host unknown could not be found.')
+        terminal.terminate()
+
+        self.test_uninstall_honeypot_valid()
+        terminal = pexpect.spawn('python3 replay_cli.py uninstallhoneypot --hosts yogi')
+        terminal.expect('yogi did not have an installed honeypot.')
+        terminal.terminate()
+
+        self.setUp()
+        self.test_install_honeypot_valid()
+        terminal = pexpect.spawn('python3 replay_cli.py uninstallhoneypot --hosts yogi')
+        terminal.expect('Password for yogi@192.168.23.52:')
+        terminal.sendline('badpass')
+        terminal.expect('The honeypot on yogi failed to uninstall.')
+        terminal.terminate()
+
+
+    """
+    Test reinstalling a honeypot with the following invalid options: 
+    - using a hostname that doesn't exist
+    - using a folder for the tar file instead of a file
+    - using an invalid filepath for the tar file
+    - using a host that didn't have a honeypot installed
+
+    NOT TESTED: 
+    - using a valid filepath of an invalid tar file
+    - using an invalid password (reinstall.sh doesn't seem to trap/catch that error)
+
+    Expected: 
+    - honeypot is not reinstalled
+    """
+    def test_reinstall_honeypot_invalid(self): 
+        terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts unknown')
+        terminal.expect('Tar File:')
+        terminal.sendline('deployment/repo.tar.gz')
+        terminal.expect('Host unknown could not be found.')
+        terminal.terminate()
+
+        terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts yogi')
+        terminal.expect('Tar File:')
+        terminal.sendline('deployment')
+        terminal.expect('File deployment could not be found')
+        terminal.terminate()
+
+        terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts yogi')
+        terminal.expect('Tar File:')
+        terminal.sendline('deployment/bad_file_path')
+        terminal.expect('File deployment/bad_file_path could not be found')
+        terminal.terminate()
+
+        self.test_uninstall_honeypot_valid()
+        terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts yogi')
+        terminal.expect('Tar File:')
+        terminal.sendline('deployment/repo.tar.gz')
+        terminal.expect('yogi did not have an installed honeypot.')
+        terminal.terminate()
+
+
 if __name__ == '__main__':
     unittest.main()
