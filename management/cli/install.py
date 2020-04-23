@@ -126,7 +126,7 @@ def uninstallhoneypot(ctx):
                 config.set('HOSTS', host[0], host_value)
                 writeConfig("The honeypot on " + host[0] + " is now uninstalled.")
             else: 
-                log ("The honeypot on " host[0] + " failed to uninstall.", "red")
+                log ("The honeypot on " + host[0] + " failed to uninstall.", "red")
 
 
 @main.command()
@@ -198,4 +198,4 @@ def reinstallhoneypot(ctx):
                 config.set('HOSTS', host[0], host_value)
                 writeConfig("The honeypot on " + host[0] + " is now reinstalled.")
             else: 
-                log ("The honeypot on " host[0] + " failed to reinstall.", "red")
+                log ("The honeypot on " + host[0] + " failed to reinstall.", "red")

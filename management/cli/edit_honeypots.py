@@ -162,7 +162,7 @@ def stophoneypot(ctx):
                 config.set('HOSTS', host[0], host_value)
                 writeConfig("The honeypot on " + host[0] + " is now stopped.")
             else: 
-                log ("The honeypot on " host[0] + " failed to stop.", "red")
+                log ("The honeypot on " + host[0] + " failed to stop.", "red")
 
 
 @main.command()
