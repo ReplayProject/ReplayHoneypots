@@ -1,4 +1,4 @@
-from utilities import log, style, hostselector, setupConfig, writeConfig, EmptyValidator
+from utilities import log, style, hostselector, setupConfig, writeConfig, hosts, hostdata, EmptyValidator
 from PyInquirer import prompt
 import click
 import json
@@ -22,8 +22,9 @@ def main(ctx):
 
 
 @main.command()
+@click.option('-h', '--hosts', 'selected_hosts', multiple=True)
 @click.pass_context
-def starthoneypot(ctx):
+def starthoneypot(ctx, selected_hosts=None):
     """
     Start a honeypot
     """
@@ -48,26 +49,27 @@ def starthoneypot(ctx):
 
     db = config.get('GENERAL', 'db')
 
-    honeypots = hostselector("Which host(s) do you want to start a honeypot on?")
+    if len(selected_hosts) == 0: 
+        selected_hosts = hostselector("Which host(s) do you want to start a honeypot on?")
 
-    if len(honeypots) == 0:
-        log ("No host has been selected.", "red")
-        return
+        if len(selected_hosts) == 0: 
+            log ("No host has been selected.", "red")
+            return 
 
-    hosts = config.items('HOSTS')
+    all_hosts = hosts()
 
-    for host in hosts:
-        if host[0] in honeypots:
-            host_data = json.loads(host[1].replace("\'", "\""))
+    for host in selected_hosts: 
+        if host in all_hosts: 
+            host_data = hostdata(host)
             installed = host_data['installed']
             status = host_data['status']
 
             if installed == "False":
-                log (host[0] + " did not have an installed honeypot.", "red")
+                log (host + " did not have an installed honeypot.", "red")
                 continue
 
             if status == "active":
-                log (host[0] + " is already running a honeypot.", "red")
+                log (host + " is already running a honeypot.", "red")
                 continue
 
             user = host_data['user']
@@ -97,10 +99,12 @@ def starthoneypot(ctx):
             if "Honeypot started successfully" in output: 
                 host_data['status'] = 'active'
                 host_value = str(host_data)
-                config.set('HOSTS', host[0], host_value)
-                writeConfig(host[0] + " is now running a honeypot.")
+                config.set('HOSTS', host, host_value)
+                writeConfig(host + " is now running a honeypot.")
             else: 
-                log (host[0] + " failed to start a honeypot.", "red") 
+                log (host + " failed to start a honeypot.", "red") 
+        else: 
+            log("Host " + host + " could not be found.", "red")
 
 
 @main.command()
