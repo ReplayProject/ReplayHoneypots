@@ -131,14 +131,13 @@ class TestSniffer(unittest.TestCase):
                     whitelist=[],
                     honeypotIP="localhost",
                     managementIPs=("52.87.97.77", "54.80.228.0"),
-                    databaser=None,
-                    hostname="Somehost")
+                    databaser=None)
         s.daemon = True
         s.start()
 
         #Google IP; we'll be using this later
         IPPipe = os.popen('dig +short www.google.com')
-        responseIP = IPPipe.read()[:-1]
+        responseIPs = IPPipe.read()[:-1].split("\n")
         IPPipe.close()
 
         #Making sure we catch it
@@ -149,10 +148,13 @@ class TestSniffer(unittest.TestCase):
         # Let the logger handle whats up
         time.sleep(2)
 
-        self.assertTrue(responseIP in s.RECORD.keys())
-        self.assertTrue(s.RECORD[responseIP][0].sourceIPAddress == responseIP)
-        self.assertTrue(s.RECORD[responseIP][0].sourcePortNumber == 80)
-        self.assertTrue(s.RECORD[responseIP][0].trafficType == "TCP")
+        #Dig sometimes gives us multiple IPs, not all of which are used. If one is used, that's a successful read.
+        ipObtained = False
+        for ip in responseIPs:
+            if (ip in s.RECORD.keys() and s.RECORD[ip][0].sourceIPAddress == ip and s.RECORD[ip][0].sourcePortNumber == 80 and s.RECORD[ip][0].trafficType == "TCP"):
+                ipObtained = True
+                break
+        self.assertTrue(ipObtained)
 
         s.running = False
 
@@ -167,8 +169,7 @@ class TestSniffer(unittest.TestCase):
                     whitelist=[],
                     portWhitelist=[],
                     honeypotIP=host_ip,
-                    managementIPs=("52.87.97.77", "54.80.228.0"),
-                    hostname="Somehost")
+                    managementIPs=("52.87.97.77", "54.80.228.0"))
         s.daemon = True
         s.start()
 

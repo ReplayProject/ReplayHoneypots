@@ -176,19 +176,29 @@ class Sniffer(Thread):
             else:
                 dbHostname = self.db.hostname
 
+            if (ipLayer.haslayer("TCP")):
+                trafficType = "TCP"
+            elif (ipLayer.haslayer("UDP")):
+                trafficType = "UDP"
+            else:
+                trafficType = "Other"
+            
             #Log Entry object we're saving
             log = LogEntry(srcPort, srcIP, sourceMAC, destPort, dstIP, destMAC,
                            trafficType, destPort in self.openPorts, dbHostname)
 
-            #saving the database ID in case of port scan detection
-            if (self.config == "base"):
-                dbID = self.db.save(log.json())
 
             #self.RECORD is where we save logs for easy testing
             if (not srcIP in self.RECORD.keys()):
                 self.RECORD[srcIP] = [log]
             else:
                 self.RECORD[srcIP].append(log)
+
+            #saving the database ID in case of port scan detection
+            if (self.config == "base"):
+                dbID = self.db.save(log.json())
+            else:
+                return
 
             #self.PS_RECORD is a separate dictionary used for port scan detection
             if (not srcIP in self.PS_RECORD.keys()):
