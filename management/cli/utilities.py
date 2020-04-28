@@ -81,6 +81,7 @@ Configuration
 """
 
 import configparser
+import json
 
 CONF_PATH = 'honeycli.cfg'
 config = configparser.ConfigParser()
@@ -104,6 +105,19 @@ def writeConfig(message):
         config.write(f)
     log(message, "green")
 
+def hosts(): 
+    all_hosts = config.items('HOSTS')
+    all_hostnames = []
+
+    for host in all_hosts: 
+        all_hostnames.append(host[0])
+
+    return all_hostnames
+
+def hostdata(hostname): 
+    host = config.get('HOSTS', hostname)
+    return json.loads(host.replace("\'", "\""))
+
 """
 ##########
 Validators
@@ -112,7 +126,6 @@ Validators
 
 import os
 import ipaddress
-import json
 from PyInquirer import ValidationError, Validator
 
 """

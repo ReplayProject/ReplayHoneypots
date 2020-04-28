@@ -3,8 +3,7 @@
 KEYPATH=$1
 REMOTEIP=$2
 REMOTENAME=$3
-REMOTEPASS=$4
-REPOPATH=$5
+REPOPATH=$4
 
 function silentSsh {
     local connectionString="$1"

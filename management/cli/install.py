@@ -1,4 +1,4 @@
-from utilities import log, style, hostselector, setupConfig, writeConfig, FilePathValidator
+from utilities import log, style, hostselector, setupConfig, writeConfig, hosts, hostdata, FilePathValidator
 from PyInquirer import prompt
 import click
 import json
@@ -11,19 +11,21 @@ config = setupConfig()
 def main(ctx):
     ctx.ensure_object(dict)
 
-#TODO
+
 @main.command()
+@click.option('-h', '--hosts', 'selected_hosts', multiple=True)
 @click.pass_context
-def installhoneypot(ctx):
+def installhoneypot(ctx, selected_hosts=None):
     """
     Install a honeypot
     """
 
-    honeypots = hostselector("Which host(s) do you want to install a honeypot on?")
+    if len(selected_hosts) == 0: 
+        selected_hosts = hostselector("Which host(s) do you want to install a honeypot on?")
 
-    if len(honeypots) == 0:
-        log ("No host has been selected.", "red")
-        return
+        if len(selected_hosts) == 0: 
+            log ("No host has been selected.", "red")
+            return 
 
     tar_file = None
     try:
@@ -39,70 +41,63 @@ def installhoneypot(ctx):
         log("Action cancelled by user", "red")
         return
 
-    hosts = config.items('HOSTS')
+    all_hosts = hosts()
 
-    for host in hosts:
-        if host[0] in honeypots:
-            host_data = json.loads(host[1].replace("\'", "\""))
+    for host in selected_hosts: 
+        if host in all_hosts: 
+            host_data = hostdata(host)
             installed = host_data['installed']
 
             if installed == "True":
-                log (host[0] + " already has an installed honeypot.", "red")
+                log (host + " already has an installed honeypot.", "red")
                 continue
 
             user = host_data['user']
             ip = host_data['ip']
             ssh_key = host_data['ssh_key']
 
-            password = None
-            try:
-                password = prompt([
-                    {
-                        'type': 'password',
-                        'name': 'password',
-                        'message': ('Password for ' + user + "@" + ip + ":"),
-                    }
-                ], style=style())['password']
-            except EOFError:
-                log("Action cancelled by user", "red")
-                continue
-
-            stdout, stderr = subprocess.Popen(['deployment/install.sh', ssh_key, ip, user, password, tar_file],
+            stdout, stderr = subprocess.Popen(['deployment/install.sh', ssh_key, ip, user, tar_file],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
 
-            print (("" + stdout.decode() + stderr.decode()))
+            output = str(stdout.decode() + stderr.decode())
+            log (output, "yellow")
 
-            # TODO: check for errors, do not label host as installed if there were any errors with install
-            host_data['installed'] = 'True'
-            host_value = str(host_data)
-            config.set('HOSTS', host[0], host_value)
-            writeConfig(host[0] + " now has an installed honeypot.")
+            if "Honeypot installed successfully" in output: 
+                host_data['installed'] = 'True'
+                host_value = str(host_data)
+                config.set('HOSTS', host, host_value)
+                writeConfig(host + " now has an installed honeypot.")
+            else: 
+                log (host + " failed to install a honeypot.", "red") 
+        else: 
+            log("Host " + host + " could not be found.", "red")
 
 
-#TODO
 @main.command()
+@click.option('-h', '--hosts', 'selected_hosts', multiple=True)
 @click.pass_context
-def uninstallhoneypot(ctx):
+def uninstallhoneypot(ctx, selected_hosts=None):
     """
     Stop and uninstall a honeypot
     """
 
-    honeypots = hostselector("Which host(s) do you want to uninstall a honeypot on?")
+    if len(selected_hosts) == 0: 
+        selected_hosts = hostselector("Which host(s) do you want to uninstall a honeypot on?")
 
-    if len(honeypots) == 0:
-        log ("No host has been selected.", "red")
-        return
+        if len(selected_hosts) == 0: 
+            log ("No host has been selected.", "red")
+            return 
 
-    hosts = config.items('HOSTS')
+    all_hosts = hosts()
 
-    for host in hosts:
-        if host[0] in honeypots:
-            host_data = json.loads(host[1].replace("\'", "\""))
+    for host in selected_hosts: 
+        if host in all_hosts: 
+            host_data = hostdata(host)
             installed = host_data['installed']
 
             if installed == "False":
-                log (host[0] + " did not have an installed honeypot.", "red")
+                log (host + " did not have an installed honeypot.", "red")
                 continue
 
             user = host_data['user']
@@ -127,29 +122,35 @@ def uninstallhoneypot(ctx):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
 
-            print (("" + stdout.decode() + stderr.decode()))
+            output = str(stdout.decode() + stderr.decode())
+            log (output, "yellow")
 
-            # TODO: check for errors, do not label host as uninstalled if there were any errors with uninstall
-            host_data['status'] = 'inactive'
-            host_data['installed'] = 'False'
-            host_value = str(host_data)
-            config.set('HOSTS', host[0], host_value)
-            writeConfig("The honeypot on " + host[0] + " is now uninstalled.")
+            if "Honeypot uninstalled successfully" in output: 
+                host_data['status'] = 'inactive'
+                host_data['installed'] = 'False'
+                host_value = str(host_data)
+                config.set('HOSTS', host, host_value)
+                writeConfig("The honeypot on " + host + " is now uninstalled.")
+            else: 
+                log ("The honeypot on " + host + " failed to uninstall.", "red")
+        else:
+            log("Host " + host + " could not be found.", "red")
 
 
-#TODO
 @main.command()
+@click.option('-h', '--hosts', 'selected_hosts', multiple=True)
 @click.pass_context
-def reinstallhoneypot(ctx):
+def reinstallhoneypot(ctx, selected_hosts=None):
     """
     Stop and reinstall a honeypot
     """
 
-    honeypots = hostselector("Which host(s) do you want to reinstall a honeypot on?")
+    if len(selected_hosts) == 0: 
+        selected_hosts = hostselector("Which host(s) do you want to reinstall a honeypot on?")
 
-    if len(honeypots) == 0:
-        log ("No host has been selected.", "red")
-        return
+        if len(selected_hosts) == 0: 
+            log ("No host has been selected.", "red")
+            return 
 
     tar_file = None
     try:
@@ -165,15 +166,15 @@ def reinstallhoneypot(ctx):
         log("Action cancelled by user", "red")
         return
 
-    hosts = config.items('HOSTS')
+    all_hosts = hosts()
 
-    for host in hosts:
-        if host[0] in honeypots:
-            host_data = json.loads(host[1].replace("\'", "\""))
+    for host in selected_hosts: 
+        if host in all_hosts: 
+            host_data = hostdata(host)
             installed = host_data['installed']
 
             if installed == "False":
-                log (host[0] + " did not have an installed honeypot.", "red")
+                log (host + " did not have an installed honeypot.", "red")
                 continue
 
             user = host_data['user']
@@ -198,10 +199,15 @@ def reinstallhoneypot(ctx):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
 
-            print (("" + stdout.decode() + stderr.decode()))
+            output = str(stdout.decode() + stderr.decode())
+            log (output, "yellow")
 
-            # TODO: check for errors, do not label host as inactive if there were any errors with redeployment
-            host_data['status'] = 'inactive'
-            host_value = str(host_data)
-            config.set('HOSTS', host[0], host_value)
-            writeConfig("The honeypot on " + host[0] + " is now reinstalled.")
+            if "Honeypot reinstalled successfully" in output: 
+                host_data['status'] = 'inactive'
+                host_value = str(host_data)
+                config.set('HOSTS', host, host_value)
+                writeConfig("The honeypot on " + host + " is now reinstalled.")
+            else: 
+                log ("The honeypot on " + host + " failed to reinstall.", "red")
+        else: 
+            log("Host " + host + " could not be found.", "red")
