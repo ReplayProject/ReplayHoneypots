@@ -13,7 +13,26 @@ test('index.vue', t => {
       $route: {
         name: 'index'
       },
-      $toasted: { show }
+      $toasted: { show },
+      $store: {
+        state: {
+          hostsInfo: [
+            {
+              key: 'winnie',
+              value: 5648
+            },
+            {
+              key: 'yogi',
+              value: 2730
+            }
+          ],
+          aggInfo: {
+            sizes: {
+              file: 1000
+            }
+          }
+        }
+      }
     }
   })
   let html = wrapper.html()
