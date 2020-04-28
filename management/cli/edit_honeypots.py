@@ -49,17 +49,17 @@ def starthoneypot(ctx, selected_hosts=None):
 
     db = config.get('GENERAL', 'db')
 
-    if len(selected_hosts) == 0: 
+    if len(selected_hosts) == 0:
         selected_hosts = hostselector("Which host(s) do you want to start a honeypot on?")
 
-        if len(selected_hosts) == 0: 
+        if len(selected_hosts) == 0:
             log ("No host has been selected.", "red")
-            return 
+            return
 
     all_hosts = hosts()
 
-    for host in selected_hosts: 
-        if host in all_hosts: 
+    for host in selected_hosts:
+        if host in all_hosts:
             host_data = hostdata(host)
             installed = host_data['installed']
             status = host_data['status']
@@ -96,14 +96,14 @@ def starthoneypot(ctx, selected_hosts=None):
             output = str(stdout.decode() + stderr.decode())
             log (output, "yellow")
 
-            if "Honeypot started successfully" in output: 
+            if "Honeypot started successfully" in output:
                 host_data['status'] = 'active'
                 host_value = str(host_data)
                 config.set('HOSTS', host, host_value)
                 writeConfig(host + " is now running a honeypot.")
-            else: 
-                log (host + " failed to start a honeypot.", "red") 
-        else: 
+            else:
+                log (host + " failed to start a honeypot.", "red")
+        else:
             log("Host " + host + " could not be found.", "red")
 
 
@@ -115,17 +115,17 @@ def stophoneypot(ctx, selected_hosts=None):
     Stop a honeypot
     """
 
-    if len(selected_hosts) == 0: 
+    if len(selected_hosts) == 0:
         selected_hosts = hostselector("Which host(s) do you want to stop a honeypot on?")
 
-        if len(selected_hosts) == 0: 
+        if len(selected_hosts) == 0:
             log ("No host has been selected.", "red")
-            return 
+            return
 
     all_hosts = hosts()
 
-    for host in selected_hosts: 
-        if host in all_hosts: 
+    for host in selected_hosts:
+        if host in all_hosts:
             host_data = hostdata(host)
             installed = host_data['installed']
             status = host_data['status']
@@ -162,14 +162,14 @@ def stophoneypot(ctx, selected_hosts=None):
             output = str(stdout.decode() + stderr.decode())
             log (output, "yellow")
 
-            if "Honeypot stopped successfully" in output: 
+            if "Honeypot stopped successfully" in output:
                 host_data['status'] = 'inactive'
                 host_value = str(host_data)
                 config.set('HOSTS', host, host_value)
                 writeConfig("The honeypot on " + host + " is now stopped.")
-            else: 
+            else:
                 log ("The honeypot on " + host + " failed to stop.", "red")
-        else: 
+        else:
             log("Host " + host + " could not be found.", "red")
 
 
@@ -181,12 +181,12 @@ def configurehoneypot(ctx, selected_hosts=None):
     Configure a honeypot through a live ConfigTunnel connection
     """
 
-    if len(selected_hosts) == 0: 
+    if len(selected_hosts) == 0:
         selected_hosts = hostselector("Which host(s) do you want to configure?")
 
-        if len(selected_hosts) == 0: 
+        if len(selected_hosts) == 0:
             log ("No host has been selected.", "red")
-            return 
+            return
 
     choice = None
     try:
@@ -208,21 +208,21 @@ def configurehoneypot(ctx, selected_hosts=None):
     if choice == "edit configuration files":
         all_hosts = hosts()
 
-        for host in selected_hosts: 
-            if host in all_hosts: 
+        for host in selected_hosts:
+            if host in all_hosts:
                 host_data = hostdata(host)
                 user = host_data['user']
                 ip = host_data['ip']
                 ssh_key = host_data['ssh_key']
 
-                # TODO: fix path
-                path = "~/dan/config"
+                # TODO: fix path if install path is static
+                path = "~"
 
                 cmd = 'ssh -i {} -t {}@{} "cd {}; ls; echo "Welcome to {}! Feel free to use your editor of choice to edit the above configuration files, and run exit to return to the CLI."; bash"'.format(ssh_key, user, ip, path, host)
 
                 print('\n')
                 os.system(cmd)
-            else: 
+            else:
                 log("Host " + host + " could not be found.", "red")
 
     elif choice == "reconfigure":
@@ -252,8 +252,8 @@ def configurehoneypot(ctx, selected_hosts=None):
 
         all_hosts = hosts()
 
-        for host in selected_hosts: 
-            if host in all_hosts: 
+        for host in selected_hosts:
+            if host in all_hosts:
                 host_data = hostdata(host)
                 ip = host_data['ip']
 
@@ -269,5 +269,5 @@ def configurehoneypot(ctx, selected_hosts=None):
 
                 tunnel.stop()
                 tunnel.join()
-            else: 
+            else:
                 log("Host " + host + " could not be found.", "red")

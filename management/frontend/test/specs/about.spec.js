@@ -2,8 +2,7 @@ import { shallowMount } from '@vue/test-utils'
 import test from 'ava'
 import about from '../../client/src/pages/about.vue'
 import sinon from 'sinon'
-
-// TODO: make more realistic testing suite
+import store from '../store'
 
 test('about.vue', t => {
   const spy = sinon.spy()
@@ -19,25 +18,7 @@ test('about.vue', t => {
         createIndex,
         find
       },
-      $store: {
-        state: {
-          hostsInfo: [
-            {
-              key: 'winnie',
-              value: 5648
-            },
-            {
-              key: 'yogi',
-              value: 2730
-            }
-          ],
-          aggInfo: {
-            sizes: {
-              file: 1000
-            }
-          }
-        }
-      },
+     $store: store,
       $Progress: {
         start: spy,
         finish: spy

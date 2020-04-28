@@ -31,9 +31,6 @@ class PortListener(Thread):
         while self.isRunning:
             print("Listening on port " + str(self.port))
             conn, addr = sock.accept()
-            # TODO: remove this kind of print
-            # print(conn)
-            print(addr)
             responseThread = Thread(target=self.portResponse, args=[conn])
             responseThread.daemon = True
             responseThread.start()

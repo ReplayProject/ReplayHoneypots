@@ -200,18 +200,6 @@ export default {
         },
         this.dbURI
       )
-      // // Apply local filter or just throw it on the page
-      // let mine = groupBy(results.docs, 'timestamp')
-      // // TODO: abstract this date logic from here and the details page
-      // this.labels = Object.keys(mine).map(x => {
-      //   let s = new Date(x * 1000)
-      //     .toLocaleString()
-      //     .replace('/' + new Date().getFullYear(), '')
-      //   return s.slice(0, s.indexOf(':', 9) + 3) + ' ' + s.split(' ')[2]
-      // })
-
-      // this.data = Object.values(mine).map(x => x.length)
-
       // Lets do something with this data
       this.data = results.docs
       this.totalLogs = results.docs.length
