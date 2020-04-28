@@ -28,6 +28,30 @@
         Toggle All
       </div>
       <hr class="o-20 mt2" />
+      <div
+        @click="loadData(86400)"
+        class="dib b mv3 br2 ph4 pv2 mh2 ba b--blue pointer shadow-hover"
+      >
+        Last Day
+      </div>
+      <div
+        @click="loadData(86400 * 7)"
+        class="dib b mv3 br2 ph4 pv2 mh2 ba b--blue pointer shadow-hover"
+      >
+        Last Week
+      </div>
+      <div
+        @click="loadData(86400 * 30)"
+        class="dib b mv3 br2 ph4 pv2 mh2 ba b--blue pointer shadow-hover"
+      >
+        Last 30 Days
+      </div>
+      <div
+        @click="loadData(86400 * 365)"
+        class="dib b mv3 br2 ph4 pv2 mh2 ba b--blue pointer shadow-hover"
+      >
+        Last Year
+      </div>
       <div class="flex flex-wrap pt3 nl3 nr3">
         <div
           v-for="(data, idx) in doshit([
@@ -145,10 +169,10 @@ export default {
 
       return displayObj.slice(0, this.entryLimit)
     },
-    async loadData () {
+    async loadData (howLongAgo) {
       this.$Progress.start()
 
-      let fields = ['hostname', 'timestamp']
+      let fields = ['timestamp']
 
       // Query index
       let idx = await this.$pouch.createIndex(
@@ -164,18 +188,15 @@ export default {
       }
 
       let selector = {
-        /*hostname: { $eq: this.title }*/
+        timestamp: {
+          $gte: Math.floor(new Date().getTime() / 1000.0) - howLongAgo
+        }
       }
-      let sort = [{ timestamp: 'desc' }]
-      let skip = 0
+      console.log(selector)
       // Actually do a query
       let results = await this.$pouch.find(
         {
-          selector,
-          sort,
-          skip,
-          fields: [],
-          limit: 400
+          selector
         },
         this.dbURI
       )
@@ -207,7 +228,7 @@ export default {
   },
   async mounted () {
     try {
-      await this.loadData()
+      await this.loadData(86400)
     } catch (error) {
       console.log(error)
     }

@@ -32,7 +32,27 @@ test('details.vue', t => {
       $route: {
         name: 'details',
         params: {
-          device: 'test_device'
+          device: 'yogi'
+        }
+      },
+      $store: {
+        state: {
+          totalLogs: 1000,
+          hostsInfo: [
+            {
+              key: 'winnie',
+              value: 5648
+            },
+            {
+              key: 'yogi',
+              value: 2730
+            }
+          ],
+          aggInfo: {
+            sizes: {
+              file: 1000
+            }
+          }
         }
       },
       $Progress: {
@@ -46,6 +66,6 @@ test('details.vue', t => {
     }
   })
   let html = wrapper.html()
-  t.truthy(html.includes('Test Device Logs'))
+  t.truthy(html.includes('Yogi Logs'))
   t.truthy(html.includes('Total Logs'))
 })

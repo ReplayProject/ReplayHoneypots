@@ -8,10 +8,14 @@ const LocalStrategy = require('passport-local').Strategy
 const fs = require('fs')
 const useRootConfig = fs.existsSync(process.env.AUTH_FILE)
 
-authLog("using config: " + useRootConfig ? process.env.AUTH_FILE
-  : process.env.AUTH_FILE_FALLBACK)
+authLog(
+  'using config: ' + useRootConfig
+    ? process.env.AUTH_FILE
+    : process.env.AUTH_FILE_FALLBACK
+)
 
-const { salt, users } = require(useRootConfig ? process.env.AUTH_FILE
+const { salt, users } = require(useRootConfig
+  ? process.env.AUTH_FILE
   : process.env.AUTH_FILE_FALLBACK)
 const crypto = require('crypto')
 const computeHash = x =>

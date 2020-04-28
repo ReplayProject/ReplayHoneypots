@@ -19,6 +19,25 @@ test('about.vue', t => {
         createIndex,
         find
       },
+      $store: {
+        state: {
+          hostsInfo: [
+            {
+              key: 'winnie',
+              value: 5648
+            },
+            {
+              key: 'yogi',
+              value: 2730
+            }
+          ],
+          aggInfo: {
+            sizes: {
+              file: 1000
+            }
+          }
+        }
+      },
       $Progress: {
         start: spy,
         finish: spy
