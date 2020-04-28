@@ -9,9 +9,9 @@ const fs = require('fs')
 const useRootConfig = fs.existsSync(process.env.AUTH_FILE)
 const path = useRootConfig
   ? process.env.AUTH_FILE
-  : process.env.AUTH_FILE_FALLBACK;
+  : process.env.AUTH_FILE_FALLBACK
 
-authLog("using config: " + path)
+authLog('using config: ' + path)
 
 const { salt, users } = require(path)
 const crypto = require('crypto')

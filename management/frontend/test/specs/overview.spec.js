@@ -2,8 +2,6 @@ import { shallowMount } from '@vue/test-utils'
 import test from 'ava'
 import overview from '../../client/src/pages/overview.vue'
 
-// TODO: make more realistic testing suite
-
 test('overview.vue', t => {
   const wrapper = shallowMount(overview, {
     mocks: {

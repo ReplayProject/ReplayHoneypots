@@ -2,6 +2,7 @@ import { shallowMount, createLocalVue } from '@vue/test-utils'
 import test from 'ava'
 import details from '../../client/src/pages/details.vue'
 import sinon from 'sinon'
+import store from '../store'
 
 const localVue = createLocalVue()
 import VueGoodTablePlugin from 'vue-good-table'
@@ -19,8 +20,6 @@ localVue.filter('formatDBName', value => {
   )
 })
 
-// TODO: make more realistic testing suite
-
 test('details.vue', t => {
   const spy = sinon.spy()
   const createIndex = sinon.stub().returns({ result: 'exists' })
@@ -35,26 +34,7 @@ test('details.vue', t => {
           device: 'yogi'
         }
       },
-      $store: {
-        state: {
-          totalLogs: 1000,
-          hostsInfo: [
-            {
-              key: 'winnie',
-              value: 5648
-            },
-            {
-              key: 'yogi',
-              value: 2730
-            }
-          ],
-          aggInfo: {
-            sizes: {
-              file: 1000
-            }
-          }
-        }
-      },
+      $store: store,
       $Progress: {
         start: spy,
         finish: spy

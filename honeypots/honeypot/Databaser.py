@@ -97,7 +97,6 @@ class Databaser():
         """
         # Logic for live mode vs testing mode
         try:
-            # TODO: should put extra test here
             db = self.couch[self.alerts_name]
             doc_id, doc_rev = db.save(json.loads(json_raw))
             print("Alert created: %s" % doc_id)
