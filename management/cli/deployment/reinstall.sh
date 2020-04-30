@@ -6,6 +6,7 @@ REMOTENAME=$3
 REMOTEPASS=$4
 REPOPATH=$5
 STATUS=$6
+PORT=$7
 
 function silentSsh {
     local connectionString="$1"
@@ -14,7 +15,7 @@ function silentSsh {
         commands=`cat`
     fi
     # to stop ssh output switch from -tt to -T
-    ssh -i $KEYPATH -tt $connectionString "$commands"
+    ssh -i $KEYPATH -p $PORT -tt $connectionString "$commands"
 }
 
 # catch errors
@@ -27,7 +28,7 @@ function catch {
 }
 
 # Copy the repo archive
-sudo scp -q -o LogLevel=QUIET -i $KEYPATH $REPOPATH $REMOTENAME@$REMOTEIP:~
+sudo scp -P $PORT -q -o LogLevel=QUIET -i $KEYPATH $REPOPATH $REMOTENAME@$REMOTEIP:~
 # run string of commands over ssh
 silentSsh $REMOTENAME@$REMOTEIP << ENDSSH
 if [ "$STATUS" = "active" ]
@@ -36,7 +37,7 @@ then
     echo $REMOTEPASS | sudo -kS -p "
     " python3 CronUninstaller.py
 fi
-cd ~ 
+cd ~
 echo $REMOTEPASS | sudo -kS -p "
 " rm -r -f repo_test
 mkdir -p repo_test
