@@ -5,10 +5,19 @@ import pty
 import pexpect
 import sys
 
+hostname = "test"
+user = "fakehoney"
+password = "winniewazhere"
+ip = "0.0.0.0"
+ssh_port = "2222"
+ssh_key = "test/privatekey"
+db = "http://admin:couchdb@testingdb:5984"
+tar_file = "deployment/repo.tar.gz"
+
 """
 Handles testing for the CLI's managehosts submenu
 """
-class TestManageHosts(unittest.TestCase):
+class TestManageHosts(unittest.TestCase): 
 
 
     """
@@ -47,14 +56,16 @@ class TestManageHosts(unittest.TestCase):
     def test_add_host_valid(self): 
         terminal = pexpect.spawn('python3 replay_cli.py addhost')
         terminal.expect('Hostname:')
-        terminal.sendline('yogi')
+        terminal.sendline(hostname)
         terminal.expect('Username:')
-        terminal.sendline('yogi')
+        terminal.sendline(user)
         terminal.expect('IP Address:')
-        terminal.sendline('192.168.23.52')
+        terminal.sendline(ip)
+        terminal.expect('Port:')
+        terminal.sendline(ssh_port)
         terminal.expect('SSH Key:')
-        terminal.sendline('deployment/manager_rsa')
-        terminal.expect('New host yogi saved!')
+        terminal.sendline(ssh_key)
+        terminal.expect('New host {} saved!'.format(hostname))
         terminal.terminate()
 
 
@@ -66,8 +77,8 @@ class TestManageHosts(unittest.TestCase):
     """
     def test_remove_host_valid(self): 
         self.test_add_host_valid()
-        terminal = pexpect.spawn('python3 replay_cli.py removehost --hosts yogi')
-        terminal.expect('yogi has been removed.')
+        terminal = pexpect.spawn('python3 replay_cli.py removehost --hosts {}'.format(hostname))
+        terminal.expect('{} has been removed.'.format(hostname))
         terminal.terminate()
 
 
@@ -79,8 +90,8 @@ class TestManageHosts(unittest.TestCase):
     """
     def test_check_status_valid(self): 
         self.test_add_host_valid()
-        terminal = pexpect.spawn('python3 replay_cli.py checkstatus --hosts yogi')
-        terminal.expect('Linux yogi')
+        terminal = pexpect.spawn('python3 replay_cli.py checkstatus --hosts {}'.format(hostname))
+        terminal.expect('Linux')
         terminal.terminate()
 
 
@@ -88,6 +99,7 @@ class TestManageHosts(unittest.TestCase):
     Test adding a host with the following invalid options: 
     - using a hostname that already exists
     - using an IP address that already exists
+    - using an invalid port number 
     - using a folder for the ssh key instead of a file
     - using an invalid filepath for the ssh key
 
@@ -104,42 +116,94 @@ class TestManageHosts(unittest.TestCase):
         self.test_add_host_valid()
         terminal = pexpect.spawn('python3 replay_cli.py addhost')
         terminal.expect('Hostname:')
-        terminal.sendline('yogi')
+        terminal.sendline(hostname)
         terminal.expect('A host with that hostname already exists.')
         terminal.terminate()
 
         terminal = pexpect.spawn('python3 replay_cli.py addhost')
         terminal.expect('Hostname:')
-        terminal.sendline('winnie')
+        terminal.sendline('newhostname')
         terminal.expect('Username:')
-        terminal.sendline('winnie')
+        terminal.sendline('newuser')
         terminal.expect('IP Address:')
-        terminal.sendline('192.168.23.52')
+        terminal.sendline(ip)
         terminal.expect('A host with that IP address already exists.')
         terminal.terminate()
 
         terminal = pexpect.spawn('python3 replay_cli.py addhost')
         terminal.expect('Hostname:')
-        terminal.sendline('winnie')
+        terminal.sendline('newhostname')
         terminal.expect('Username:')
-        terminal.sendline('winnie')
+        terminal.sendline('newuser')
         terminal.expect('IP Address:')
-        terminal.sendline('192.168.23.51')
-        terminal.expect('SSH Key:')
-        terminal.sendline('deployment')
-        terminal.expect('File deployment could not be found')
+        terminal.sendline('127.0.0.1')
+        terminal.expect('Port:')
+        terminal.sendline('notanint')
+        terminal.expect('invalid literal for int')
         terminal.terminate()
 
         terminal = pexpect.spawn('python3 replay_cli.py addhost')
         terminal.expect('Hostname:')
-        terminal.sendline('winnie')
+        terminal.sendline('newhostname')
         terminal.expect('Username:')
-        terminal.sendline('winnie')
+        terminal.sendline('newuser')
         terminal.expect('IP Address:')
-        terminal.sendline('192.168.23.51')
+        terminal.sendline('127.0.0.1')
+        terminal.expect('Port:')
+        terminal.sendline('6.9')
+        terminal.expect('invalid literal for int')
+        terminal.terminate()
+
+        terminal = pexpect.spawn('python3 replay_cli.py addhost')
+        terminal.expect('Hostname:')
+        terminal.sendline('newhostname')
+        terminal.expect('Username:')
+        terminal.sendline('newuser')
+        terminal.expect('IP Address:')
+        terminal.sendline('127.0.0.1')
+        terminal.expect('Port:')
+        terminal.sendline('-1')
+        terminal.expect('Port must be between 0 and 65535')
+        terminal.terminate()
+
+        terminal = pexpect.spawn('python3 replay_cli.py addhost')
+        terminal.expect('Hostname:')
+        terminal.sendline('newhostname')
+        terminal.expect('Username:')
+        terminal.sendline('newuser')
+        terminal.expect('IP Address:')
+        terminal.sendline('127.0.0.1')
+        terminal.expect('Port:')
+        terminal.sendline('65536')
+        terminal.expect('Port must be between 0 and 65535')
+        terminal.terminate()
+
+        terminal = pexpect.spawn('python3 replay_cli.py addhost')
+        terminal.expect('Hostname:')
+        terminal.sendline('newhostname')
+        terminal.expect('Username:')
+        terminal.sendline('newuser')
+        terminal.expect('IP Address:')
+        terminal.sendline('127.0.0.1')
+        terminal.expect('Port:')
+        terminal.sendline(ssh_port)
         terminal.expect('SSH Key:')
-        terminal.sendline('deployment/bad_file_path')
-        terminal.expect('File deployment/bad_file_path could not be found')
+        terminal.sendline('test')
+        terminal.expect('File test could not be found')
+        terminal.terminate()
+
+        terminal = pexpect.spawn('python3 replay_cli.py addhost')
+        terminal.expect('Hostname:')
+        terminal.sendline('newhostname')
+        terminal.expect('Username:')
+        terminal.sendline('newuser')
+        terminal.expect('IP Address:')
+        terminal.sendline('127.0.0.1')
+        terminal.expect('Port:')
+        terminal.sendline(ssh_port)
+        terminal.expect('SSH Key:')
+        terminal.sendline('test/bad_file_path')
+        terminal.expect('File test/bad_file_path could not be found')
         terminal.terminate()
 
 
@@ -158,8 +222,8 @@ class TestManageHosts(unittest.TestCase):
         terminal.terminate()
 
         TestInstall.test_install_honeypot_valid(self)
-        terminal = pexpect.spawn('python3 replay_cli.py removehost --hosts yogi')
-        terminal.expect('yogi has a honeypot installed.')
+        terminal = pexpect.spawn('python3 replay_cli.py removehost --hosts {}'.format(hostname))
+        terminal.expect('{} has a honeypot installed.'.format(hostname))
         terminal.terminate()
 
 
@@ -204,10 +268,10 @@ class TestInstall(unittest.TestCase):
     """
     def test_install_honeypot_valid(self): 
         TestManageHosts.test_add_host_valid(self)
-        terminal = pexpect.spawn('python3 replay_cli.py installhoneypot --hosts yogi')
+        terminal = pexpect.spawn('python3 replay_cli.py installhoneypot --hosts {}'.format(hostname))
         terminal.expect('Tar File:')
-        terminal.sendline('deployment/repo.tar.gz')
-        terminal.expect('yogi now has an installed honeypot.')
+        terminal.sendline(tar_file)
+        terminal.expect('{} now has an installed honeypot.'.format(hostname))
         terminal.terminate()
 
 
@@ -219,10 +283,10 @@ class TestInstall(unittest.TestCase):
     """
     def test_uninstall_honeypot_valid(self): 
         self.test_install_honeypot_valid()
-        terminal = pexpect.spawn('python3 replay_cli.py uninstallhoneypot --hosts yogi')
-        terminal.expect('Password for yogi@192.168.23.52:')
-        terminal.sendline('@HoneyYogi')
-        terminal.expect('The honeypot on yogi is now uninstalled.')
+        terminal = pexpect.spawn('python3 replay_cli.py uninstallhoneypot --hosts {}'.format(hostname))
+        terminal.expect('Password for {}@{}:'.format(user, ip))
+        terminal.sendline(password)
+        terminal.expect('The honeypot on {} is now uninstalled.'.format(hostname))
         terminal.terminate()
 
 
@@ -234,12 +298,12 @@ class TestInstall(unittest.TestCase):
     """
     def test_reinstall_honeypot_valid(self): 
         self.test_install_honeypot_valid()
-        terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts yogi')
+        terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts {}'.format(hostname))
         terminal.expect('Tar File:')
-        terminal.sendline('deployment/repo.tar.gz')
-        terminal.expect('Password for yogi@192.168.23.52:')
-        terminal.sendline('@HoneyYogi')
-        terminal.expect('The honeypot on yogi is now reinstalled.')
+        terminal.sendline(tar_file)
+        terminal.expect('Password for {}@{}:'.format(user, ip))
+        terminal.sendline(password)
+        terminal.expect('The honeypot on {} is now reinstalled.'.format(hostname))
         terminal.terminate()
 
 
@@ -259,27 +323,27 @@ class TestInstall(unittest.TestCase):
     def test_install_honeypot_invalid(self): 
         terminal = pexpect.spawn('python3 replay_cli.py installhoneypot --hosts unknown')
         terminal.expect('Tar File:')
-        terminal.sendline('deployment/repo.tar.gz')
+        terminal.sendline(tar_file)
         terminal.expect('Host unknown could not be found.')
         terminal.terminate()
 
-        terminal = pexpect.spawn('python3 replay_cli.py installhoneypot --hosts yogi')
+        terminal = pexpect.spawn('python3 replay_cli.py installhoneypot --hosts {}'.format(hostname))
         terminal.expect('Tar File:')
-        terminal.sendline('deployment')
-        terminal.expect('File deployment could not be found')
+        terminal.sendline('test')
+        terminal.expect('File test could not be found')
         terminal.terminate()
 
-        terminal = pexpect.spawn('python3 replay_cli.py installhoneypot --hosts yogi')
+        terminal = pexpect.spawn('python3 replay_cli.py installhoneypot --hosts {}'.format(hostname))
         terminal.expect('Tar File:')
-        terminal.sendline('deployment/bad_file_path')
-        terminal.expect('File deployment/bad_file_path could not be found')
+        terminal.sendline('test/bad_file_path')
+        terminal.expect('File test/bad_file_path could not be found')
         terminal.terminate()
 
         self.test_install_honeypot_valid()
-        terminal = pexpect.spawn('python3 replay_cli.py installhoneypot --hosts yogi')
+        terminal = pexpect.spawn('python3 replay_cli.py installhoneypot --hosts {}'.format(hostname))
         terminal.expect('Tar File:')
-        terminal.sendline('deployment/repo.tar.gz')
-        terminal.expect('yogi already has an installed honeypot.')
+        terminal.sendline(tar_file)
+        terminal.expect('{} already has an installed honeypot.'.format(hostname))
         terminal.terminate()
 
 
@@ -298,16 +362,16 @@ class TestInstall(unittest.TestCase):
         terminal.terminate()
 
         self.test_uninstall_honeypot_valid()
-        terminal = pexpect.spawn('python3 replay_cli.py uninstallhoneypot --hosts yogi')
-        terminal.expect('yogi did not have an installed honeypot.')
+        terminal = pexpect.spawn('python3 replay_cli.py uninstallhoneypot --hosts {}'.format(hostname))
+        terminal.expect('{} did not have an installed honeypot.'.format(hostname))
         terminal.terminate()
 
         self.setUp()
         self.test_install_honeypot_valid()
-        terminal = pexpect.spawn('python3 replay_cli.py uninstallhoneypot --hosts yogi')
-        terminal.expect('Password for yogi@192.168.23.52:')
+        terminal = pexpect.spawn('python3 replay_cli.py uninstallhoneypot --hosts {}'.format(hostname))
+        terminal.expect('Password for {}@{}:'.format(user, ip))
         terminal.sendline('badpass')
-        terminal.expect('The honeypot on yogi failed to uninstall.')
+        terminal.expect('The honeypot on {} failed to uninstall.'.format(hostname))
         terminal.terminate()
 
 
@@ -328,27 +392,27 @@ class TestInstall(unittest.TestCase):
     def test_reinstall_honeypot_invalid(self): 
         terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts unknown')
         terminal.expect('Tar File:')
-        terminal.sendline('deployment/repo.tar.gz')
+        terminal.sendline(tar_file)
         terminal.expect('Host unknown could not be found.')
         terminal.terminate()
 
-        terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts yogi')
+        terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts {}'.format(hostname))
         terminal.expect('Tar File:')
-        terminal.sendline('deployment')
-        terminal.expect('File deployment could not be found')
+        terminal.sendline('test')
+        terminal.expect('File test could not be found')
         terminal.terminate()
 
-        terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts yogi')
+        terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts {}'.format(hostname))
         terminal.expect('Tar File:')
-        terminal.sendline('deployment/bad_file_path')
-        terminal.expect('File deployment/bad_file_path could not be found')
+        terminal.sendline('test/bad_file_path')
+        terminal.expect('File test/bad_file_path could not be found')
         terminal.terminate()
 
         self.test_uninstall_honeypot_valid()
-        terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts yogi')
+        terminal = pexpect.spawn('python3 replay_cli.py reinstallhoneypot --hosts {}'.format(hostname))
         terminal.expect('Tar File:')
-        terminal.sendline('deployment/repo.tar.gz')
-        terminal.expect('yogi did not have an installed honeypot.')
+        terminal.sendline(tar_file)
+        terminal.expect('{} did not have an installed honeypot.'.format(hostname))
         terminal.terminate()
 
 
@@ -379,12 +443,12 @@ class TestEditHoneypots(unittest.TestCase):
     """
     def test_start_honeypot_valid(self): 
         TestInstall.test_install_honeypot_valid(self)
-        terminal = pexpect.spawn('python3 replay_cli.py starthoneypot --hosts yogi')
+        terminal = pexpect.spawn('python3 replay_cli.py starthoneypot --hosts {}'.format(hostname))
         terminal.expect('Database URL:')
-        terminal.sendline('http://honeypots:securehoneypassword@192.168.23.50:5984')
-        terminal.expect('Password for yogi@192.168.23.52:')
-        terminal.sendline('@HoneyYogi')
-        terminal.expect('yogi is now running a honeypot.')
+        terminal.sendline(db)
+        terminal.expect('Password for {}@{}:'.format(user, ip))
+        terminal.sendline(password)
+        terminal.expect('{} is now running a honeypot.'.format(hostname))
         terminal.terminate()
 
     
@@ -396,10 +460,10 @@ class TestEditHoneypots(unittest.TestCase):
     """
     def test_stop_honeypot_valid(self): 
         self.test_start_honeypot_valid()
-        terminal = pexpect.spawn('python3 replay_cli.py stophoneypot --hosts yogi')
-        terminal.expect('Password for yogi@192.168.23.52:')
-        terminal.sendline('@HoneyYogi')
-        terminal.expect('The honeypot on yogi is now stopped.')
+        terminal = pexpect.spawn('python3 replay_cli.py stophoneypot --hosts {}'.format(hostname))
+        terminal.expect('Password for {}@{}:'.format(user, ip))
+        terminal.sendline(password)
+        terminal.expect('The honeypot on {} is now stopped.'.format(hostname))
         terminal.terminate()
 
     
@@ -419,29 +483,29 @@ class TestEditHoneypots(unittest.TestCase):
     def test_start_honeypot_invalid(self): 
         terminal = pexpect.spawn('python3 replay_cli.py starthoneypot --hosts unknown')
         terminal.expect('Database URL:')
-        terminal.sendline('http://honeypots:securehoneypassword@192.168.23.50:5984')
+        terminal.sendline(db)
         terminal.expect('Host unknown could not be found.')
         terminal.terminate()
 
         TestManageHosts.test_add_host_valid(self)
-        terminal = pexpect.spawn('python3 replay_cli.py starthoneypot --hosts yogi')
-        terminal.expect('yogi did not have an installed honeypot.')
+        terminal = pexpect.spawn('python3 replay_cli.py starthoneypot --hosts {}'.format(hostname))
+        terminal.expect('{} did not have an installed honeypot.'.format(hostname))
         terminal.terminate()
 
         self.setUp()
         self.test_start_honeypot_valid()
-        terminal = pexpect.spawn('python3 replay_cli.py starthoneypot --hosts yogi')
-        terminal.expect('yogi is already running a honeypot.')
+        terminal = pexpect.spawn('python3 replay_cli.py starthoneypot --hosts {}'.format(hostname))
+        terminal.expect('{} is already running a honeypot.'.format(hostname))
         terminal.terminate()
 
         self.setUp()
         TestInstall.test_install_honeypot_valid(self)
-        terminal = pexpect.spawn('python3 replay_cli.py starthoneypot --hosts yogi')
+        terminal = pexpect.spawn('python3 replay_cli.py starthoneypot --hosts {}'.format(hostname))
         terminal.expect('Database URL:')
-        terminal.sendline('http://honeypots:securehoneypassword@192.168.23.50:5984')
-        terminal.expect('Password for yogi@192.168.23.52:')
+        terminal.sendline(db)
+        terminal.expect('Password for {}@{}:'.format(user, ip))
         terminal.sendline('badpass')
-        terminal.expect('yogi failed to start a honeypot.')
+        terminal.expect('{} failed to start a honeypot.'.format(hostname))
         terminal.terminate()
 
 
@@ -461,22 +525,22 @@ class TestEditHoneypots(unittest.TestCase):
         terminal.terminate()
 
         TestManageHosts.test_add_host_valid(self)
-        terminal = pexpect.spawn('python3 replay_cli.py stophoneypot --hosts yogi')
-        terminal.expect('yogi did not have an installed honeypot.')
+        terminal = pexpect.spawn('python3 replay_cli.py stophoneypot --hosts {}'.format(hostname))
+        terminal.expect('{} did not have an installed honeypot.'.format(hostname))
         terminal.terminate()
 
         self.setUp()
         self.test_stop_honeypot_valid()
-        terminal = pexpect.spawn('python3 replay_cli.py stophoneypot --hosts yogi')
-        terminal.expect('yogi was not running a honeypot.')
+        terminal = pexpect.spawn('python3 replay_cli.py stophoneypot --hosts {}'.format(hostname))
+        terminal.expect('{} was not running a honeypot.'.format(hostname))
         terminal.terminate()
 
         self.setUp()
         self.test_start_honeypot_valid()
-        terminal = pexpect.spawn('python3 replay_cli.py stophoneypot --hosts yogi')
-        terminal.expect('Password for yogi@192.168.23.52:')
+        terminal = pexpect.spawn('python3 replay_cli.py stophoneypot --hosts {}'.format(hostname))
+        terminal.expect('Password for {}@{}:'.format(user, ip))
         terminal.sendline('badpass')
-        terminal.expect('The honeypot on yogi failed to stop.')
+        terminal.expect('The honeypot on {} failed to stop.'.format(hostname))
         terminal.terminate()
 
 

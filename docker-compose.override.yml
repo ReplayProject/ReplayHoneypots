@@ -3,37 +3,6 @@
 version: "3.7"
 
 services:
-  ### Optional Services ###
-
-  # Service to start a devault ubuntu container with ssh running
-  # newpot:
-  #   image: linuxserver/openssh-server
-  #   container_name: openssh-server
-  #   hostname: openssh-server
-  #   ports:
-  #     - 2222:2222
-  #   networks:
-  #     default:
-  #   environment:
-  #     - PUID=1000
-  #     - PGID=1000
-  #     - TZ=America/New_York
-  #     - PASSWORD_ACCESS=false
-  #     - PUBLIC_KEY=ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDVtnZ/ax3m7dOKuYPULSCRnJyiKDDHHyBRWGMFCq/yHEI7B61VfqP69fsoklvAwF7aTHfDotiWaum5PwEs2W66oHDHTyO2U08YnSp6vk/4sHiuuioyJbUfG3DKkIQOALUwlq7YjS8JQCG6TK/Eu2MhqyD9M0YpSi30H/dgi4u2PzQHbgk3dgnDiRaG3PCA1lD6S6timbNmhLmtkV5EFNIXquIadDqOeoNORS/bTFeatAzcoYUzszfUoHdOLcvV8EKlZ3cDL3kRxRUFqS20ktZXDpynVrBPqJFuWWUfhzMERpBLejA5IgEdVUMEb5Kl8jGBgbtT6p4ZPPGB6y5wpAn5 root@6344607aa60b
-  #     - SUDO_ACCESS=true
-  #     - USER_PASSWORD=password
-  #     - USER_NAME=linuxserver.io
-  #   volumes:
-  #     - replay-src:/src
-  #   ports:
-  #     - 2222:2222
-  #   restart: unless-stopped
-
-  # Service that performs a nmap scan against hosts(s)
-  # rogue:
-  #   command: "-n -A -p0-6666 couchdb"
-  #   image: instrumentisto/nmap
-
   ### Build & Development Settings ###
   couchdb:
     logging:

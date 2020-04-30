@@ -217,3 +217,22 @@ class HostnameValidator(Validator):
             raise ValidationError(
                 message="You can't leave this blank",
                 cursor_position=len(value.text))
+
+class PortValidator(Validator):
+    def validate(self, value):
+        if len(value.text):
+            try: 
+                port = int(value.text)
+
+                if port < 0 or port > 65535: 
+                    raise ValidationError(
+                        message="Port must be between 0 and 65535",
+                        cursor_position=len(value.text))
+            except ValueError as e:
+                raise ValidationError(
+                    message=str(e),
+                    cursor_position=len(value.text))
+        else:
+            raise ValidationError(
+                message="You can't leave this blank",
+                cursor_position=len(value.text))

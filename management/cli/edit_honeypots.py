@@ -75,6 +75,7 @@ def starthoneypot(ctx, selected_hosts=None):
             user = host_data['user']
             ip = host_data['ip']
             ssh_key = host_data['ssh_key']
+            ssh_port = host_data['ssh_port']
 
             password = None
             try:
@@ -89,7 +90,7 @@ def starthoneypot(ctx, selected_hosts=None):
                 log("Action cancelled by user", "red")
                 continue
 
-            stdout, stderr = subprocess.Popen(['deployment/start.sh', ssh_key, ip, user, password, db],
+            stdout, stderr = subprocess.Popen(['deployment/start.sh', ssh_key, ip, user, password, db, ssh_port],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
 
@@ -141,6 +142,7 @@ def stophoneypot(ctx, selected_hosts=None):
             user = host_data['user']
             ip = host_data['ip']
             ssh_key = host_data['ssh_key']
+            ssh_port = host_data['ssh_port']
 
             password = None
             try:
@@ -155,7 +157,7 @@ def stophoneypot(ctx, selected_hosts=None):
                 log("Action cancelled by user", "red")
                 continue
 
-            stdout, stderr = subprocess.Popen(['deployment/stop.sh', ssh_key, ip, user, password],
+            stdout, stderr = subprocess.Popen(['deployment/stop.sh', ssh_key, ip, user, password, ssh_port],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
 
@@ -214,11 +216,12 @@ def configurehoneypot(ctx, selected_hosts=None):
                 user = host_data['user']
                 ip = host_data['ip']
                 ssh_key = host_data['ssh_key']
+                ssh_port = host_data['ssh_port']
 
                 # TODO: fix path if install path is static
                 path = "~"
-
-                cmd = 'ssh -i {} -t {}@{} "cd {}; ls; echo "Welcome to {}! Feel free to use your editor of choice to edit the above configuration files, and run exit to return to the CLI."; bash"'.format(ssh_key, user, ip, path, host)
+                cmd = 'ssh -i {} -t {}@{} -p {} "cd {}; ls; echo "Welcome to {}! Feel free to use your editor of choice to edit the above configuration files, and run exit to return to the CLI."; bash"'.format(
+                    ssh_key, user, ip, ssh_port, path, host)
 
                 print('\n')
                 os.system(cmd)

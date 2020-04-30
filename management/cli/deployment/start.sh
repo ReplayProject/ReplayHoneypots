@@ -5,15 +5,18 @@ REMOTEIP=$2
 REMOTENAME=$3
 REMOTEPASS=$4
 DB=$5
+PORT=$6
 
 function silentSsh {
     local connectionString="$1"
     local commands="$2"
+    local port=$3
+
     if [ -z "$commands" ]; then
         commands=`cat`
     fi
     # to stop ssh output switch from -tt to -T
-    ssh -i $KEYPATH -tt $connectionString "$commands"
+    ssh -i $KEYPATH -p $PORT -tt $connectionString "$commands"
 }
 
 # catch errors

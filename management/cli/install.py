@@ -55,8 +55,9 @@ def installhoneypot(ctx, selected_hosts=None):
             user = host_data['user']
             ip = host_data['ip']
             ssh_key = host_data['ssh_key']
+            ssh_port = host_data['ssh_port']
 
-            stdout, stderr = subprocess.Popen(['deployment/install.sh', ssh_key, ip, user, tar_file],
+            stdout, stderr = subprocess.Popen(['deployment/install.sh', ssh_key, ip, user, tar_file, ssh_port],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
 
@@ -104,6 +105,7 @@ def uninstallhoneypot(ctx, selected_hosts=None):
             ip = host_data['ip']
             ssh_key = host_data['ssh_key']
             status = host_data['status']
+            ssh_port = host_data['ssh_port']
 
             password = None
             try:
@@ -118,7 +120,7 @@ def uninstallhoneypot(ctx, selected_hosts=None):
                 log("Action cancelled by user", "red")
                 continue
 
-            stdout, stderr = subprocess.Popen(['deployment/uninstall.sh', ssh_key, ip, user, password, status],
+            stdout, stderr = subprocess.Popen(['deployment/uninstall.sh', ssh_key, ip, user, password, status, ssh_port],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
 
@@ -181,6 +183,7 @@ def reinstallhoneypot(ctx, selected_hosts=None):
             ip = host_data['ip']
             ssh_key = host_data['ssh_key']
             status = host_data['status']
+            ssh_port = host_data['ssh_port']
 
             password = None
             try:
@@ -195,7 +198,7 @@ def reinstallhoneypot(ctx, selected_hosts=None):
                 log("Action cancelled by user", "red")
                 continue
 
-            stdout, stderr = subprocess.Popen(['deployment/reinstall.sh', ssh_key, ip, user, password, tar_file, status],
+            stdout, stderr = subprocess.Popen(['deployment/reinstall.sh', ssh_key, ip, user, password, tar_file, status, ssh_port],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE).communicate()
 
