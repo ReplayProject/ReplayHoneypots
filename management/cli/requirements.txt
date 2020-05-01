@@ -9,3 +9,4 @@ regex==2020.1.8
 six==1.14.0
 termcolor==1.1.0
 wcwidth==0.1.8
+pexpect==4.8.0

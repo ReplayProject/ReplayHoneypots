@@ -1,0 +1,55 @@
+version: "3.7"
+
+services:
+  # Service to get a database up and running with CORS
+  couchdb:
+    image: bitnami/couchdb:3
+    container_name: couchdb
+    hostname: couchdb
+    environment:
+      - COUCHDB_USER= # TODO: change creds or use default: "admin"
+      - COUCHDB_PASSWORD= # TODO: change creds or use default: "couchdb"
+    ports:
+      - 5984:5984
+      - 4369:4369
+      - 9100:9100
+    volumes:
+      # - couchdb_data:/bitnami/couchdb # make data persistant here
+      - ./config/couch_defaults.ini:/opt/bitnami/couchdb/etc/local.d/cutom-local.ini
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - "node.role==manager"
+
+  # Service to get manager up and running
+  replay-manager:
+    image: 127.0.0.1:5000/seth/replay-manager:latest
+    hostname: replay-manager
+    ports:
+      - 8080:8080
+    configs:
+      - source: frontend_auth
+        target: /frontend_auth.json
+    depends_on:
+      - couchdb
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - "node.role==manager"
+      restart_policy:
+        condition: on-failure
+
+  # replay-honeypot:
+  # image: 127.0.0.1:5000/seth/replay-honeypot:latest
+  # Service to get ready to run a honeypot is in ./service_deploy.sh
+
+configs:
+  frontend_auth:
+    file: ./config/frontend_auth.json
+
+volumes:
+  replay-db:
+  couchdb_data:
+    driver: local

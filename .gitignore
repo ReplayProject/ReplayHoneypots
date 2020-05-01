@@ -10,7 +10,6 @@
 # Virtualenv
 # http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
 pyvenv.cfg
-.env
 .venv
 env/
 venv/
@@ -50,6 +49,15 @@ management/cli/honeycli.cfg
 
 # Frontend Stuff
 node_modules
+npm-debug.log
 dist
 .cache
 .nyc_output
+.data
+
+#Configuration files
+honeypot.cfg
+restart.sh
+manager_rsa
+management/cli/deployment/repo.tar.gz
+management/frontend/log.txt
