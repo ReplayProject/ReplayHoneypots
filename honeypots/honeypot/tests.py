@@ -66,9 +66,8 @@ class TestLogs(unittest.TestCase):
         self.assertEqual("80", entry.sourcePortNumber)
         self.assertTrue(type(entry.timestamp) is int)
 
-
-# DB_URL = 'http://admin:couchdb@152.14.85.156:5984'
-DB_URL = 'http://admin:couchdb@127.0.0.1:5984'
+#TODO: DB conenction string for testing
+DB_URL = '' # Default 'http://admin:couchdb@127.0.0.1:5984'
 
 
 class TestDatabaser(unittest.TestCase):
@@ -185,7 +184,7 @@ class TestSniffer(unittest.TestCase):
                        portWhitelist=[777, 888, 999],
                        honeypotIP="192.168.42.42",
                        managementIPs="54.80.228.0")
-        
+
         #used to flush the Sniffer
         os.system("curl www.google.com 2>&1 >> /dev/null")
 

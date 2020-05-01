@@ -46,7 +46,7 @@ services:
       - "./config/senddata.json:/senddata.json"
       - replay-src:/src # toggle this line for dev mode (bind source code)
     environment:
-      - DB_URL=http://honeypots:securehoneypassword@couchdb:5984
+      - DB_URL= # TODO: DB Connection string for honeypot connection
       # - HONEY_CFG=/properties.cfg
       # Toggle below for dev
       - NODE_ENV=development
