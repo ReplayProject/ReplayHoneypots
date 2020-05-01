@@ -7,8 +7,8 @@ services:
     container_name: couchdb
     hostname: couchdb
     environment:
-      - COUCHDB_USER=admin
-      - COUCHDB_PASSWORD=couchdb
+      - COUCHDB_USER= # TODO: change creds or use default: "admin"
+      - COUCHDB_PASSWORD= # TODO: change creds or use default: "couchdb"
     ports:
       - 5984:5984
       - 4369:4369

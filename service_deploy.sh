@@ -10,9 +10,11 @@ if [ -z "$TAG" ]; then
     exit
 fi
 
+# TODO: DB connection string setup for honeypots using DB_URL env variable
+
 docker service create \
    --with-registry-auth \
-   --env DB_URL="http://honeypots:securehoneypassword@192.168.23.50:5984" \
+   --env DB_URL="" \
    --env HONEY_CFG="/properties.cfg" \
    --replicas "${1:-1}" \
    --replicas-max-per-node 1 \
@@ -30,4 +32,6 @@ docker service create \
 #  --mount type=bind,src=/shared/2020SpringTeam18/honeypots/honeypot/Databaser.py,dst=/usr/src/app/honeypot/Databaser.py \
 #  --mount type=bind,src=/shared/2020SpringTeam18/honeypots/honeypot/Sniffer.py,dst=/usr/src/app/honeypot/Sniffer.py \
 #  --mount dst=/usr/src/frontend/.data \
-#  --env TARGET_ADDR="http://honeypots:securehoneypassword@192.168.23.50:5984" \
+#  --env TARGET_ADDR="" \
+
+# TODO: set TARGET_ADDR credentials if in use
