@@ -11,7 +11,7 @@ password = "winniewazhere"
 ip = "0.0.0.0"
 ssh_port = "2222"
 ssh_key = "test/privatekey"
-db = "http://admin:couchdb@testingdb:5984"
+db = "http://admin:couchdb@testingdb:25565"
 tar_file = "deployment/repo.tar.gz"
 
 """
