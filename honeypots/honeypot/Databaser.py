@@ -1,89 +1,110 @@
 import os
-import subprocess
+import couchdb
 import socket
-import time
 import json
-from threading import Thread
-from requests import put, post
 
 
-class Databaser(Thread):
+# Couchdb Tutorial
+# https://gist.github.com/marians/8e41fc817f04de7c4a70
+# Actual Docs
+# https://couchdb-python.readthedocs.io/en/latest/
+class Databaser():
     """
     Use pouch db to run the database for logging
+    Uses env Variables:
+    DB_URL, and TARGET_ADDR
     """
-
     def __init__(self):
         """
-        Constructor; takes a config keyword to see what mode to run it in
-        'testing' ignores ssh spam you get
+        Initialize
         """
-        Thread.__init__(self)
-        self.process = None
-        # Config Cariables
-        self.port = "1437"
-        self.conf = "../config/dbconfig.json"
-        self.dbfolder = "../database"
-        self.bindaddress = "localhost"
-        self.url = 'http://{}:{}/'.format(self.bindaddress, self.port)
-        self.db_name = socket.gethostname() + "_logs"
-        self.db_url = self.url + self.db_name
+        self.hostname = socket.gethostname()
+        self.db_name = 'aggregate' + '_logs'
+        self.alerts_name = 'alerts'
+        # Connect
+        db_url = os.getenv('DB_URL')
+        if (db_url and db_url.strip() != ""):
+            self.couch = couchdb.Server(db_url)
+            self.createDB()  # create the logging db for this device's logs
 
-        self.ready = False
+            # Decide if we should be replicating
+            target = os.getenv("TARGET_ADDR")
+            if (target and target.strip() != ""):
+                self.startReplicate(target)
 
-    def createDatabase(self):
+            print("CouchDB Is connected with version ", self.couch.version())
+        else:
+            print("No DB_URL provided, logging to stdout only")
+
+    def startReplicate(self, target):
+        """
+        Attempt to setup replication
+        """
+        self.couch.replicate(self.db_name,
+                             target + "/" + self.db_name,
+                             options={
+                                 "continuous": True,
+                                 "create_target": True
+                             })
+
+        print("Replicating to:", target + self.db_name)
+
+    def listDbs(self):
+        """
+        Get list of dbs
+        """
+        return [dbname for dbname in self.couch]
+
+    def deleteDB(self):
+        """
+        Delete the database this host is bound to
+        """
+        # TODO: decide if this is needed (remove testing logs from db)
+        print("Deletion like this disabled due to aggregate databases")
+        # del self.couch[self.db_name]
+
+    def createDB(self):
         """
         Create this device's log database
         """
-        # TODO: automatically setup the replication settings
-        header = {"content-type": "application/json"}
-        r = put(url=self.url + self.db_name,
-                headers=header, verify=False, timeout=3)
-        if (r.status_code != 201):
-            Exception("Database could not be created")
+        # Attempt Traffic DB creation
+        self.couch[self.db_name] if self.db_name in self.couch else self.couch.create(self.db_name)
+        # Attempt Alerting DB Creation
+        self.couch[self.alerts_name] if self.alerts_name in self.couch else self.couch.create(self.alerts_name)
 
-        # Optional step for continuous
-        header = {"content-type": "application/json"}
-
-        payload = {
-            "continuous": True,
-            "create_target": True,
-            "source": self.db_name,
-            "target": "https://sd-db.glitch.me/" + self.db_name
-        }
-
-        res = post(url=self.url + '_replicate',
-                   data=json.dumps(payload), headers=header, verify=False)
-        print("Replication Status: \n%s" % res.json())
-
-        return r
-
-    def run(self):
+    def save(self, json_raw):
         """
-        Runs the thread, begins sniffing
+        Save a json document
         """
-        # TODO: check database is not running before starting (especially replicating)
+        # Logic for live mode vs testing mode
+        try:
+            # TODO: should put extra test here
+            db = self.couch[self.db_name]
+            doc_id, doc_rev = db.save(json.loads(json_raw))
+            print("Log created: %s" % doc_id)
+            return doc_id
+        except Exception as e:
+            # print(str(e))
+            print("DB Save Error:", json_raw)
+            return None
+        except AttributeError:
+            print("Attr Warning:", json_raw)
+            return None
 
-        # toggle --in-memory to save data
-        cmd = ["pouchdb-server", "--in-memory", "-n", "--dir", self.dbfolder,
-               "--port", self.port, "--host", self.bindaddress, "--config", self.conf]
-        self.process = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.dbfolder)
-
-        # TODO: make this not a timing issue.
-        print("Waiting 5 seconds for DB to start")
-        time.sleep(5)
-
-        status = self.createDatabase()
-        print("Handling DB: " + self.url + "_utils")
-        print("Logging DB is: %s" % status.json())
-
-        self.ready = True
-
-        while True:
-            output = self.process.stdout.readline()
-            if output == '' and self.process.poll() is not None:
-                break
-            if output:
-                print(output.decode("utf-8"))
-        rc = self.process.poll()
-        return rc
+    def alert(self, json_raw):
+        """
+        Save a json document (that is an alert)
+        """
+        # Logic for live mode vs testing mode
+        try:
+            db = self.couch[self.alerts_name]
+            doc_id, doc_rev = db.save(json.loads(json_raw))
+            print("Alert created: %s" % doc_id)
+            return doc_id
+        except Exception as e:
+            # print(str(e))
+            print("Alert DB Save Error:", json_raw)
+            return None
+        except AttributeError:
+            print("Alert Attr Warning:", json_raw)
+            return None

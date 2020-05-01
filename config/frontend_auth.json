@@ -1,0 +1,10 @@
+{
+  "salt" : "himalayan",
+  "//" : "TODO: setup frontend accounts",
+  "users": [
+    {
+      "username": "",
+      "hash": ""
+    }
+  ]
+}
