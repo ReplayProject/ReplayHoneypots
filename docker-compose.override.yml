@@ -40,13 +40,13 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - couchdb
-    restart: "no"
+    restart: "unless-stopped"
     volumes:
       - "./config/honeypot.cfg:/properties.cfg"
       - "./config/senddata.json:/senddata.json"
       - replay-src:/src # toggle this line for dev mode (bind source code)
     environment:
-      - DB_URL= # TODO: DB Connection string for honeypot connection
+      - DB_URL=http://honeypots:securehoneypassword@couchdb:5984 #TODO: DB Connection string for honeypot connection
       # - HONEY_CFG=/properties.cfg
       # Toggle below for dev
       - NODE_ENV=development

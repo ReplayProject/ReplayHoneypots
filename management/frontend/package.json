@@ -4,8 +4,8 @@
   "description": "A tiny VueJS app bundled using ParcelJS && Pouch Database & Frontend",
   "main": "index.html",
   "scripts": {
-    "build": "parcel build ./client/index.html --public-url 'http://152.14.85.156:8080' ",
-    "build-watch": "parcel watch ./client/index.html --public-url 'http://152.14.85.156:8080' ",
+    "build": "parcel build ./client/index.html --public-url 'http://10.11.12.125:8080' ",
+    "build-watch": "parcel watch ./client/index.html --public-url 'http://10.11.12.125:8080' ",
     "dev": "concurrently --kill-others \"npm run start-watch\" \"npm run build-watch\"",
     "dev2": "concurrently --kill-others \"npm run start-serve\" \"npm run build-watch\"",
     "format": "npx prettier-standard && npx sort-package-json ",
