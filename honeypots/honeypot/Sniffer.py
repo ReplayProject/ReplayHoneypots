@@ -161,20 +161,21 @@ class Sniffer(Thread):
 
         #Whitelist check
         if srcIP not in self.whitelist:
-            #ICMP layer check first
-            if (ipLayer.haslayer("ICMP")):
-                trafficType = "ICMP"
-                log = LogEntry(None, srcIP, sourceMAC, None, dstIP, destMAC, trafficType, None, dbHostname)
-                self.db.save(log.json())
-                return            
-
-            #TCP/UDP section now
-            
             #Testing config - does not utilize a database
             if (self.config == "onlyUDP" or self.config == "testing"):
                 dbHostname = "N/A"
             else:
                 dbHostname = self.db.hostname
+
+            #ICMP layer check first
+            if (ipLayer.haslayer("ICMP")):
+                trafficType = "ICMP"
+                log = LogEntry(None, srcIP, sourceMAC, None, dstIP, destMAC, trafficType, None, dbHostname)
+                self.db.save(log.json())
+                return
+
+            #TCP/UDP section now
+
 
             if (ipLayer.haslayer("TCP")):
                 trafficType = "TCP"
@@ -182,7 +183,7 @@ class Sniffer(Thread):
                 trafficType = "UDP"
             else:
                 trafficType = "Other"
-            
+
             #Log Entry object we're saving
             log = LogEntry(srcPort, srcIP, sourceMAC, destPort, dstIP, destMAC,
                            trafficType, destPort in self.openPorts, dbHostname)
@@ -206,7 +207,7 @@ class Sniffer(Thread):
                 self.PS_RECORD[srcIP][log.destPortNumber] = dbID
             else:
                 self.PS_RECORD[srcIP][log.destPortNumber] = dbID
-                
+
                 #Sending out the port scan alert
                 if (len(self.PS_RECORD[srcIP]) > 100):
                     self.db.alert(
