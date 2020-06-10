@@ -67,7 +67,7 @@ class TestLogs(unittest.TestCase):
         self.assertTrue(type(entry.timestamp) is int)
 
 #TODO: DB conenction string for testing
-DB_URL = '' # Default 'http://admin:couchdb@127.0.0.1:5984'
+DB_URL = 'http://admin:couchdb@127.0.0.1:5984' # Default 'http://admin:couchdb@127.0.0.1:5984'
 
 
 class TestDatabaser(unittest.TestCase):
