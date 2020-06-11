@@ -18,6 +18,8 @@ docker service create \
    --env HONEY_CFG="/properties.cfg" \
    --replicas "${1:-1}" \
    --replicas-max-per-node 1 \
+   --reserve-memory=100m
+   --limit-memory=1GB
    --constraint node.role==worker \
    --placement-pref spread=node.id \
    --restart-condition on-failure \
