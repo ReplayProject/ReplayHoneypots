@@ -28,25 +28,25 @@ services:
 
   # Service to define how the honeypots get built
   replay-honeypot:
-    command: "" # toggle to disable sample honeypot during development
+    command: "/bin/sh" # toggle to disable sample honeypot during development
     image: 127.0.0.1:5000/seth/replay-honeypot:latest
     container_name: honeypot # Only works with one honeypot
     hostname: honeypot # Only works with one honeypot
     ports:
       - 9998:9998
     build:
-      network: "host"
+      # network: "host"
       context: "./honeypots"
       dockerfile: Dockerfile
-    depends_on:
-      - couchdb
+    # depends_on:
+    #   - couchdb
     restart: "unless-stopped"
     volumes:
       - "./config/honeypot.cfg:/properties.cfg"
       - "./config/senddata.json:/senddata.json"
       - replay-src:/src # toggle this line for dev mode (bind source code)
     environment:
-      - DB_URL=http://honeypots:securehoneypassword@couchdb:5984 #TODO: DB Connection string for honeypot connection
+      - DB_URL=http://honeypots:securehoneypassword@10.11.12.125:5984 #TODO: DB Connection string for honeypot connection
       # - HONEY_CFG=/properties.cfg
       # Toggle below for dev
       - NODE_ENV=development
