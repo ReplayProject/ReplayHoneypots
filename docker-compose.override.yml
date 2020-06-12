@@ -28,12 +28,17 @@ services:
 
   # Service to define how the honeypots get built
   replay-honeypot:
-    command: "/bin/sh" # toggle to disable sample honeypot during development
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    command: "/bin/ash" # toggle to disable sample honeypot during development
     image: 127.0.0.1:5000/seth/replay-honeypot:latest
     container_name: honeypot # Only works with one honeypot
     hostname: honeypot # Only works with one honeypot
     ports:
       - 9998:9998
+      - 1337:1337/udp
+      - 1337:1337
+      - 8085:80
     build:
       # network: "host"
       context: "./honeypots"
