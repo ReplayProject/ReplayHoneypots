@@ -16,7 +16,7 @@ import datetime
 import argparse
 from NmapParser import NmapParser
 from Sniffer import Sniffer
-from PortListener import PortListener
+from TCPPortListener import TCPPortListener
 from UDPPortListener import UDPPortListener
 from ConfigTunnel import ConfigTunnel
 from Databaser import Databaser
@@ -134,7 +134,7 @@ class PortThreadManager:
         # On initial run
         # if (len(self.processList) == 0):
         #     for port in replayPorts:
-        #         portThread = PortListener(port, self.responseData[port]["TCP"],
+        #         portThread = TCPPortListener(port, self.responseData[port]["TCP"],
         #                                   self.delay)
         #         portThread.daemon = True
         #         portThread.start()
@@ -166,7 +166,7 @@ class PortThreadManager:
 
         #     for p in updatedPorts:
         #         if (not p in currentPorts):
-        #             portThread = PortListener(p, self.responseData[p]["TCP"],
+        #             portThread = TCPPortListener(p, self.responseData[p]["TCP"],
         #                                       self.delay)
         #             portThread.daemon = True
         #             portThread.start()
@@ -188,7 +188,7 @@ class PortThreadManager:
         async def nursery_bag():
           async with trio.open_nursery() as nursery:
               nursery.start_soon(replay_server, UDPPortListener, udp_sockets, "UDP")
-              nursery.start_soon(replay_server, PortListener, tcp_sockets, "TCP")
+              nursery.start_soon(replay_server, TCPPortListener, tcp_sockets, "TCP")
 
         trio.run(nursery_bag)
 
