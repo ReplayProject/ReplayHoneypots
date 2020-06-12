@@ -1,53 +1,56 @@
-from threading import Thread
-import socket
-import time
+import trio
 
 """
 Opens one TCP port through a python socket
 """
 
-class PortListener(Thread):
+
+class PortListener:
     """
     Constructor - makes a new socket
     """
-    def __init__(self, port, response, delay):
-        Thread.__init__(self)
 
+    def __init__(self, port, response, delay, nursery):
         self.port = port
         self.response = response
         self.delay = delay
+        self.nursery = nursery
+
+        # Defaults
+        self.ip = ""
         self.isRunning = True
-
-    """
-    Listen and respond on the given port
-
-    Args:
-      portObj: port object with communication info
-    """
-    def run(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind(("", int(self.port)))
-        sock.listen(1)
-        while self.isRunning:
-            print("Listening on port " + str(self.port))
-            conn, addr = sock.accept()
-            responseThread = Thread(target=self.portResponse, args=[conn])
-            responseThread.daemon = True
-            responseThread.start()
-        conn.close()
 
     """
     Send a response on a port
 
     Args:
-      portObj: port object with communication info
-      conn: connection object to communicate on
+      addr: where to send the payload to
     """
 
-    def portResponse(self, conn):
+    async def portResponse(self, conn):
         byteData = bytes.fromhex(self.response)
-        time.sleep(float(self.delay))
-        try:
-            conn.send(byteData)
-        except:
-            print("Connection reset on port " + str(self.port))
+        await trio.sleep(float(self.delay))
+        await conn.send(byteData)
+        # TODO: check if desired behaivor
+        conn.shutdown(trio.socket.SHUT_RDWR)
+        conn.close()
+
+    """
+    Listen and respond on the given port
+    """
+
+    async def handler(self):
+        with trio.socket.socket(trio.socket.AF_INET, trio.socket.SOCK_STREAM) as sock:
+
+            sock.setsockopt(trio.socket.SOL_SOCKET, trio.socket.SO_REUSEADDR, 1)
+            await sock.bind((self.ip, int(self.port)))
+            sock.listen(1)
+            print("TCP Listening on port " + str(self.port))
+
+            while self.isRunning:
+                conn, addr = await sock.accept()
+                print("TCP from:", addr)
+                # Print out incoming data
+                # data = await conn.recv(1024)
+                # print("received message:", data)
+                self.nursery.start_soon(self.portResponse, conn)
