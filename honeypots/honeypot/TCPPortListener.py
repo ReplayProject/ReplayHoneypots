@@ -5,7 +5,7 @@ Opens one TCP port through a python socket
 """
 
 
-class PortListener:
+class TCPPortListener:
     """
     Constructor - makes a new socket
     """
