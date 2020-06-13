@@ -1,3 +1,7 @@
+#
+# TODO: REVISIT when move to TRIO is done
+#
+
 from PortThreadManager import PortThreadManager
 import unittest
 import os
@@ -26,7 +30,7 @@ class TestRedeploy(unittest.TestCase):
 
         #changed both, should return a 3
         self.assertTrue(x == 3)
-        
+
         self.assertTrue(len(man.responseData.keys()) == 7)
         self.assertFalse("49667" in man.responseData.keys())
         self.assertTrue("430" in man.responseData.keys())
@@ -50,7 +54,7 @@ class TestRedeploy(unittest.TestCase):
                      updateSniffer=True, updateOpenPorts=True)
         self.assertTrue(x == 0)
 
-        
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -229,7 +229,7 @@ class ConfigTunnel(Thread):
         pt1k2 = self.keyMaterial[AES.block_size:]
         # AES ENCRYPT MESSAGE
         iv = Random.new().read(AES.block_size)
-        cipher = AES.new(pt1k1, AES.MODE_CBC, iv)
+        cipher = AES.new(pt1k1.encode("utf8"), AES.MODE_CBC, iv)
         # Pad It
         x = bytes(cleartext.encode("ascii"))
         length = 32 - (len(x) % 32)
@@ -256,7 +256,7 @@ class ConfigTunnel(Thread):
         # Authenticity Check
         if mac != h.digest():
             sys.exit("THE MESSAGE OR AUTHKEY IS WRONG (non-authentic)")
-        decipher = AES.new(pt1k1, AES.MODE_CBC, iv)
+        decipher = AES.new(pt1k1.encode('utf8'), AES.MODE_CBC, iv)
         cleartext = decipher.decrypt(ciphertext)
         padding = cleartext[len(cleartext) - 1]
         # Should work most of the time
