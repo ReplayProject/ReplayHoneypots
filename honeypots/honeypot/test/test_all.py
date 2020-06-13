@@ -67,7 +67,7 @@ class TestLogs(unittest.TestCase):
         self.assertTrue(type(entry.timestamp) is int)
 
 #TODO: DB conenction string for testing
-DB_URL = 'http://admin:couchdb@127.0.0.1:5984' # Default 'http://admin:couchdb@127.0.0.1:5984'
+DB_URL = 'http://admin:couchdb@10.11.12.125:5984' # Default 'http://admin:couchdb@127.0.0.1:5984'
 
 
 class TestDatabaser(unittest.TestCase):
@@ -110,6 +110,8 @@ class TestDatabaser(unittest.TestCase):
             db = Databaser()
         except ConnectionRefusedError:
             self.assertRaises(Exception)
+        except OSError:
+            self.assertRaises(Exception)
 
         try:
             os.environ["TARGET_ADDR"] = ""
@@ -140,9 +142,9 @@ class TestSniffer(unittest.TestCase):
         IPPipe.close()
 
         #Making sure we catch it
-        os.system("curl www.google.com 2>&1 >> /dev/null")
-        os.system("curl www.google.com 2>&1 >> /dev/null")
-        os.system("curl www.google.com 2>&1 >> /dev/null")
+        os.system("curl -s www.google.com -o /dev/null")
+        os.system("curl -s www.google.com -o /dev/null")
+        os.system("curl -s www.google.com -o /dev/null")
 
         # Let the logger handle whats up
         time.sleep(2)
@@ -184,10 +186,8 @@ class TestSniffer(unittest.TestCase):
                        portWhitelist=[777, 888, 999],
                        honeypotIP="192.168.42.42",
                        managementIPs="54.80.228.0")
-
         #used to flush the Sniffer
-        os.system("curl www.google.com 2>&1 >> /dev/null")
-
+        os.system("curl -s www.google.com -o /dev/null")
         self.assertTrue(len(s.openPorts) == 2)
         self.assertTrue(len(s.whitelist) == 2)
         self.assertTrue(len(s.portWhitelist) == 3)
