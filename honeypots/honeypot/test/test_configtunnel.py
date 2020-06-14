@@ -20,8 +20,8 @@ class TestConfigTunnel:
         """
         Setup both ends of the tunnel with a connection to localhost
         """
-        stunnel = ConfigTunnel("server")
-        ctunnel = ConfigTunnel("client", "localhost")
+        stunnel = ConfigTunnel("server", TEST_PORT)
+        ctunnel = ConfigTunnel("client", TEST_PORT, "localhost")
 
         flag = False
 
@@ -47,8 +47,8 @@ class TestConfigTunnel:
         """
         Setup both ends of the tunnel with a connection to localhost
         """
-        stunnel = ConfigTunnel("server")
-        ctunnel = ConfigTunnel("client", "localhost")
+        stunnel = ConfigTunnel("server", TEST_PORT)
+        ctunnel = ConfigTunnel("client", TEST_PORT, "localhost")
 
         # Helper Variables & Functions
         echoflag = False
@@ -101,8 +101,8 @@ class TestConfigTunnel:
         """
         Setup both ends of the tunnel with a connection to localhost
         """
-        stunnel = ConfigTunnel("server", cafile=CERT_FILE)
-        ctunnel = ConfigTunnel("client", "localhost", cafile=CERT_FILE)
+        stunnel = ConfigTunnel("server", TEST_PORT, cafile=CERT_FILE)
+        ctunnel = ConfigTunnel("client", TEST_PORT, "localhost", cafile=CERT_FILE)
 
         flag = False
 
@@ -128,8 +128,8 @@ class TestConfigTunnel:
         """
         Setup both ends of the tunnel with a connection to localhost
         """
-        stunnel = ConfigTunnel("server", cafile=CERT_FILE)
-        ctunnel = ConfigTunnel("client", "localhost", cafile=CERT_FILE)
+        stunnel = ConfigTunnel("server", TEST_PORT, cafile=CERT_FILE)
+        ctunnel = ConfigTunnel("client", TEST_PORT, "localhost", cafile=CERT_FILE)
 
         # Helper Variables & Functions
         echoflag = False

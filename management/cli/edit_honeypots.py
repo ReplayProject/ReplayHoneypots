@@ -4,6 +4,7 @@ import click
 import json
 import subprocess
 import getpass
+import trio
 import time
 import sys
 import os
@@ -259,18 +260,24 @@ def configurehoneypot(ctx, selected_hosts=None):
             if host in all_hosts:
                 host_data = hostdata(host)
                 ip = host_data['ip']
+                # TODO: make this read from configs
+                certfile = '../../config/cert.pem'
+                confport = 9998
 
-                tunnel = ConfigTunnel('client', host=ip)
-                tunnel.start()
-                time.sleep(2)
+                try:
+                  async def attempt_remote_config():
+                    with trio.move_on_after(10):
+                      async with trio.open_nursery() as nursery:
+                          tunnel = ConfigTunnel('client', confport, ip)#, cafile=certfile)
+                          nursery.start_soon(tunnel.connect)
+                          await trio.sleep(2)
+                          await tunnel.send(message + " user " + getpass.getuser())
+                          log ("Ran '" + message + "' on " + host, "green")
+                    log ("Conftunnel timeout hit", "green")
 
-                if not tunnel.ready:
-                    log ("Could not connect to " + host, "red")
-                else:
-                    tunnel.send(message + " user " + getpass.getuser())
-                    log ("Ran '" + message + "' on " + host, "green")
-
-                tunnel.stop()
-                tunnel.join()
+                  trio.run(attempt_remote_config)
+                except Exception as ex:
+                  log ("Could not connect to " + host, "red")
+                  raise(ex)
             else:
                 log("Host " + host + " could not be found.", "red")
