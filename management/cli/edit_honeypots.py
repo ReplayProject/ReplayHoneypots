@@ -263,16 +263,15 @@ def configurehoneypot(ctx, selected_hosts=None):
                 # TODO: make this read from configs
                 certfile = '../../config/cert.pem'
                 confport = 9998
-
                 try:
                   async def attempt_remote_config():
                     with trio.move_on_after(10):
                       async with trio.open_nursery() as nursery:
-                          tunnel = ConfigTunnel('client', confport, ip)#, cafile=certfile)
-                          nursery.start_soon(tunnel.connect)
-                          await trio.sleep(2)
+                          tunnel = ConfigTunnel('client', confport, ip, cafile=certfile)
+                          await nursery.start(tunnel.connect)
                           await tunnel.send(message + " user " + getpass.getuser())
                           log ("Ran '" + message + "' on " + host, "green")
+                          await tunnel.destroy(nursery.cancel_scope)
                     log ("Conftunnel timeout hit", "green")
 
                   trio.run(attempt_remote_config)
