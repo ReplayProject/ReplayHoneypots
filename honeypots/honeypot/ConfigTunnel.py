@@ -9,7 +9,7 @@ class ConfigTunnel:
     Handles the creation/usage of the configuration tunnel, which is a module to support remote/live configuration over a discrete connection
     """
 
-    def __init__(self, mode, port, host="", cafile=""):
+    def __init__(self, mode, port, host="", cafile=None):
         """
         Setup variables for the config tunnel to operate
         Input: mode [server|client], host (optional ssh tunnel host)
@@ -20,6 +20,7 @@ class ConfigTunnel:
         self.handlers = {}
         self.certfile = cafile
         self.client_stream = None
+        self.channel = None
 
     def setHandler(self, trigger, handler):
         """
@@ -62,7 +63,7 @@ class ConfigTunnel:
                 resp = await self.triggerHandler(data)
                 if resp is not None:
                     await stream.send_all(resp.encode("utf8"))
-        print(self.mode + "conftunnel: connection closed")
+            print(self.mode + "conftunnel: connection closed")
         # except Exception as exc:
         #     print(self.mode +" readstream crashed: {!r}".format(exc))
 
@@ -82,7 +83,7 @@ class ConfigTunnel:
         else:
             await trio.serve_tcp(self.readstream, self.serverPort)
 
-    async def connect(self):
+    async def connect(self, task_status=trio.TASK_STATUS_IGNORED):
         """
         Start the config server client (and tunnel in)
         """
@@ -103,6 +104,8 @@ class ConfigTunnel:
                 self.connectHost, self.serverPort
             )
 
+        task_status.started()
+
         async with trio.open_nursery() as nursery:
             nursery.start_soon(self.readstream, self.client_stream)
 
@@ -117,13 +120,16 @@ class ConfigTunnel:
         await self.client_stream.send_all(given_line.encode("utf8"))
 
     async def relaytochannel(self, x):
-        async with self.channel:
-            await self.channel.send(x)
+        await self.channel.send(x)
         return
 
-    # def destroy(self):
-    #     """
-    #     Closes stream resources
-    #     """
-    #     if self.client_stream:
-    #         self.client_stream.aclose()
+    async def destroy(self, cancel_scope):
+        """
+        Closes stream and channel resources
+        """
+        if self.client_stream:
+            await self.client_stream.aclose()
+        if self.channel:
+            await self.channel.aclose()
+        if cancel_scope:
+            cancel_scope.cancel()
