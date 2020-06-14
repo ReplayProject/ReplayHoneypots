@@ -251,7 +251,7 @@ if __name__ == "__main__":
 
     # --- ConfigTunnel - connection allows for live configuration options ---#
     manager.getConfigTunnelData()
-    tunnel = ConfigTunnel("server", manager.confport)  # , manager.confcert)
+    tunnel = ConfigTunnel("server", manager.confport, cafile=manager.confcert)
     tunnel.setHandler(
         "reconfigure", tunnel.relaytochannel
     )  # TODO: change when we have other tunnel actions to worry about
