@@ -6,11 +6,43 @@ import pytest
 
 TEST_PORT = 1337
 WAIT_TIME = 0.1
+CERT_FILE = "../../config/cert.pem"
 
 from trio.testing import open_stream_to_socket_listener
 
 
 class TestConfigTunnel:
+    """
+    Tests are duplicated to test using SSL
+    """
+
+    async def test_basic_handler(self, nursery):
+        """
+        Setup both ends of the tunnel with a connection to localhost
+        """
+        stunnel = ConfigTunnel("server")
+        ctunnel = ConfigTunnel("client", "localhost")
+
+        flag = False
+
+        def handle_test(x):
+            nonlocal flag
+            print("handle: ", x)
+            flag = True
+
+        # Server Handler Setup
+        stunnel.setHandler("test", handle_test)
+        nursery.start_soon(stunnel.listen)
+        await trio.sleep(WAIT_TIME)
+
+        nursery.start_soon(ctunnel.connect)
+        await trio.sleep(WAIT_TIME)
+
+        await ctunnel.send("test with a longer command")
+        await trio.sleep(WAIT_TIME)
+
+        assert flag
+
     async def test_advanced_handler(self, nursery):
         """
         Setup both ends of the tunnel with a connection to localhost
@@ -56,12 +88,21 @@ class TestConfigTunnel:
         assert doneflag
         assert donePayload == ["echo", "value"]
 
-    async def test_basic_handler(self, nursery):
+    # SSL TESTS
+
+    def test_cert_exists(self):
+        from pathlib import Path
+
+        certfile = Path(CERT_FILE)
+        assert certfile.is_file(), "Cert exists"
+        assert certfile.exists(), "Cert exists"
+
+    async def test_ssl_basic_handler(self, nursery):
         """
         Setup both ends of the tunnel with a connection to localhost
         """
-        stunnel = ConfigTunnel("server")
-        ctunnel = ConfigTunnel("client", "localhost")
+        stunnel = ConfigTunnel("server", cafile=CERT_FILE)
+        ctunnel = ConfigTunnel("client", "localhost", cafile=CERT_FILE)
 
         flag = False
 
@@ -82,6 +123,51 @@ class TestConfigTunnel:
         await trio.sleep(WAIT_TIME)
 
         assert flag
+
+    async def test_ssl_advanced_handler(self, nursery):
+        """
+        Setup both ends of the tunnel with a connection to localhost
+        """
+        stunnel = ConfigTunnel("server", cafile=CERT_FILE)
+        ctunnel = ConfigTunnel("client", "localhost", cafile=CERT_FILE)
+
+        # Helper Variables & Functions
+        echoflag = False
+        echoPayload = []
+
+        def handle_server_echo(x):
+            nonlocal echoflag, echoPayload
+            echoflag = True
+            echoPayload = x
+            return "echo value"
+
+        doneflag = False
+        donePayload = []
+
+        def handle_client_done(x):
+            nonlocal doneflag, donePayload
+            doneflag = True
+            donePayload = x
+
+        # Server Handler Setup
+        stunnel.setHandler("test", handle_server_echo)
+        nursery.start_soon(stunnel.listen)
+        await trio.sleep(WAIT_TIME)
+
+        ctunnel.setHandler("done", handle_client_done)
+        nursery.start_soon(ctunnel.connect)
+        await trio.sleep(WAIT_TIME)
+
+        # Wait and send a "command"
+        await ctunnel.send("test with a somewhat longer message")
+        await trio.sleep(WAIT_TIME)
+
+        assert echoflag
+        assert echoPayload == ["with", "a", "somewhat", "longer", "message"]
+
+        # Client received response and payload
+        assert doneflag
+        assert donePayload == ["echo", "value"]
 
 
 # DEPRECATED CONFIG TUNNEL TESTS KEPT AS REFERENCE

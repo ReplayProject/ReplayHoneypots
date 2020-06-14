@@ -5,7 +5,6 @@ from Port import Port
 from NmapParser import NmapParser
 from PortThreadManager import PortThreadManager
 from LogEntry import LogEntry
-from ConfigTunnel import ConfigTunnel
 from Databaser import Databaser
 from Sniffer import Sniffer
 from CronInstaller import CronInstaller

@@ -1,4 +1,5 @@
 import trio
+import ssl
 import sys
 
 
@@ -7,7 +8,7 @@ class ConfigTunnel:
     Handles the creation/usage of the configuration tunnel, which is a module to support remote/live configuration over a discrete connection
     """
 
-    def __init__(self, mode, host=""):
+    def __init__(self, mode, host="", cafile=""):
         """
         Setup variables for the config tunnel to operate
         Input: mode [server|client], host (optional ssh tunnel host)
@@ -16,6 +17,7 @@ class ConfigTunnel:
         self.connectHost = host
         self.serverPort = 9998
         self.handlers = {}
+        self.certfile = cafile
         self.client_stream = None
 
     def setHandler(self, trigger, handler):
@@ -63,7 +65,13 @@ class ConfigTunnel:
         """
         Start the config server as a host
         """
-        await trio.serve_tcp(self.readstream, self.serverPort)
+        # Decide if we are encrypting or not.
+        if self.certfile:
+            sslctx = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
+            sslctx.load_cert_chain(certfile=self.certfile, keyfile=self.certfile)
+            await trio.serve_ssl_over_tcp(self.readstream, self.serverPort, sslctx)
+        else:
+            await trio.serve_tcp(self.readstream, self.serverPort)
 
     async def connect(self):
         """
@@ -71,9 +79,18 @@ class ConfigTunnel:
         """
         print("connecting to {}:{}".format(self.connectHost, self.serverPort))
 
-        self.client_stream = await trio.open_tcp_stream(
-            self.connectHost, self.serverPort
-        )
+        # Decide if we are encrypting or not.
+        if self.certfile:
+            sslctx = ssl.create_default_context(cafile=self.certfile)
+            sslctx.check_hostname = False
+
+            self.client_stream = await trio.open_ssl_over_tcp_stream(
+                self.connectHost, self.serverPort, ssl_context=sslctx
+            )
+        else:
+            self.client_stream = await trio.open_tcp_stream(
+                self.connectHost, self.serverPort
+            )
 
         async with trio.open_nursery() as nursery:
             nursery.start_soon(self.readstream, self.client_stream)
@@ -88,9 +105,9 @@ class ConfigTunnel:
         print("client sending: ", given_line)
         await self.client_stream.send_all(given_line.encode("utf8"))
 
-    def destroy(self):
-        """
-        Closes stream resources
-        """
-        if self.client_stream:
-            self.client_stream.aclose()
+    # def destroy(self):
+    #     """
+    #     Closes stream resources
+    #     """
+    #     if self.client_stream:
+    #         self.client_stream.aclose()
