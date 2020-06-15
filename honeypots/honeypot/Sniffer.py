@@ -1,17 +1,18 @@
 from LogEntry import LogEntry
-from scapy.all import sniff
-from threading import Thread
+from scapy.all import AsyncSniffer
+from scapy.error import Scapy_Exception
 from Databaser import Databaser
 from datetime import datetime
 from Alert import Alert
 import requests
 requests.adapters.DEFAULT_RETRIES = 0
+
 """
 Uses Scapy library to examine all incoming traffic
 """
 
 
-class Sniffer(Thread):
+class Sniffer():
     """
     Constructor; takes a config keyword to see what mode to run it in
     'testing' ignores ssh spam you get
@@ -24,7 +25,6 @@ class Sniffer(Thread):
                  honeypotIP=None,
                  managementIPs=None,
                  databaser=None):
-        Thread.__init__(self)
 
         self.config = config
         self.openPorts = openPorts
@@ -33,20 +33,12 @@ class Sniffer(Thread):
         self.portWhitelist = portWhitelist
         self.managementIPs = managementIPs
         self.db = databaser
-
-        #Used to tell if we should continue running sniffer
-        self.running = True
-        #Semaphore that tells us when we can restart the run method with new config details
-        self.ready = True
-
         #used to detect port scans
         self.portScanTimeout = None
         #also used to detect port scans
         self.PS_RECORD = dict()
-
         #set used for testing convenience
         self.RECORD = dict()
-
         #Hash used to tell if we properly updated Sniffer class; probably a better way of making this hash
         self.currentHash = hash(self.config)
         self.currentHash += hash(tuple(self.openPorts))
@@ -58,42 +50,46 @@ class Sniffer(Thread):
     Runs the thread, begins sniffing
     """
 
-    def run(self):
-        print("Sniffing")
-
-        #This acts as a semaphore
-        self.ready = False
-
-        #building the base filter
+    def start(self):
+        print("Starting async sniffer")
+        # building the base filter
         fltr = "not src host {} ".format(self.honeypotIP)
-        #adding a variable number of management ips
+        # adding a variable number of management ips
         for ip in self.managementIPs:
             fltr += "and not host {} ".format(ip)
-        #adding things from the port list
+        # adding things from the port list
         for port in self.portWhitelist:
             fltr += "and not dst port {} ".format(port)
 
-        #here's where the packet detection starts
-        if (self.config == "testing"):
-            fltr = fltr + " and not (src port ssh or dst port ssh)"
-            # this ignores the ssh spam you get when sending packets between two ssh terminals
-            sniff(filter=fltr,
-                  prn=self.save_packet,
-                  stop_filter=lambda p: not self.running)
-        elif (self.config == "base"):
-            fltr = fltr + " and not (src port ssh or dst port ssh)"
-            # this above filter ignores the ssh spam you get when sending packets between two ssh terminals - TAKE THIS OUT IN PROD
-            sniff(filter=fltr,
-                  prn=self.save_packet,
-                  stop_filter=lambda p: not self.running)
-        #this last config option is used in testing
-        elif (self.config == "onlyUDP"):
-            fltr = "udp"
-            sniff(filter=fltr,
-                  prn=self.save_packet,
-                  stop_filter=lambda p: not self.running)
+        # here's where the packet detection starts
 
-        self.ready = True
+        if self.config == "testing":
+            # this ignores the ssh spam you get when sending packets between two ssh terminals
+            fltr = fltr + " and not (src port ssh or dst port ssh)"
+        elif self.config == "base":
+            # this above filter ignores the ssh spam you get when sending packets between two ssh terminals - TAKE THIS OUT IN PROD
+            fltr = fltr + " and not (src port ssh or dst port ssh)"
+        elif self.config == "onlyUDP":
+            # this last config option is used in testing
+            fltr = "udp"
+
+        self.sniffer = AsyncSniffer(
+            filter=fltr, prn=self.save_packet, store=False
+        )
+
+        if not self.sniffer:
+          raise Exception("Async sniffer not initialized")
+
+        self.sniffer.start()
+
+    """
+    Attempts to stop the async sniffer
+    """
+
+    def stop(self):
+      if not self.sniffer or not self.sniffer.running:
+          raise Exception("Async sniffer not initialized")
+      self.sniffer.stop()
 
     """
     Updates configuration options during runtime
@@ -105,7 +101,7 @@ class Sniffer(Thread):
                      portWhitelist=[],
                      honeypotIP=None,
                      managementIPs=None):
-        print("Sniffer updated")
+        print("Async sniffer updated")
         self.running = False
         self.openPorts = openPorts
         self.whitelist = whitelist
@@ -120,10 +116,12 @@ class Sniffer(Thread):
         self.currentHash += hash(honeypotIP)
         self.currentHash += hash(tuple(managementIPs))
 
-        #preps Sniffer
-        if (self.ready):
-            self.running = True
-            self.run()
+        #restart's Sniffer
+        try:
+          self.stop()
+        except Scapy_Exception as ex:
+          print("Sniffer did not finish setting up before teardown: ", str(ex))
+        self.start()
 
     """
     Function for recording a packet during sniff runtime
