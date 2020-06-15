@@ -5,7 +5,7 @@ This object contains information about a port
 """
 
 
-class Port():
+class Port:
     """
     This object contains information about each
     open port
@@ -38,10 +38,7 @@ class Port():
     """
 
     def get_json(self):
-        return {
-            "port": self.port,
-            "defaultData": self.defaultData
-        }
+        return {"port": self.port, "defaultData": self.defaultData}
 
     def __str__(self):
         return "Port: " + str(self.port)
