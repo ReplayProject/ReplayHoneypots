@@ -18,7 +18,7 @@ class TCPPortListener:
 
         # Defaults
         self.ip = ""
-        self.isRunning = True
+        self.isRunning = False
 
     """
     Send a response on a port
@@ -46,8 +46,9 @@ class TCPPortListener:
             await sock.bind((self.ip, int(self.port)))
             sock.listen(1)
             print("TCP Listening on port " + str(self.port))
+            self.isRunning = True
 
-            while self.isRunning:
+            while True:
                 conn, addr = await sock.accept()
                 print("TCP from:", addr)
                 # Print out incoming data

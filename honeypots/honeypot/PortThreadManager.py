@@ -127,8 +127,6 @@ class PortThreadManager:
                                             managementIPs=self.MGMT_IPs,
                                             databaser=self.db)
                 self.sniffer.start()
-                # Mark trio task as started
-                task_status.started(scope)
             elif (updateSniffer == True):
                 oldHash = self.sniffer.currentHash
                 self.sniffer.configUpdate(openPorts=list(replayPorts),
@@ -138,6 +136,8 @@ class PortThreadManager:
                                                 managementIPs=self.MGMT_IPs)
                 if (not self.sniffer.currentHash == oldHash):
                     retCode = 1
+            # Mark trio task as started
+            task_status.started(scope)
 
             #--- Open Sockets - Disabled due to new TRIO API---#
             # On initial run
@@ -189,16 +189,19 @@ class PortThreadManager:
             tcp_sockets =  list(filter(lambda x: "TCP" in self.responseData[x].keys(), replayPorts))
 
             async def replay_server(listener_class, sockets, config_path, nursery):
-              for port in sockets:
-                listener = listener_class(port, self.responseData[port][config_path], self.delay, nursery)
-                nursery.start_soon(listener.handler)
+                for port in sockets:
+                  self.processList[port] = listener_class(port, self.responseData[port][config_path], self.delay, nursery)
+                  nursery.start_soon(self.processList[port].handler)
 
-            #--- Actually Start up listeners ---#
-            async with trio.open_nursery() as nursery:
-                nursery.start_soon(replay_server, UDPPortListener, udp_sockets, "UDP", nursery)
-                nursery.start_soon(replay_server, TCPPortListener, tcp_sockets, "TCP", nursery)
-
-            print("Listeners have been killed...")
+            try:
+              #--- Actually Start up listeners ---#
+              async with trio.open_nursery() as nursery:
+                  nursery.start_soon(replay_server, UDPPortListener, udp_sockets, "UDP", nursery)
+                  nursery.start_soon(replay_server, TCPPortListener, tcp_sockets, "TCP", nursery)
+            except Exception as ex:
+              print("listener nursery exception: ", str(ex))
+            finally:
+              print("Listeners have been killed")
 
             #return the code here; 0 means no changes, 1 means only sniffer changed, 2 means only TCP ports were changed, 3 means both were changed
             if (retCode == 1):
@@ -281,7 +284,10 @@ if __name__ == "__main__":
             # Respond to updates coming from tunnel
             async for command in receive_channel:
                 print("config command {!r} received".format(command))
-                everything_else.cancel()
+
+                everything_else.cancel() # clean tasks
+                manager.processList = dict() # clean listener objects
+
                 print("Reconfiguring Replay Manager: ", command)
                 everything_else = await nursery.start(
                     partial(
