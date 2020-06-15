@@ -18,7 +18,7 @@ class UDPPortListener:
 
         # Defaults
         self.ip = ""
-        self.isRunning = True
+        self.isRunning = False
 
     """
     Send a response on a port
@@ -41,6 +41,7 @@ class UDPPortListener:
 
             await sock.bind((self.ip, int(self.port)))
             print("UDP Listening on port " + str(self.port))
+            self.isRunning = True
 
             while self.isRunning:
                 data, addr = await sock.recvfrom(1024)  # buffer size is 1024 bytes
