@@ -15,6 +15,7 @@ class Alert:
     references - a list of related Traffic IDs, if applicable
     hostname - which honeypot this came from
     """
+
     __name__ = "Alert"
 
     def __init__(self, variant, message="", references=[], hostname="DefaultHostname"):
@@ -25,10 +26,12 @@ class Alert:
         self.hostname = hostname
 
     def json(self):
-        return json.dumps({
-            "variant": self.variant,
-            "message": self.message,
-            "timestamp": self.timestamp,
-            "references": self.references,
-            "hostname": self.hostname
-        })
+        return json.dumps(
+            {
+                "variant": self.variant,
+                "message": self.message,
+                "timestamp": self.timestamp,
+                "references": self.references,
+                "hostname": self.hostname,
+            }
+        )
