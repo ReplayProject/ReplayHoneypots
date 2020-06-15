@@ -39,8 +39,8 @@ class PortThreadManager:
         self.portList = []
         self.ip = str(get('https://api.ipify.org').text)
         self.processList = dict()
-        # where the sniffer thread will be located
-        self.snifferThread = None
+        # where the async sniffer will be located
+        self.sniffer = None
         #delay specified by config file
         self.delay = None
         #whitelist of ports
@@ -116,28 +116,27 @@ class PortThreadManager:
         replayPorts = self.responseData.keys()
 
         with trio.CancelScope() as scope:
-            task_status.started(scope)
-            #--- Start Sniffer Thread ---#
-            if (self.snifferThread == None):
+            #--- Start Async Sniffer ---#
+            if (self.sniffer == None):
                 # TODO: Switch config="testing" to "base" when in production
-                self.snifferThread = Sniffer(config="base",
+                self.sniffer = Sniffer(config="base",
                                             openPorts=list(replayPorts),
                                             whitelist=self.whitelist,
                                             portWhitelist=self.portWhitelist,
                                             honeypotIP=self.HONEY_IP,
                                             managementIPs=self.MGMT_IPs,
                                             databaser=self.db)
-                self.snifferThread.daemon = True
-                self.snifferThread.start()
+                self.sniffer.start()
+                # Mark trio task as started
+                task_status.started(scope)
             elif (updateSniffer == True):
-                oldHash = self.snifferThread.currentHash
-
-                self.snifferThread.configUpdate(openPorts=list(replayPorts),
+                oldHash = self.sniffer.currentHash
+                self.sniffer.configUpdate(openPorts=list(replayPorts),
                                                 whitelist=self.whitelist,
                                                 portWhitelist=self.portWhitelist,
                                                 honeypotIP=self.HONEY_IP,
                                                 managementIPs=self.MGMT_IPs)
-                if (not self.snifferThread.currentHash == oldHash):
+                if (not self.sniffer.currentHash == oldHash):
                     retCode = 1
 
             #--- Open Sockets - Disabled due to new TRIO API---#
