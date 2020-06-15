@@ -75,3 +75,27 @@ app.use(function (err, req, res, next) {
 
 // listen for frontend requests :)
 app.listen(port, () => log('Frontend listening on', port))
+
+// If we ever venture into direct HTTPS (watch for couchdb requests... they have to be HTTPS too)
+// var fs = require("fs");
+// var https = require("https");
+
+// var options = {
+//   key: fs.readFileSync("../../config/server.key"),
+//   cert: fs.readFileSync("../../config/server.cert")
+// };
+
+// https
+//   .createServer(options, app)
+//   .listen(443, () => log("Frontend HTTPS listening on", 443));
+
+// // Redirect from http port 80 to https
+// var http = require("http");
+// http
+//   .createServer(function(req, res) {
+//     res.writeHead(301, {
+//       Location: "https://" + req.headers["host"] + req.url
+//     });
+//     res.end();
+//   })
+//   .listen(80, () => log("Frontend HTTP redirect listening on", 80));
