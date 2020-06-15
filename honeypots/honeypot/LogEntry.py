@@ -13,7 +13,18 @@ class LogEntry:
 
     __name__ = "LogEntry"
 
-    def __init__(self, sourcePortNumber, sourceIPAddress, sourceMAC, destPortNumber, destIPAddress, destMAC, trafficType, isPortOpen, hostname):
+    def __init__(
+        self,
+        sourcePortNumber,
+        sourceIPAddress,
+        sourceMAC,
+        destPortNumber,
+        destIPAddress,
+        destMAC,
+        trafficType,
+        isPortOpen,
+        hostname,
+    ):
         self.sourcePortNumber = sourcePortNumber
         self.sourceIPAddress = sourceIPAddress
         self.sourceMAC = sourceMAC
