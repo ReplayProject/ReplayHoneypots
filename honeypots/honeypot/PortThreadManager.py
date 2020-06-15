@@ -5,6 +5,7 @@ import os
 
 import trio
 from functools import partial
+import signal
 
 from requests import get
 import configparser
@@ -238,6 +239,18 @@ if __name__ == "__main__":
         parser = NmapParser(args.nmap)
         portList = parser.getPorts()
 
+    async def control_c_handler(nursery):
+      with trio.open_signal_receiver(signal.SIGINT) as batched_signal_aiter:
+          async for _ in batched_signal_aiter:
+              print("\nAttempting graceful honeypot shutdown")
+              nursery.cancel_scope.cancel()
+              # We exit the loop, restoring the normal behavior of
+              # control-C. This way hitting control-C once will try to
+              # do a polite shutdown, but if that gets stuck the user
+              # can hit control-C again to raise KeyboardInterrupt and
+              # force things to exit.
+              break
+
     manager = PortThreadManager()
     #initial creation alert
     manager.db.alert(
@@ -258,7 +271,9 @@ if __name__ == "__main__":
 
     async def main():
         async with trio.open_nursery() as nursery:
-            # Get our tunnel and trio channels running
+            # Get our CTRL-C handler, tunnel, and trio channels running
+            nursery.start_soon(control_c_handler, nursery)
+
             send_channel, receive_channel = trio.open_memory_channel(0)
             nursery.start_soon(tunnel.listen, send_channel)
             everything_else = await nursery.start(
