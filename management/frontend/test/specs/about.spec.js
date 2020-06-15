@@ -18,7 +18,7 @@ test('about.vue', t => {
         createIndex,
         find
       },
-     $store: store,
+      $store: store,
       $Progress: {
         start: spy,
         finish: spy
