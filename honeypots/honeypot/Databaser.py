@@ -87,8 +87,7 @@ class Databaser:
             doc_id, doc_rev = db.save(json.loads(json_raw))
             print("Log created: %s" % doc_id)
             return doc_id
-        except Exception as e:
-            # print(str(e))
+        except Exception:
             print("DB Save Error:", json_raw)
             return None
         except AttributeError:
@@ -105,8 +104,7 @@ class Databaser:
             doc_id, doc_rev = db.save(json.loads(json_raw))
             print("Alert created: %s" % doc_id)
             return doc_id
-        except Exception as e:
-            # print(str(e))
+        except Exception:
             print("Alert DB Save Error:", json_raw)
             return None
         except AttributeError:

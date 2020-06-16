@@ -110,7 +110,8 @@ class TestManageHosts(unittest.TestCase):
 
     NOT TESTED:
     - using an invalid username for a valid IP address
-    - using a valid IP address for an inaccessible machine (e.g. no SSH, machine shut down)
+    - using a valid IP address for an inaccessible machine
+      (e.g. no SSH, machine shut down)
     - using a valid filepath of an invalid ssh key file
 
     Expected:

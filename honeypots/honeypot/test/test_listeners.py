@@ -33,16 +33,16 @@ def udp():
 class TestUDPListener:
     async def testListenerInit(self, udp, nursery):
         string = "hello world"
-        l = udp(e(string), 0, nursery)
+        listener = udp(e(string), 0, nursery)
         assert len(nursery.child_tasks) == 0
-        nursery.start_soon(l.handler)
+        nursery.start_soon(listener.handler)
         await trio.sleep(WAIT_TIME)
         assert len(nursery.child_tasks) == 1, "Task should make it into the nursery"
 
     async def testListenerReplay(self, udp, nursery):
         string = "hello world"
-        l = udp(e(string), 0, nursery)
-        nursery.start_soon(l.handler)
+        listener = udp(e(string), 0, nursery)
+        nursery.start_soon(listener.handler)
         await trio.sleep(WAIT_TIME)
 
         with trio.socket.socket(trio.socket.AF_INET, trio.socket.SOCK_DGRAM) as sock:
@@ -55,8 +55,8 @@ class TestUDPListener:
 
     async def testListenerPayload(self, udp, nursery):
         string = "[][]6[]8[]7657%$^#%^%$#^%"
-        l1 = udp(e(string), 0, nursery)
-        nursery.start_soon(l1.handler)
+        listener1 = udp(e(string), 0, nursery)
+        nursery.start_soon(listener1.handler)
         await trio.sleep(WAIT_TIME)
 
         with trio.socket.socket(trio.socket.AF_INET, trio.socket.SOCK_DGRAM) as sock:
@@ -70,8 +70,8 @@ class TestUDPListener:
 
     async def testMultipleClients(self, udp, nursery):
         string = "normal text"
-        l = udp(e(string), 0, nursery)
-        nursery.start_soon(l.handler)
+        listener = udp(e(string), 0, nursery)
+        nursery.start_soon(listener.handler)
         await trio.sleep(WAIT_TIME)
 
         for x in range(1, 150):
@@ -94,8 +94,6 @@ def tcp():
     """
 
     def _(*args, **kwargs):
-        from TCPPortListener import TCPPortListener
-
         return TCPPortListener(TEST_PORT, args[0], args[1], args[2])
 
     return _
@@ -104,16 +102,16 @@ def tcp():
 class TestTCPListener:
     async def testListenerInit(self, tcp, nursery):
         string = "hello world"
-        l = tcp(e(string), 0, nursery)
+        listener = tcp(e(string), 0, nursery)
         assert len(nursery.child_tasks) == 0
-        nursery.start_soon(l.handler)
+        nursery.start_soon(listener.handler)
         await trio.sleep(WAIT_TIME)
         assert len(nursery.child_tasks) == 1, "Task should make it into the nursery"
 
     async def testListenerReplay(self, tcp, nursery):
         string = "hello world"
-        l = tcp(e(string), 0, nursery)
-        nursery.start_soon(l.handler)
+        listener = tcp(e(string), 0, nursery)
+        nursery.start_soon(listener.handler)
         await trio.sleep(WAIT_TIME)
 
         with trio.socket.socket(trio.socket.AF_INET, trio.socket.SOCK_STREAM) as sock:
@@ -127,8 +125,8 @@ class TestTCPListener:
 
     async def testListenerPayload(self, tcp, nursery):
         string = "[][]6[]8[]7657%$^#%^%$#^%"
-        l1 = tcp(e(string), 0, nursery)
-        nursery.start_soon(l1.handler)
+        listener1 = tcp(e(string), 0, nursery)
+        nursery.start_soon(listener1.handler)
         await trio.sleep(WAIT_TIME)
 
         with trio.socket.socket(trio.socket.AF_INET, trio.socket.SOCK_STREAM) as sock:
@@ -143,11 +141,11 @@ class TestTCPListener:
 
     async def testMultipleClients(self, tcp, nursery):
         string = "normal text"
-        l = tcp(e(string), 0, nursery)
-        nursery.start_soon(l.handler)
+        listener = tcp(e(string), 0, nursery)
+        nursery.start_soon(listener.handler)
         await trio.sleep(WAIT_TIME)
 
-        for x in range(1, 150):
+        for _ in range(1, 150):
             with trio.socket.socket(
                 trio.socket.AF_INET, trio.socket.SOCK_STREAM
             ) as sock:
