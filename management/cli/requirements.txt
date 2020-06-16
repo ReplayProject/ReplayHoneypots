@@ -1,5 +1,6 @@
 Click==7.0
 colorama==0.4.3
+pexpect==4.8.0
 prompt-toolkit==1.0.14
 pycryptodome==3.9.7
 pyfiglet==0.8.post1
@@ -9,4 +10,3 @@ regex==2020.1.8
 six==1.14.0
 termcolor==1.1.0
 wcwidth==0.1.8
-pexpect==4.8.0

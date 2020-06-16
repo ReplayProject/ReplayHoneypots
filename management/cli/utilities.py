@@ -89,7 +89,7 @@ def hostselector(ctx, message):
 
 """
 #############
-Configuration 
+Configuration
 #############
 """
 

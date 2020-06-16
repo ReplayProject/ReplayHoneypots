@@ -34,10 +34,10 @@ Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
 
 Host script results:
 |_nbstat: NetBIOS name: DESKTOP-852UNFC, NetBIOS user: <unknown>, NetBIOS MAC: 00:0c:29:39:7b:58 (VMware)
-| smb2-security-mode: 
-|   2.02: 
+| smb2-security-mode:
+|   2.02:
 |_    Message signing enabled but not required
-| smb2-time: 
+| smb2-time:
 |   date: 2019-09-19 13:38:05
 |_  start_date: N/A
 

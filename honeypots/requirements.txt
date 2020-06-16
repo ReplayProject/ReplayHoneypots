@@ -1,5 +1,5 @@
+CouchDB==1.2
+pycryptodome==3.9.7
 requests==2.23.0
 scapy==2.4.3
-pycryptodome==3.9.7
-CouchDB==1.2
 trio==0.16.0
