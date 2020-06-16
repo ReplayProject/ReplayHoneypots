@@ -45,7 +45,7 @@ class TestNmapParser(unittest.TestCase):
 
     def test_invalid_filename(self):
         with self.assertRaises(FileNotFoundError):
-            parser = NmapParser("wrongfilename")
+            NmapParser("wrongfilename")
 
     def test_ports(self):
         parser = NmapParser("../../logs/nmap/default.nmap")
@@ -74,7 +74,8 @@ class TestLogs(unittest.TestCase):
 
 
 # TODO: DB conenction string for testing
-DB_URL = "http://admin:couchdb@10.11.12.125:5984"  # Default 'http://admin:couchdb@127.0.0.1:5984'
+# Default 'http://admin:couchdb@127.0.0.1:5984'
+DB_URL = "http://admin:couchdb@10.11.12.125:5984"
 
 
 class TestDatabaser(unittest.TestCase):
@@ -107,14 +108,14 @@ class TestDatabaser(unittest.TestCase):
     def test_fail(self):
         try:
             os.environ["DB_URL"] = DB_URL + "9"
-            db = Databaser()
+            Databaser()
         except ConnectionRefusedError:
             self.assertRaises(Exception)
 
     def test_fail_2(self):
         try:
             os.environ["DB_URL"] = "http://localhost:1020"
-            db = Databaser()
+            Databaser()
         except ConnectionRefusedError:
             self.assertRaises(Exception)
         except OSError:
@@ -122,7 +123,7 @@ class TestDatabaser(unittest.TestCase):
 
         try:
             os.environ["TARGET_ADDR"] = ""
-            db = Databaser()
+            Databaser()
         except Exception:
             self.assertRaises(Exception)
 
@@ -238,8 +239,9 @@ class TestCron(unittest.TestCase):
         stdout, stderr = process.communicate()
         self.assertEqual(stderr.decode(), "no crontab for root\n")
         """
-        Install Cron when there is already an existing Cron file, and that file contains our job.
-        We expect the installer to identify our job and not duplicate the Cron job.
+        Install Cron when there is already an existing Cron file, and
+        that file contains our job. We expect the installer to identify
+        our job and not duplicate the Cron job.
         """
 
         CronInstaller.install(
@@ -264,7 +266,8 @@ class TestCron(unittest.TestCase):
         )
         CronUninstaller.uninstall()
         """
-        Install Cron when there is already an existing Cron file, and that file does not contain our job.
+        Install Cron when there is already an existing Cron file, and that
+         file does not contain our job.
         We expect the installer to:
         - Preserve the previous contents of the Cron file
         - Add our job to the Cron file

@@ -18,11 +18,13 @@ class Alert:
 
     __name__ = "Alert"
 
-    def __init__(self, variant, message="", references=[], hostname="DefaultHostname"):
+    def __init__(
+        self, variant, message="", references=None, hostname="DefaultHostname"
+    ):
         self.variant = variant
         self.message = message
         self.timestamp = int(datetime.now().timestamp())
-        self.references = references
+        self.references = [] if references is None else references
         self.hostname = hostname
 
     def json(self):
