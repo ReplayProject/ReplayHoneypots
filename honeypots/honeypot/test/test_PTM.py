@@ -21,7 +21,7 @@ class TestRedeploy:
 
         assert (
             man.processList["49667"].port == "49667"
-            and man.processList["49667"].isRunning == True
+            and man.processList["49667"].isRunning
         )
 
         assert len(man.sniffer.openPorts) == 13
@@ -48,10 +48,7 @@ class TestRedeploy:
         assert len(man.responseData.keys()) == 7
         assert not ("49667" in man.responseData.keys())
         assert "430" in man.responseData.keys()
-        assert (
-            man.processList["430"].port == "430"
-            and man.processList["430"].isRunning == True
-        )
+        assert man.processList["430"].port == "430" and man.processList["430"].isRunning
 
         assert len(man.sniffer.openPorts) == 7
         assert "5.6.7.8" in man.sniffer.whitelist
@@ -72,7 +69,8 @@ class TestRedeploy:
         # )
         # assert x == 1
 
-        # # We tell it to update sniffer and open ports, but nothing changes. Should return 0.
+        # # We tell it to update sniffer and open ports, but nothing changes.
+        # # this Should return 0.
         # x = man.activate(
         #     r"../testing_configs/pt.cfg", updateSniffer=True, updateOpenPorts=True
         # )

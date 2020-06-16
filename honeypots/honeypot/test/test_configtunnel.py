@@ -1,3 +1,4 @@
+from trio.testing import open_stream_to_socket_listener
 from TCPPortListener import TCPPortListener
 from ConfigTunnel import ConfigTunnel
 
@@ -7,8 +8,6 @@ import pytest
 TEST_PORT = 1337
 WAIT_TIME = 0.1
 CERT_FILE = "../../config/cert.pem"
-
-from trio.testing import open_stream_to_socket_listener
 
 
 class TestConfigTunnel:

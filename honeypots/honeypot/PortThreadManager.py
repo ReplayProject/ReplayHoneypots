@@ -93,7 +93,10 @@ class PortThreadManager:
             self.responseData = json.load(responseDataFile)
 
     """
-    Start a thread for each port in the config file, connects to the database, runs sniffer class
+    Start a thread that does the following
+    - for each port in the config file
+    - connects to the database
+    - runs sniffer class
 
     Returns: 0 if no changes
              1 if only Sniffer changed
@@ -121,7 +124,7 @@ class PortThreadManager:
 
         with trio.CancelScope() as scope:
             # --- Start Async Sniffer ---#
-            if self.sniffer == None:
+            if self.sniffer is None:
                 # TODO: Switch config="testing" to "base" when in production
                 self.sniffer = Sniffer(
                     config="base",
@@ -133,7 +136,7 @@ class PortThreadManager:
                     databaser=self.db,
                 )
                 self.sniffer.start()
-            elif updateSniffer == True:
+            elif updateSniffer:
                 oldHash = self.sniffer.currentHash
                 self.sniffer.configUpdate(
                     openPorts=list(replayPorts),
@@ -175,9 +178,11 @@ class PortThreadManager:
             #         if (not p in updatedPorts):
             #             self.processList[p].isRunning = False
             #             del self.processList[p]
-            #         elif (not self.processList[p].response == self.responseData[p]["TCP"]
+            #         elif (not self.processList[p].response ==
+            #                   self.responseData[p]["TCP"]
             #               ):
-            #             #check if we need to alter response -- just change everything, might not matter
+            #             #check if we need to alter response --
+            #             # just change everything, might not matter
             #             self.processList[p].response = self.responseData[p]["TCP"]
             #             portsAltered = True
 
@@ -221,7 +226,11 @@ class PortThreadManager:
             finally:
                 print("Listeners have been killed")
 
-            # return the code here; 0 means no changes, 1 means only sniffer changed, 2 means only TCP ports were changed, 3 means both were changed
+            # return the code here;
+            # 0 means no changes,
+            # 1 means only sniffer changed,
+            # 2 means only TCP ports were changed,
+            # 3 means both were changed
             if retCode == 1:
                 self.db.alert(
                     Alert(

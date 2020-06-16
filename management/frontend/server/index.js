@@ -27,11 +27,11 @@ app.use(require('body-parser').json()) // application/json
 
 // Session middleware to allow "persistant" authentication
 app.use(
-  require('express-session')({
-    secret: 'keyboard cat',
-    resave: true,
-    saveUninitialized: true
-  })
+    require('express-session')({
+        secret: 'keyboard cat',
+        resave: true,
+        saveUninitialized: true,
+    })
 )
 
 // Initialize Passport and restore authentication state, if any, from the session.
@@ -45,7 +45,7 @@ app.use(require('./modules/authroutes'))
 
 // Serve the actual frontend of the app & other routes (behind the auth guard)
 app.get('/test', authGuard(), (req, res) =>
-  res.send('you passed the authentication check')
+    res.send('you passed the authentication check')
 )
 
 // Host the app's frontend on port 8080
@@ -53,24 +53,24 @@ const path = require('path')
 const dist = path.join(__dirname, '../dist')
 // Account for the SPA portion of the app
 app.use(
-  require('connect-history-api-fallback')({
-    logger: historyLog
-  })
+    require('connect-history-api-fallback')({
+        logger: historyLog,
+    })
 )
 // Serve application files
 app.use(require('serve-static')(dist, { index: ['index.html'] }))
 
 // Handling deserialization errors here.
 app.use(function (err, req, res, next) {
-  if (err) {
-    console.log('Cookie Invalidated')
-    req.logout()
-    return res
-      .status(401)
-      .send('You are not authenticated, your cookie has been removed')
-  } else {
-    next()
-  }
+    if (err) {
+        console.log('Cookie Invalidated')
+        req.logout()
+        return res
+            .status(401)
+            .send('You are not authenticated, your cookie has been removed')
+    } else {
+        next()
+    }
 })
 
 // listen for frontend requests :)

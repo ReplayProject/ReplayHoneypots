@@ -6,7 +6,9 @@ import sys
 
 class ConfigTunnel:
     """
-    Handles the creation/usage of the configuration tunnel, which is a module to support remote/live configuration over a discrete connection
+    Handles the creation/usage of the configuration tunnel,
+    which is a module to support remote/live configuration over
+    a discrete connection
     """
 
     def __init__(self, mode, port, host="", cafile=None):

@@ -1,46 +1,46 @@
 .flip {
-  -ms-transform: rotate(180deg);
-  -webkit-transform: rotate(180deg);
-  transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    transform: rotate(180deg);
 }
 
 body {
-  font-family: 'Roboto';
-  -webkit-font-smoothing: antialiased;
-  overflow-y: scroll;
+    font-family: 'Roboto';
+    -webkit-font-smoothing: antialiased;
+    overflow-y: scroll;
 }
 
 .bg-green {
-  background: #1bc98e;
+    background: #1bc98e;
 }
 
 .bg-red {
-  background: #e64759;
+    background: #e64759;
 }
 
 .bg-purple {
-  background: #9f86ff;
+    background: #9f86ff;
 }
 
 .divide:before {
-  background: rgba(0, 0, 0, 0.1);
-  content: '';
-  height: 1px;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 8px;
-  width: 100%;
-  z-index: -1;
+    background: rgba(0, 0, 0, 0.1);
+    content: '';
+    height: 1px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 8px;
+    width: 100%;
+    z-index: -1;
 }
 
 .unselectable {
-  -webkit-user-select: none;
-  /* Chrome all / Safari all */
-  -moz-user-select: none;
-  /* Firefox all */
-  -ms-user-select: none;
-  /* IE 10+ */
-  user-select: none;
-  /* Likely future */
+    -webkit-user-select: none;
+    /* Chrome all / Safari all */
+    -moz-user-select: none;
+    /* Firefox all */
+    -ms-user-select: none;
+    /* IE 10+ */
+    user-select: none;
+    /* Likely future */
 }

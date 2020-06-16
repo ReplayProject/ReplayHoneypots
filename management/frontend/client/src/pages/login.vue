@@ -1,89 +1,89 @@
 <template>
-  <main
-    class="w-100 ph3-m ph3-l"
-    :class="{
-      'w-75-m': $route.name != 'overview',
-      'w-75-l': $route.name != 'overview'
-    }"
-  >
-    <component-title>Sign In</component-title>
-    <hr class="o-20" />
-    <main class="black-80">
-      <form class="measure" @submit="login" autocomplete="off" ref="form">
-        <fieldset id="sign_up" class="ba b--transparent ph0 mh0">
-          <div class="mt3">
-            <label class="db fw6 lh-copy f6" for="username">Username</label>
-            <input
-              class="pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100"
-              type="username"
-              v-model="username"
-              name="username"
-              id="username"
-            />
-          </div>
-          <div class="mv3">
-            <label class="db fw6 lh-copy f6" for="password">Password</label>
-            <input
-              class="b pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100"
-              type="password"
-              v-model="password"
-              name="password"
-              id="password"
-            />
-          </div>
-          <!-- <label class="pa0 ma0 lh-copy f6 pointer"
+    <main
+        class="w-100 ph3-m ph3-l"
+        :class="{
+            'w-75-m': $route.name != 'overview',
+            'w-75-l': $route.name != 'overview',
+        }"
+    >
+        <component-title>Sign In</component-title>
+        <hr class="o-20" />
+        <main class="black-80">
+            <form class="measure" @submit="login" autocomplete="off" ref="form">
+                <fieldset id="sign_up" class="ba b--transparent ph0 mh0">
+                    <div class="mt3">
+                        <label class="db fw6 lh-copy f6" for="username">Username</label>
+                        <input
+                            class="pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100"
+                            type="username"
+                            v-model="username"
+                            name="username"
+                            id="username"
+                        />
+                    </div>
+                    <div class="mv3">
+                        <label class="db fw6 lh-copy f6" for="password">Password</label>
+                        <input
+                            class="b pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100"
+                            type="password"
+                            v-model="password"
+                            name="password"
+                            id="password"
+                        />
+                    </div>
+                    <!-- <label class="pa0 ma0 lh-copy f6 pointer"
             ><input type="checkbox" /> Remember me</label
           > -->
-        </fieldset>
-        <div class="">
-          <input
-            class="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib"
-            type="submit"
-            value="Sign in"
-          />
-        </div>
-        <!-- <div class="lh-copy mt3">
+                </fieldset>
+                <div class="">
+                    <input
+                        class="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib"
+                        type="submit"
+                        value="Sign in"
+                    />
+                </div>
+                <!-- <div class="lh-copy mt3">
           <a href="#0" class="f6 link dim black db">Sign up</a>
           <a href="#0" class="f6 link dim black db">Forgot your password?</a>
         </div> -->
-      </form>
+            </form>
+        </main>
     </main>
-  </main>
 </template>
 
 <script>
 import componentTitle from '../components/title'
 
 export default {
-  name: 'Login',
-  components: {
-    componentTitle
-  },
-  data () {
-    return {
-      username: 'admin',
-      password: 'admin'
-    }
-  },
-  methods: {
-    async login (e) {
-      e.preventDefault()
+    name: 'Login',
+    components: {
+        componentTitle,
+    },
+    data() {
+        return {
+            username: 'admin',
+            password: 'admin',
+        }
+    },
+    methods: {
+        async login(e) {
+            e.preventDefault()
 
-      let data = {
-        username: this.username,
-        password: this.password
-      }
+            let data = {
+                username: this.username,
+                password: this.password,
+            }
 
-      try {
-        let res = await this.axios.post('/login', data)
-        console.log('Logged in')
-        this.$toasted.show('Authenticated')
-        this.$router.push('/dashboard')
-      } catch (error) {
-        this.$toasted.show('Failed to Login. Error: ' + error.message)
-        if (process.env.NODE_ENV != 'test') console.log('Cannot log in', error)
-      }
-    }
-  }
+            try {
+                let res = await this.axios.post('/login', data)
+                console.log('Logged in')
+                this.$toasted.show('Authenticated')
+                this.$router.push('/dashboard')
+            } catch (error) {
+                this.$toasted.show('Failed to Login. Error: ' + error.message)
+                if (process.env.NODE_ENV != 'test') console.log('Cannot log in', error)
+            }
+        },
+    },
 }
 </script>
