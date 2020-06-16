@@ -43,7 +43,8 @@ class TestConfigTunnel:
         # Let the logger handle whats up
         await trio.sleep(0.1)
 
-        # Dig sometimes gives us multiple IPs, not all of which are used. If one is used, that's a successful read.
+        # Dig sometimes gives us multiple IPs, not all of which are used.
+        #  If one is used, that's a successful read.
         ipObtained = False
         for ip in responseIPs:
             if (

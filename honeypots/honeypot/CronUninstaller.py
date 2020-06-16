@@ -32,8 +32,11 @@ class CronUninstaller:
         if "no crontab" in stderr.decode():  # If there is no previous crontab file:
             # Send an error to the user
             raise FileNotFoundError(
-                "No crontab file for this user.\n"
-                + "CronUninstaller.py should be run by the same user who ran PortThreadManager.py."
+                (
+                    "No crontab file for this user.\n"
+                    "CronUninstaller.py should be run by the "
+                    "same user who ran PortThreadManager.py."
+                )
             )
         else:
             if job in stdout.decode():
@@ -43,7 +46,7 @@ class CronUninstaller:
                 # Write the previous crontab file into the new crontab file
                 for line in stdout.decode().split("\n"):
                     # Exclude restart.sh's job
-                    if not job in line:
+                    if job not in line:
                         crontab_file.write(line + "\n")
 
                 crontab_file.close()
@@ -107,10 +110,11 @@ class CronUninstaller:
             else:  # If the previous crontab file doesn't contain our job:
                 # Send an error to the user
                 raise LookupError(
-                    "Crontab file does not contain "
-                    + job
-                    + ".\n"
-                    + "CronUninstaller.py should be run after PortThreadManager.py has been run."
+                    (
+                        "Crontab file does not contain {}.\n"
+                        "CronUninstaller.py should be run after "
+                        "PortThreadManager.py has been run."
+                    ).format(job)
                 )
 
 

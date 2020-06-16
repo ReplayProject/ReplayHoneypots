@@ -1,6 +1,9 @@
 #! /env/bin/python3
 
-# https://codeburst.io/building-beautiful-command-line-interfaces-with-python-26c7e1bb54df
+"""
+For more info
+codeburst.io/building-beautiful-command-line-interfaces-with-python-26c7e1bb54df
+"""
 
 from __future__ import print_function, unicode_literals
 import os
@@ -10,6 +13,10 @@ import sys
 from utilities import log, style, setupConfig, writeConfig
 from PyInquirer import prompt
 import click
+
+from manage_hosts import addhost, removehost, checkstatus
+from install import installhoneypot, uninstallhoneypot, reinstallhoneypot
+from edit_honeypots import starthoneypot, stophoneypot, configurehoneypot
 
 config = setupConfig()
 
@@ -31,19 +38,13 @@ def main(ctx):
     ctx.ensure_object(dict)
 
 
-from manage_hosts import addhost, removehost, checkstatus
-
 main.add_command(addhost)
 main.add_command(removehost)
 main.add_command(checkstatus)
 
-from install import installhoneypot, uninstallhoneypot, reinstallhoneypot
-
 main.add_command(installhoneypot)
 main.add_command(uninstallhoneypot)
 main.add_command(reinstallhoneypot)
-
-from edit_honeypots import starthoneypot, stophoneypot, configurehoneypot
 
 main.add_command(starthoneypot)
 main.add_command(stophoneypot)

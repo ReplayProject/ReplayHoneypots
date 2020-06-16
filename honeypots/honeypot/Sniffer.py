@@ -21,19 +21,19 @@ class Sniffer:
     def __init__(
         self,
         config="base",
-        openPorts=[],
-        whitelist=[],
-        portWhitelist=[],
+        openPorts=None,
+        whitelist=None,
+        portWhitelist=None,
         honeypotIP=None,
         managementIPs=None,
         databaser=None,
     ):
 
         self.config = config
-        self.openPorts = openPorts
-        self.whitelist = whitelist
+        self.openPorts = [] if openPorts is None else openPorts
+        self.whitelist = [] if whitelist is None else whitelist
         self.honeypotIP = honeypotIP
-        self.portWhitelist = portWhitelist
+        self.portWhitelist = [] if portWhitelist is None else portWhitelist
         self.managementIPs = managementIPs
         self.db = databaser
         # used to detect port scans
@@ -42,7 +42,8 @@ class Sniffer:
         self.PS_RECORD = dict()
         # set used for testing convenience
         self.RECORD = dict()
-        # Hash used to tell if we properly updated Sniffer class; probably a better way of making this hash
+        # Hash used to tell if we properly updated Sniffer class;
+        # there is probably a better way of making this hash
         self.currentHash = hash(self.config)
         self.currentHash += hash(tuple(self.openPorts))
         self.currentHash += hash(tuple(self.whitelist))
@@ -67,10 +68,12 @@ class Sniffer:
         # here's where the packet detection starts
 
         if self.config == "testing":
-            # this ignores the ssh spam you get when sending packets between two ssh terminals
+            # this ignores the ssh spam you get when sending
+            # packets between two ssh terminals
             fltr = fltr + " and not (src port ssh or dst port ssh)"
         elif self.config == "base":
-            # this above filter ignores the ssh spam you get when sending packets between two ssh terminals - TAKE THIS OUT IN PROD
+            # this above filter ignores the ssh spam you get when sending packets
+            #  between two ssh terminals - TODO: TAKE THIS OUT IN PROD
             fltr = fltr + " and not (src port ssh or dst port ssh)"
         elif self.config == "onlyUDP":
             # this last config option is used in testing
@@ -98,17 +101,17 @@ class Sniffer:
 
     def configUpdate(
         self,
-        openPorts=[],
-        whitelist=[],
-        portWhitelist=[],
+        openPorts=None,
+        whitelist=None,
+        portWhitelist=None,
         honeypotIP=None,
         managementIPs=None,
     ):
         print("Async sniffer updated")
         self.running = False
-        self.openPorts = openPorts
-        self.whitelist = whitelist
-        self.portWhitelist = portWhitelist
+        self.openPorts = [] if openPorts is None else openPorts
+        self.whitelist = [] if whitelist is None else whitelist
+        self.portWhitelist = [] if portWhitelist is None else portWhitelist
         self.honeypotIP = honeypotIP
         self.managementIPs = managementIPs
 
@@ -133,7 +136,7 @@ class Sniffer:
 
     def save_packet(self, packet):
         # TODO: make this work with layer 2, for now just skip filtering those packets
-        if packet.haslayer("IP") == False:
+        if not packet.haslayer("IP"):
             return
 
         # timestamp used for port scan detection
@@ -155,7 +158,6 @@ class Sniffer:
         dstIP = ipLayer.dst
         destPort = ipLayer.dport
         srcPort = ipLayer.sport
-        pair = (srcIP, destPort)
 
         if (
             not ipLayer.haslayer("TCP")
@@ -212,7 +214,7 @@ class Sniffer:
             )
 
             # self.RECORD is where we save logs for easy testing
-            if not srcIP in self.RECORD.keys():
+            if srcIP not in self.RECORD.keys():
                 self.RECORD[srcIP] = [log]
             else:
                 self.RECORD[srcIP].append(log)
@@ -224,7 +226,7 @@ class Sniffer:
                 return
 
             # self.PS_RECORD is a separate dictionary used for port scan detection
-            if not srcIP in self.PS_RECORD.keys():
+            if srcIP not in self.PS_RECORD.keys():
                 self.PS_RECORD[srcIP] = dict()
                 self.PS_RECORD[srcIP][log.destPortNumber] = dbID
             else:

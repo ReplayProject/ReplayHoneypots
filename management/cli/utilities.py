@@ -1,11 +1,26 @@
+import os
+import six
+import json
+import click
+import ipaddress
+import configparser
+from pyfiglet import figlet_format
+from PyInquirer import (
+    Token,
+    style_from_dict,
+    Separator,
+    prompt,
+    ValidationError,
+    Validator,
+)
+
+
 """
 #######
 Visuals
 #######
 """
 
-import six
-from pyfiglet import figlet_format
 
 try:
     import colorama
@@ -36,9 +51,6 @@ Interactivity
 #############
 """
 
-from PyInquirer import Token, style_from_dict, Separator, prompt
-import click
-
 
 def style():
     return style_from_dict(
@@ -56,9 +68,12 @@ def style():
 
 @click.pass_context
 def hostselector(ctx, message):
-    if len(config.items("HOSTS")) is 0:
+    if len(config.items("HOSTS")) == 0:
         log(
-            "No hosts have been added yet. To add a host, select 'Add/Update Host > Add Host' command.",
+            (
+                "No hosts have been added yet."
+                "To add a host, select 'Add/Update Host > Add Host' command."
+            ),
             "red",
         )
         return []
@@ -92,9 +107,6 @@ def hostselector(ctx, message):
 Configuration
 #############
 """
-
-import configparser
-import json
 
 CONF_PATH = "honeycli.cfg"
 config = configparser.ConfigParser()
@@ -142,10 +154,6 @@ Validators
 ##########
 """
 
-import os
-import ipaddress
-from PyInquirer import ValidationError, Validator
-
 """
 Validate an IP address based on:
 1 - IP address value
@@ -158,7 +166,7 @@ class DeviceIPValidator(Validator):
 
         if len(value.text):
             try:
-                valid_ip = ipaddress.ip_address(value.text)
+                ipaddress.ip_address(value.text)
             except ValueError as e:
                 raise ValidationError(message=str(e), cursor_position=len(value.text))
 
@@ -171,7 +179,10 @@ class DeviceIPValidator(Validator):
 
             if value.text in ip:
                 raise ValidationError(
-                    message="A host with that IP address already exists. To replace it, please remove host first.",
+                    message=(
+                        "A host with that IP address already exists. "
+                        "To replace it, please remove host first."
+                    ),
                     cursor_position=len(value.text),
                 )
         else:
@@ -235,7 +246,10 @@ class HostnameValidator(Validator):
 
             if value.text in hostnames:
                 raise ValidationError(
-                    message="A host with that hostname already exists. To replace it, please remove host first.",
+                    message=(
+                        "A host with that hostname already exists. "
+                        "To replace it, please remove host first."
+                    ),
                     cursor_position=len(value.text),
                 )
 
