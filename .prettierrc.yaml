@@ -1,8 +1,10 @@
+printWidth: 88
 trailingComma: 'es5'
 tabWidth: 4
 semi: false
 singleQuote: true
 arrowParens: 'avoid'
+vueIndentScriptAndStyle: false
 # overrides:
 #   - files: "*.vue"
 #     options:

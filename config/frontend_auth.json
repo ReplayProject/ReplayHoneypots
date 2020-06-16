@@ -1,14 +1,14 @@
 {
-  "salt": "himalayan",
-  "//": "TODO: real admin accounts admin, notseth",
-  "users": [
-    {
-      "username": "admin",
-      "hash": "bb44544f15e1c6efa2e3c20dd16b8d26e23f3684ee3675c4e5bdd14e0956340c"
-    },
-    {
-      "username": "seth",
-      "hash": "08626bdca5a98b07ff174aded9e33870dcb675f1a0e90a0096fe285b559a712f"
-    }
-  ]
+    "salt": "himalayan",
+    "//": "TODO: real admin accounts admin, notseth",
+    "users": [
+        {
+            "username": "admin",
+            "hash": "bb44544f15e1c6efa2e3c20dd16b8d26e23f3684ee3675c4e5bdd14e0956340c"
+        },
+        {
+            "username": "seth",
+            "hash": "08626bdca5a98b07ff174aded9e33870dcb675f1a0e90a0096fe285b559a712f"
+        }
+    ]
 }
