@@ -51,7 +51,7 @@ class TestManageHosts(unittest.TestCase):
     """
     Test adding a valid host
 
-    Expected: 
+    Expected:
     - host is added
     """
 
@@ -73,7 +73,7 @@ class TestManageHosts(unittest.TestCase):
     """
     Test removing a valid host
 
-    Expected: 
+    Expected:
     - host is removed
     """
 
@@ -88,7 +88,7 @@ class TestManageHosts(unittest.TestCase):
     """
     Test checking the status of a valid host
 
-    Expected: 
+    Expected:
     - status is output
     """
 
@@ -101,19 +101,19 @@ class TestManageHosts(unittest.TestCase):
         terminal.terminate()
 
     """
-    Test adding a host with the following invalid options: 
+    Test adding a host with the following invalid options:
     - using a hostname that already exists
     - using an IP address that already exists
-    - using an invalid port number 
+    - using an invalid port number
     - using a folder for the ssh key instead of a file
     - using an invalid filepath for the ssh key
 
-    NOT TESTED: 
+    NOT TESTED:
     - using an invalid username for a valid IP address
     - using a valid IP address for an inaccessible machine (e.g. no SSH, machine shut down)
     - using a valid filepath of an invalid ssh key file
 
-    Expected: 
+    Expected:
     - user receives relevant error message
     - host is not added
     """
@@ -213,11 +213,11 @@ class TestManageHosts(unittest.TestCase):
         terminal.terminate()
 
     """
-    Test removing a host with the following invalid options: 
+    Test removing a host with the following invalid options:
     - using a hostname that doesn't exist
     - using a host that has a honeypot installed
 
-    Expected: 
+    Expected:
     - user receives relevant error message
     - host is not removed
     """
@@ -235,10 +235,10 @@ class TestManageHosts(unittest.TestCase):
         terminal.terminate()
 
     """
-    Test checking the status of a host with the following invalid options: 
+    Test checking the status of a host with the following invalid options:
     - using a hostname that doesn't exist
 
-    Expected: 
+    Expected:
     - user receives relevant error message
     - no status is output
     """
@@ -272,7 +272,7 @@ class TestInstall(unittest.TestCase):
     """
     Test installing a honeypot on a valid host
 
-    Expected: 
+    Expected:
     - honeypot is installed
     """
 
@@ -289,7 +289,7 @@ class TestInstall(unittest.TestCase):
     """
     Test uninstalling a honeypot on a valid host
 
-    Expected: 
+    Expected:
     - honeypot is uninstalled
     """
 
@@ -306,7 +306,7 @@ class TestInstall(unittest.TestCase):
     """
     Test reinstalling a honeypot on a valid host
 
-    Expected: 
+    Expected:
     - honeypot is reinstalled
     """
 
@@ -323,16 +323,16 @@ class TestInstall(unittest.TestCase):
         terminal.terminate()
 
     """
-    Test installing a honeypot with the following invalid options: 
+    Test installing a honeypot with the following invalid options:
     - using a hostname that doesn't exist
     - using a folder for the tar file instead of a file
     - using an invalid filepath for the tar file
     - using a host that already has a honeypot installed
 
-    NOT TESTED: 
+    NOT TESTED:
     - using a valid filepath of an invalid tar file
 
-    Expected: 
+    Expected:
     - honeypot is not installed
     """
 
@@ -371,12 +371,12 @@ class TestInstall(unittest.TestCase):
         terminal.terminate()
 
     """
-    Test uninstalling a honeypot with the following invalid options: 
+    Test uninstalling a honeypot with the following invalid options:
     - using a hostname that doesn't exist
     - using a host that didn't have a honeypot installed
-    - using an invalid password 
+    - using an invalid password
 
-    Expected: 
+    Expected:
     - honeypot is not uninstalled
     """
 
@@ -405,17 +405,17 @@ class TestInstall(unittest.TestCase):
         terminal.terminate()
 
     """
-    Test reinstalling a honeypot with the following invalid options: 
+    Test reinstalling a honeypot with the following invalid options:
     - using a hostname that doesn't exist
     - using a folder for the tar file instead of a file
     - using an invalid filepath for the tar file
     - using a host that didn't have a honeypot installed
 
-    NOT TESTED: 
+    NOT TESTED:
     - using a valid filepath of an invalid tar file
     - using an invalid password (reinstall.sh doesn't seem to trap/catch that error)
 
-    Expected: 
+    Expected:
     - honeypot is not reinstalled
     """
 
@@ -477,7 +477,7 @@ class TestEditHoneypots(unittest.TestCase):
     """
     Test starting a honeypot on a valid host
 
-    Expected: 
+    Expected:
     - honeypot is started
     """
 
@@ -496,7 +496,7 @@ class TestEditHoneypots(unittest.TestCase):
     """
     Test stopping a honeypot on a valid host
 
-    Expected: 
+    Expected:
     - honeypot is stopped
     """
 
@@ -511,16 +511,16 @@ class TestEditHoneypots(unittest.TestCase):
         terminal.terminate()
 
     """
-    Test starting a honeypot with the following invalid options: 
+    Test starting a honeypot with the following invalid options:
     - using a hostname that doesn't exist
     - using a host that didn't have a honeypot installed
     - using a host that was already started
-    - using an invalid password 
+    - using an invalid password
 
-    NOT TESTED: 
-    - using a valid string of an invalid database url 
+    NOT TESTED:
+    - using a valid string of an invalid database url
 
-    Expected: 
+    Expected:
     - honeypot is not started
     """
 
@@ -559,13 +559,13 @@ class TestEditHoneypots(unittest.TestCase):
         terminal.terminate()
 
     """
-    Test stopping a honeypot with the following invalid options: 
+    Test stopping a honeypot with the following invalid options:
     - using a hostname that doesn't exist
     - using a host that didn't have a honeypot installed
     - using a host that was already stopped
-    - using an invalid password 
+    - using an invalid password
 
-    Expected: 
+    Expected:
     - honeypot is not stopped
     """
 
