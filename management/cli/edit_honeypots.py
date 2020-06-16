@@ -20,8 +20,7 @@ import os
 
 # insert at 1, 0 is the script path (or '' in REPL)
 sys.path.insert(1, "../../honeypots/honeypot/")
-
-from ConfigTunnel import ConfigTunnel
+from ConfigTunnel import ConfigTunnel  # noqa: E402
 
 config = setupConfig()
 
@@ -210,13 +209,15 @@ def configurehoneypot(ctx, selected_hosts=None):
     """
     Configure a honeypot through a live ConfigTunnel connection
     """
+    selected_hosts = (
+        hostselector("Which host(s) do you want to configure?")
+        if len(selected_hosts) == 0
+        else 0
+    )
 
     if len(selected_hosts) == 0:
-        selected_hosts = hostselector("Which host(s) do you want to configure?")
-
-        if len(selected_hosts) == 0:
-            log("No host has been selected.", "red")
-            return
+        log("No host has been selected.", "red")
+        return
 
     choice = None
     try:
@@ -249,9 +250,12 @@ def configurehoneypot(ctx, selected_hosts=None):
 
                 # TODO: fix path if install path is static
                 path = "~"
-                cmd = 'ssh -i {} -t {}@{} -p {} "cd {}; ls; echo "Welcome to {}! Feel free to use your editor of choice to edit the above configuration files, and run exit to return to the CLI."; bash"'.format(
-                    ssh_key, user, ip, ssh_port, path, host
-                )
+                cmd = (
+                    'ssh -i {} -t {}@{} -p {} "cd {}; ls; '
+                    'echo "Welcome to {}! Feel free to use your editor of choice to '
+                    "edit the above configuration files, and run exit to return to "
+                    'the CLI."; bash"'
+                ).format(ssh_key, user, ip, ssh_port, path, host)
 
                 print("\n")
                 os.system(cmd)
@@ -280,12 +284,11 @@ def configurehoneypot(ctx, selected_hosts=None):
             log("Action cancelled by user", "red")
             return
 
-        if subchoice == "reconfigure sniffer":
-            message = "reconfigure sniff"
-        elif subchoice == "reconfigure ports":
-            message = "reconfigure ports"
-        elif subchoice == "reconfigure sniffer and ports":
-            message = "reconfigure sniff ports"
+        message = {
+            "reconfigure sniffer": "reconfigure sniff",
+            "reconfigure ports": "reconfigure ports",
+            "reconfigure sniffer and ports": "reconfigure sniff ports",
+        }[subchoice]
 
         all_hosts = hosts()
 

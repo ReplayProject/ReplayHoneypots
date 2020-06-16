@@ -106,8 +106,11 @@ def removehost(ctx, selected_hosts=None):
 
             if installed == "True":
                 log(
-                    host
-                    + " has a honeypot installed. To uninstall this honeypot, select 'Uninstall Honeypot' command.",
+                    (
+                        "{} has a honeypot installed. "
+                        "To uninstall this honeypot, "
+                        "select 'Uninstall Honeypot' command."
+                    ).format(host),
                     "red",
                 )
                 continue
