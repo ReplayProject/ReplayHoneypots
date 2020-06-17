@@ -6,29 +6,28 @@
 echo "Deploying Honeypots with config revision: $TAG"
 
 if [ -z "$TAG" ]; then
-    echo "ERROR: \$TAG is not set (run \". create_configs.sh\")"
-    exit
+  echo "ERROR: \$TAG is not set (run \". create_configs.sh\")"
+  exit
 fi
 
 # TODO: DB connection string setup for honeypots using DB_URL env variable
 
 docker service create \
-   --with-registry-auth \
-   --env DB_URL="http://honeypots:securehoneypassword@10.11.12.125:5984" \
-   --env HONEY_CFG="/properties.cfg" \
-   --replicas "${1:-1}" \
-   --replicas-max-per-node 1 \
-   --reserve-memory=100m
-   --limit-memory=1GB
-   --constraint node.role==worker \
-   --placement-pref spread=node.id \
-   --restart-condition on-failure \
-   --network host \
-   --name replay-honeypot \
-   --config src="honey-cfg-$TAG",target="/properties.cfg" \
-   --config src="honey-data-$TAG",target="/senddata.json" \
-   127.0.0.1:5000/seth/replay-honeypot:latest
-
+  --with-registry-auth \
+  --env DB_URL="http://honeypots:securehoneypassword@10.11.12.125:5984" \
+  --env HONEY_CFG="/properties.cfg" \
+  --replicas "${1:-1}" \
+  --replicas-max-per-node 1 \
+  --reserve-memory=100m \
+  --limit-memory=1GB \
+  --constraint node.role==worker \
+  --placement-pref spread=node.id \
+  --restart-condition on-failure \
+  --network host \
+  --name replay-honeypot \
+  --config src="honey-cfg-$TAG",target="/properties.cfg" \
+  --config src="honey-data-$TAG",target="/senddata.json" \
+  127.0.0.1:5000/seth/replay-honeypot:latest
 
 # Optional configurations
 #  --mount type=bind,src=/shared/2020SpringTeam18/honeypots/honeypot/Databaser.py,dst=/usr/src/app/honeypot/Databaser.py \

@@ -1,8 +1,9 @@
-import trio
-
 """
 Opens one UDP port through a trio socket
 """
+
+
+import trio
 
 
 class UDPPortListener:

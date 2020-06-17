@@ -1,3 +1,7 @@
+"""
+This file contains test cases for the honeypot code
+"""
+
 import unittest
 from unittest.mock import MagicMock
 from Port import Port
@@ -9,10 +13,6 @@ from CronUninstaller import CronUninstaller
 import os
 import time
 import subprocess
-
-"""
-This file contains test cases for the honeypot code
-"""
 
 
 def run_nmap():
