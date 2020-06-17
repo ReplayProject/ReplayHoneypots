@@ -1,6 +1,3 @@
-import subprocess
-import os
-
 """
 This file edits the user's crontab file to stop running restart.sh.
 
@@ -8,6 +5,9 @@ Additionally, this file kills any remaining processes of PortThreadManager.py.
 
 This file should be run by the same user who initially ran PortThreadManager.py.
 """
+
+import subprocess
+import os
 
 
 class CronUninstaller:

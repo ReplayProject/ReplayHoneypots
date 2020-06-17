@@ -1,11 +1,11 @@
-# python3 NmapParser.py <file name of nmap file>
-import sys
-import json
-
 """
 This file is used for parsing an nmap
 scan for configuration information.
+  Usage: python3 NmapParser.py <file name of nmap file>
 """
+
+import sys
+import json
 
 
 class NmapParser:

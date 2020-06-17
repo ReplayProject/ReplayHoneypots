@@ -1,4 +1,8 @@
-# python3 PortThreadManager.py
+"""
+Handles the modules and logic to run the honeypot
+  Usage: python3 -u ./PortThreadManager.py
+"""
+
 import json
 import os
 
@@ -25,9 +29,6 @@ CONFIG_FILE_PATH = (
     if (configpath and configpath.strip() != "")
     else r"../../config/honeypot.cfg"
 )
-"""
-Handles the port threads to run the honeypot
-"""
 
 
 class PortThreadManager:

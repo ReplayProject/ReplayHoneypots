@@ -7,8 +7,8 @@ export TAG=$TAG
 echo "Set TAG to: $TAG"
 
 # Create config
-docker config create honey-cfg-$TAG $PWD/config/honeypot.cfg > /dev/null
-docker config create honey-data-$TAG $PWD/config/senddata.json > /dev/null
+docker config create honey-cfg-$TAG $PWD/config/honeypot.cfg >/dev/null
+docker config create honey-data-$TAG $PWD/config/senddata.json >/dev/null
 
 # List existing configs
 echo -e "\n"

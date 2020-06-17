@@ -1,3 +1,9 @@
+"""
+If testing in alpine container, may need to run
+ apk add curl bind-tools
+honeypot_tests.sh automatically does this
+"""
+
 from Sniffer import Sniffer
 
 import trio
@@ -5,11 +11,6 @@ import pytest
 import os
 
 WAIT_TIME = 2
-
-"""
-If testing in alpine container, may need to run
-apk add curl bind-tools
-"""
 
 
 class TestConfigTunnel:

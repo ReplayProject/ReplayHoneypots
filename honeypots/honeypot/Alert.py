@@ -1,9 +1,9 @@
-import json
-from datetime import datetime
-
 """
 Stores information to be propagated to the management system
 """
+
+import json
+from datetime import datetime
 
 
 class Alert:

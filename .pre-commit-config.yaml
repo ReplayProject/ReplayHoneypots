@@ -4,6 +4,9 @@ repos:
       hooks:
           - id: trailing-whitespace
           - id: requirements-txt-fixer
+          - id: check-docstring-first
+          - id: check-executables-have-shebangs
+          - id: check-merge-conflict
     - repo: https://github.com/ambv/black
       rev: 19.10b0
       hooks:

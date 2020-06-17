@@ -15,11 +15,9 @@ from PyInquirer import (
 )
 
 
-"""
-#######
-Visuals
-#######
-"""
+# ######
+# Visuals
+# ######
 
 
 try:
@@ -45,11 +43,9 @@ def log(string, color, font="slant", figlet=False):
         six.print_(string)
 
 
-"""
-#############
-Interactivity
-#############
-"""
+# ############
+# Interactivity
+# ############
 
 
 def style():
@@ -102,11 +98,9 @@ def hostselector(ctx, message):
         return []
 
 
-"""
-#############
-Configuration
-#############
-"""
+# ############
+# Configuration
+# ############
 
 CONF_PATH = "honeycli.cfg"
 config = configparser.ConfigParser()
@@ -148,20 +142,18 @@ def hostdata(hostname):
     return json.loads(host.replace("'", '"'))
 
 
-"""
-##########
-Validators
-##########
-"""
-
-"""
-Validate an IP address based on:
-1 - IP address value
-2 - whether the IP address already exists in the CLI data
-"""
+# #########
+# Validators
+# #########
 
 
 class DeviceIPValidator(Validator):
+    """
+    Validate an IP address based on:
+    1 - IP address value
+    2 - whether the IP address already exists in the CLI data
+    """
+
     def validate(self, value):
 
         if len(value.text):
@@ -201,17 +193,16 @@ class EmptyValidator(Validator):
             )
 
 
-"""
-Validate a path based on if it is a file
-
-Invalid paths include:
-1 - folder paths
-2 - file paths that the user does not have permission to access
-3 - non-existent paths
-"""
-
-
 class FilePathValidator(Validator):
+    """
+    Validate a path based on if it is a file
+
+    Invalid paths include:
+    1 - folder paths
+    2 - file paths that the user does not have permission to access
+    3 - non-existent paths
+    """
+
     def validate(self, value):
         if len(value.text):
             if not os.path.isfile(value.text):
@@ -225,14 +216,9 @@ class FilePathValidator(Validator):
             )
 
 
-"""
-Validate a hostname based on whether the hostname already exists in the CLI data
-"""
-
-
 class HostnameValidator(Validator):
     """
-    Validate a hostname
+    Validate a hostname based on whether the hostname already exists in the CLI data
     """
 
     def validate(self, value):

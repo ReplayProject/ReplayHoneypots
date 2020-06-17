@@ -1,3 +1,7 @@
+"""
+Uses Scapy library to examine all incoming traffic
+"""
+
 from LogEntry import LogEntry
 from scapy.all import AsyncSniffer
 from scapy.error import Scapy_Exception
@@ -6,10 +10,6 @@ from Alert import Alert
 import requests
 
 requests.adapters.DEFAULT_RETRIES = 0
-
-"""
-Uses Scapy library to examine all incoming traffic
-"""
 
 
 class Sniffer:
