@@ -1,8 +1,8 @@
-import json
-
 """
 This object contains information about a port
 """
+
+import json
 
 
 class Port:

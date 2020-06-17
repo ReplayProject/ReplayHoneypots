@@ -1,9 +1,9 @@
-import json
-from datetime import datetime
-
 """
 Holds logging information for local logs and Modern Honey Network
 """
+
+import json
+from datetime import datetime
 
 
 class LogEntry:

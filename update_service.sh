@@ -14,8 +14,8 @@ else
   docker service update \
     --config-rm $TAG1 \
     --config-rm $TAG2 \
-    --config-add source="honey-cfg-$TAG",target="/properties.cfg"\
-    --config-add source="honey-data-$TAG",target="/senddata.json"\
+    --config-add source="honey-cfg-$TAG",target="/properties.cfg" \
+    --config-add source="honey-data-$TAG",target="/senddata.json" \
     --with-registry-auth \
     replay-honeypot
 fi

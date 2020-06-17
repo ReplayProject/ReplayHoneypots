@@ -1,3 +1,7 @@
+"""
+Handles testing for the CLI's managehosts submenu
+"""
+
 import unittest
 import os
 import subprocess
@@ -13,10 +17,6 @@ ssh_port = "2222"
 ssh_key = "test/privatekey"
 db = "http://admin:couchdb@testingdb:25565"
 tar_file = "deployment/repo.tar.gz"
-
-"""
-Handles testing for the CLI's managehosts submenu
-"""
 
 
 class TestManageHosts(unittest.TestCase):
@@ -250,14 +250,10 @@ class TestManageHosts(unittest.TestCase):
         terminal.terminate()
 
 
-"""
-Handles testing for the CLI's install submenu
-"""
-
-
 class TestInstall(unittest.TestCase):
 
     """
+    Handles testing for the CLI's install submenu
     Clear any previous CLI configurations
     """
 
@@ -455,14 +451,10 @@ class TestInstall(unittest.TestCase):
         terminal.terminate()
 
 
-"""
-Handles testing for the CLI's edithoneypots submenu
-"""
-
-
 class TestEditHoneypots(unittest.TestCase):
 
     """
+    Handles testing for the CLI's edithoneypots submenu
     Clear any previous CLI configurations
     """
 

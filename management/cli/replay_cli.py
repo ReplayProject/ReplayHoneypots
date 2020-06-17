@@ -67,11 +67,9 @@ def start(ctx, debug):
     ctx.invoke(main_menu)
 
 
-"""
-#####
-Menus
-#####
-"""
+# ####
+# Menus
+# ####
 
 
 @click.pass_context

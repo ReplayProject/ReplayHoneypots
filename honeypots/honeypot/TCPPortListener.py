@@ -1,8 +1,8 @@
-import trio
-
 """
 Opens one TCP port through a python socket
 """
+
+import trio
 
 
 class TCPPortListener:
