@@ -1,13 +1,13 @@
 """
 Uses Scapy library to examine all incoming traffic
 """
+from datetime import datetime
 
+import requests
+from Alert import Alert
 from LogEntry import LogEntry
 from scapy.all import AsyncSniffer
 from scapy.error import Scapy_Exception
-from datetime import datetime
-from Alert import Alert
-import requests
 
 requests.adapters.DEFAULT_RETRIES = 0
 

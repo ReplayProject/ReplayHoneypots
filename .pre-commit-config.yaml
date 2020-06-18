@@ -7,6 +7,10 @@ repos:
           - id: check-docstring-first
           - id: check-executables-have-shebangs
           - id: check-merge-conflict
+    - repo: https://github.com/asottile/reorder_python_imports
+      rev: v2.3.0
+      hooks:
+          - id: reorder-python-imports
     - repo: https://github.com/ambv/black
       rev: 19.10b0
       hooks:
@@ -22,3 +26,16 @@ repos:
       hooks:
           - id: prettier
             args: [--prose-wrap=always, --print-width=88]
+    - repo: local
+      hooks:
+          - id: frontend-tests
+            name: run frontend tests (takes a minute or two)
+            language: node
+            # TODO: ensure runs on fresh machines without node
+            entry:
+                npm run test --prefix management/frontend/
+                --scripts-prepend-node-path=true
+            files: \.(json|myext)$
+            stages: [push]
+            always_run: true
+            verbose: true

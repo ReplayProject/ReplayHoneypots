@@ -5,11 +5,10 @@ and restarts it if not.
 Additionally, this file edits the user's crontab file to run restart.sh based
 on the given interval.
 """
-
-import subprocess
-import os
-import sys
 import argparse
+import os
+import subprocess
+import sys
 
 
 class CronInstaller:

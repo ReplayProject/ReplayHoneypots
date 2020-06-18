@@ -1,9 +1,8 @@
-from trio.testing import open_stream_to_socket_listener
-from TCPPortListener import TCPPortListener
-from ConfigTunnel import ConfigTunnel
-
-import trio
 import pytest
+import trio
+from ConfigTunnel import ConfigTunnel
+from TCPPortListener import TCPPortListener
+from trio.testing import open_stream_to_socket_listener
 
 TEST_PORT = 1337
 WAIT_TIME = 0.1

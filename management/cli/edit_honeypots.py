@@ -1,22 +1,21 @@
-from utilities import (
-    log,
-    style,
-    hostselector,
-    setupConfig,
-    writeConfig,
-    hosts,
-    hostdata,
-    EmptyValidator,
-)
-from PyInquirer import prompt
-import click
-import json
-import subprocess
 import getpass
-import trio
-import time
-import sys
+import json
 import os
+import subprocess
+import sys
+import time
+
+import click
+import trio
+from PyInquirer import prompt
+from utilities import EmptyValidator
+from utilities import hostdata
+from utilities import hosts
+from utilities import hostselector
+from utilities import log
+from utilities import setupConfig
+from utilities import style
+from utilities import writeConfig
 
 # insert at 1, 0 is the script path (or '' in REPL)
 sys.path.insert(1, "../../honeypots/honeypot/")

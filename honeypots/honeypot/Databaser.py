@@ -1,7 +1,8 @@
-import os
-import couchdb
-import socket
 import json
+import os
+import socket
+
+import couchdb
 
 
 # Couchdb Tutorial
