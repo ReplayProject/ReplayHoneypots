@@ -1,7 +1,8 @@
 import inspect
-import trio
 import ssl
 import sys
+
+import trio
 
 
 class ConfigTunnel:

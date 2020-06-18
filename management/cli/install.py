@@ -1,17 +1,16 @@
-from utilities import (
-    log,
-    style,
-    hostselector,
-    setupConfig,
-    writeConfig,
-    hosts,
-    hostdata,
-    FilePathValidator,
-)
-from PyInquirer import prompt
-import click
 import json
 import subprocess
+
+import click
+from PyInquirer import prompt
+from utilities import FilePathValidator
+from utilities import hostdata
+from utilities import hosts
+from utilities import hostselector
+from utilities import log
+from utilities import setupConfig
+from utilities import style
+from utilities import writeConfig
 
 config = setupConfig()
 

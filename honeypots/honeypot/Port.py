@@ -1,7 +1,6 @@
 """
 This object contains information about a port
 """
-
 import json
 
 

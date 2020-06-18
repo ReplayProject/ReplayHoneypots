@@ -1,18 +1,18 @@
 """
 This file contains test cases for the honeypot code
 """
-
+import os
+import subprocess
+import time
 import unittest
 from unittest.mock import MagicMock
-from Port import Port
-from NmapParser import NmapParser
-from LogEntry import LogEntry
-from Databaser import Databaser
+
 from CronInstaller import CronInstaller
 from CronUninstaller import CronUninstaller
-import os
-import time
-import subprocess
+from Databaser import Databaser
+from LogEntry import LogEntry
+from NmapParser import NmapParser
+from Port import Port
 
 
 def run_nmap():

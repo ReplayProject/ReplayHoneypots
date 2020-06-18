@@ -1,7 +1,6 @@
 """
 Opens one TCP port through a python socket
 """
-
 import trio
 
 

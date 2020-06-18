@@ -2,24 +2,22 @@
 Handles the modules and logic to run the honeypot
   Usage: python3 -u ./PortThreadManager.py
 """
-
+import argparse
+import configparser
 import json
 import os
+import signal
+from functools import partial
 
 import trio
-from functools import partial
-import signal
-
-from requests import get
-import configparser
-import argparse
+from Alert import Alert
+from ConfigTunnel import ConfigTunnel
+from Databaser import Databaser
 from NmapParser import NmapParser
+from requests import get
 from Sniffer import Sniffer
 from TCPPortListener import TCPPortListener
 from UDPPortListener import UDPPortListener
-from ConfigTunnel import ConfigTunnel
-from Databaser import Databaser
-from Alert import Alert
 
 # default location that PortThreadManager will look for config options
 

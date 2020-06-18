@@ -1,7 +1,8 @@
-from PortThreadManager import PortThreadManager
-import trio
-from functools import partial
 import os
+from functools import partial
+
+import trio
+from PortThreadManager import PortThreadManager
 
 
 class TestRedeploy:

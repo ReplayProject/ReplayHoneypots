@@ -1,8 +1,6 @@
-from TCPPortListener import TCPPortListener
-
-
-import trio
 import pytest
+import trio
+from TCPPortListener import TCPPortListener
 
 
 TEST_PORT = 1337
