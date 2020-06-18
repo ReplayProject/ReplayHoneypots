@@ -1,13 +1,13 @@
 """
 Handles testing for the CLI's managehosts submenu
 """
-
-import unittest
 import os
-import subprocess
 import pty
-import pexpect
+import subprocess
 import sys
+import unittest
+
+import pexpect
 
 hostname = "test"
 user = "fakehoney"

@@ -12,7 +12,7 @@
         "start": "NODE_ENV=development npm run build && DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history node -r dotenv/config server/index.js",
         "start-serve": "DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history node -r dotenv/config server/index.js",
         "start-watch": "DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history nodemon -r dotenv/config --ignore config.json server/index.js",
-        "test": "npm run format && npx nyc ava test/specs/*"
+        "test": "npx nyc ava test/specs/*"
     },
     "nodemonConfig": {
         "ignore": [

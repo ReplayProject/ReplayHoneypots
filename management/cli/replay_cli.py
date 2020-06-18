@@ -1,22 +1,30 @@
 #! /env/bin/python3
-
 """
 For more info
 codeburst.io/building-beautiful-command-line-interfaces-with-python-26c7e1bb54df
 """
+from __future__ import print_function
+from __future__ import unicode_literals
 
-from __future__ import print_function, unicode_literals
 import os
 import signal
 import sys
 
-from utilities import log, style, setupConfig, writeConfig
-from PyInquirer import prompt
 import click
-
-from manage_hosts import addhost, removehost, checkstatus
-from install import installhoneypot, uninstallhoneypot, reinstallhoneypot
-from edit_honeypots import starthoneypot, stophoneypot, configurehoneypot
+from edit_honeypots import configurehoneypot
+from edit_honeypots import starthoneypot
+from edit_honeypots import stophoneypot
+from install import installhoneypot
+from install import reinstallhoneypot
+from install import uninstallhoneypot
+from manage_hosts import addhost
+from manage_hosts import checkstatus
+from manage_hosts import removehost
+from PyInquirer import prompt
+from utilities import log
+from utilities import setupConfig
+from utilities import style
+from utilities import writeConfig
 
 config = setupConfig()
 

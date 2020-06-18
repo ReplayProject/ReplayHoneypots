@@ -1,18 +1,17 @@
-import os
-import six
-import json
-import click
-import ipaddress
 import configparser
+import ipaddress
+import json
+import os
+
+import click
+import six
 from pyfiglet import figlet_format
-from PyInquirer import (
-    Token,
-    style_from_dict,
-    Separator,
-    prompt,
-    ValidationError,
-    Validator,
-)
+from PyInquirer import prompt
+from PyInquirer import Separator
+from PyInquirer import style_from_dict
+from PyInquirer import Token
+from PyInquirer import ValidationError
+from PyInquirer import Validator
 
 
 # ######

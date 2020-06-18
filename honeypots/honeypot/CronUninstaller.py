@@ -5,9 +5,8 @@ Additionally, this file kills any remaining processes of PortThreadManager.py.
 
 This file should be run by the same user who initially ran PortThreadManager.py.
 """
-
-import subprocess
 import os
+import subprocess
 
 
 class CronUninstaller:
