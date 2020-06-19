@@ -8,11 +8,11 @@
         "build-watch": "parcel watch ./client/index.html --public-url 'http://10.11.12.125:8080' ",
         "dev": "concurrently --kill-others \"npm run start-watch\" \"npm run build-watch\"",
         "dev2": "concurrently --kill-others \"npm run start-serve\" \"npm run build-watch\"",
-        "format": "npx prettier --list-different --write \"test/**\" \"server/**\" \"client/**\" \"./**.{json, babelrc}\" \"!.cache\" && npx sort-package-json",
+        "format": "prettier --list-different --write \"test/**\" \"server/**\" \"client/**\" \"./**.{json, babelrc}\" \"!.cache\" && sort-package-json",
         "start": "NODE_ENV=development npm run build && DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history node -r dotenv/config server/index.js",
         "start-serve": "DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history node -r dotenv/config server/index.js",
         "start-watch": "DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history nodemon -r dotenv/config --ignore config.json server/index.js",
-        "test": "npx nyc ava test/specs/*"
+        "test": "nyc ava test/specs/*"
     },
     "nodemonConfig": {
         "ignore": [
@@ -71,11 +71,9 @@
         "parcel-bundler": "^1.12.4",
         "pouch-vue": "^0.3.5",
         "pouchdb": "^7.2.1",
-        "pouchdb-authentication": "git+https://github.com/silverbackdan/pouchdb-authentication.git#c6e903693c1f",
         "pouchdb-browser": "^7.2.1",
         "pouchdb-find": "^7.2.1",
         "pouchdb-live-find": "^0.4.0",
-        "prettier-standard": "^16.3.0",
         "require-extension-hooks": "^0.3.3",
         "require-extension-hooks-babel": "^1.0.0",
         "require-extension-hooks-vue": "^3.0.0",
