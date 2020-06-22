@@ -201,6 +201,7 @@ class Sniffer:
                 dstIP,
                 destMAC,
                 trafficType,
+                ipLayer.len,
                 destPort in self.openPorts,
                 dbHostname,
             )
