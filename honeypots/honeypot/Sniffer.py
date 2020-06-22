@@ -26,6 +26,8 @@ class Sniffer:
         portWhitelist=None,
         honeypotIP=None,
         managementIPs=None,
+        port_scan_window=None,
+        port_scan_sensitivity=None,
         databaser=None,
     ):
 
@@ -35,6 +37,8 @@ class Sniffer:
         self.honeypotIP = honeypotIP
         self.portWhitelist = [] if portWhitelist is None else portWhitelist
         self.managementIPs = managementIPs
+        self.scan_window = port_scan_window
+        self.scan_sensitivity = port_scan_sensitivity
         self.db = databaser
         self.dbHostname = None
         # used to detect port scans
@@ -107,6 +111,8 @@ class Sniffer:
         portWhitelist=None,
         honeypotIP=None,
         managementIPs=None,
+        port_scan_window=None,
+        port_scan_sensitivity=None,
     ):
         print("Async sniffer updated")
         self.running = False
@@ -115,6 +121,8 @@ class Sniffer:
         self.portWhitelist = [] if portWhitelist is None else portWhitelist
         self.honeypotIP = honeypotIP
         self.managementIPs = managementIPs
+        self.scan_window = port_scan_window
+        self.scan_sensitivity = port_scan_sensitivity
 
         # updates hash
         self.currentHash = hash(self.config)
@@ -122,6 +130,7 @@ class Sniffer:
         self.currentHash += hash(tuple(self.whitelist))
         self.currentHash += hash(honeypotIP)
         self.currentHash += hash(tuple(managementIPs))
+        self.currentHash += hash(tuple([self.scan_window, self.scan_sensitivity]))
 
         # restart's Sniffer
         try:
@@ -143,10 +152,10 @@ class Sniffer:
         # timestamp used for port scan detection
         currentTime = int(datetime.now().timestamp())
         if self.portScanTimeout is None:
-            self.portScanTimeout = int(datetime.now().timestamp())
+            self.portScanTimeout = currentTime
 
         # how to tell if we need to reset our port scan record
-        if currentTime > self.portScanTimeout + 60:
+        if currentTime > self.portScanTimeout + self.scan_window:
             self.portScanTimeout = currentTime
             self.PS_RECORD = dict()
 
@@ -216,7 +225,7 @@ class Sniffer:
                 self.PS_RECORD[srcIP][log.destPortNumber] = dbID
 
                 # Sending out the port scan alert
-                if len(self.PS_RECORD[srcIP]) > 100:
+                if len(self.PS_RECORD[srcIP]) > self.scan_sensitivity:
                     self.db.alert(
                         Alert(
                             variant="alert",

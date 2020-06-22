@@ -28,7 +28,7 @@ class UDPPortListener:
 
     async def portResponse(self, sock, addr):
         byteData = bytes.fromhex(self.response)
-        await trio.sleep(float(self.delay))
+        await trio.sleep(self.delay)
         await sock.sendto(byteData, addr)
 
     """
