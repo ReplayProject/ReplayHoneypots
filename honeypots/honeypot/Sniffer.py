@@ -36,6 +36,7 @@ class Sniffer:
         self.portWhitelist = [] if portWhitelist is None else portWhitelist
         self.managementIPs = managementIPs
         self.db = databaser
+        self.dbHostname = None
         # used to detect port scans
         self.portScanTimeout = None
         # also used to detect port scans
@@ -156,8 +157,8 @@ class Sniffer:
         # IP where this came from
         srcIP = ipLayer.src
         dstIP = ipLayer.dst
-        destPort = ipLayer.dport
-        srcPort = ipLayer.sport
+        destPort = ipLayer.dport if hasattr(ipLayer, "dport") else None
+        srcPort = ipLayer.sport if hasattr(ipLayer, "sport") else None
 
         if (
             not ipLayer.haslayer("TCP")
@@ -169,36 +170,18 @@ class Sniffer:
         # Whitelist check
         if srcIP not in self.whitelist:
             # Testing config - does not utilize a database
-            if self.config == "onlyUDP" or self.config == "testing":
-                dbHostname = "N/A"
-            else:
-                dbHostname = self.db.hostname
+            isTest = self.config == "onlyUDP" or self.config == "testing"
+            dbHostname = self.dbHostname if not isTest else "N/A"
 
-            # ICMP layer check first
-            if ipLayer.haslayer("ICMP"):
-                trafficType = "ICMP"
-                log = LogEntry(
-                    None,
-                    srcIP,
-                    sourceMAC,
-                    None,
-                    dstIP,
-                    destMAC,
-                    trafficType,
-                    None,
-                    dbHostname,
-                )
-                self.db.save(log.json())
-                return
-
-            # TCP/UDP section now
-
-            if ipLayer.haslayer("TCP"):
-                trafficType = "TCP"
-            elif ipLayer.haslayer("UDP"):
-                trafficType = "UDP"
-            else:
-                trafficType = "Other"
+            trafficType = (
+                "TCP"
+                if ipLayer.haslayer("TCP")
+                else "UDP"
+                if ipLayer.haslayer("UDP")
+                else "ICMP"
+                if ipLayer.haslayer("ICMP")
+                else "Other"
+            )
 
             # Log Entry object we're saving
             log = LogEntry(
@@ -214,10 +197,10 @@ class Sniffer:
             )
 
             # self.RECORD is where we save logs for easy testing
-            if srcIP not in self.RECORD.keys():
-                self.RECORD[srcIP] = [log]
-            else:
+            if srcIP in self.RECORD.keys():
                 self.RECORD[srcIP].append(log)
+            else:
+                self.RECORD[srcIP] = [log]
 
             # saving the database ID in case of port scan detection
             if self.config == "base":

@@ -7,12 +7,15 @@ import os
 
 import pytest
 import trio
+from scapy.all import ICMP
+from scapy.all import IP
+from scapy.all import send
 from Sniffer import Sniffer
 
-WAIT_TIME = 2
+WAIT_TIME = 0.1
 
 
-class TestConfigTunnel:
+class TestSniffer:
     """
     Testing for the async sniffer
     """
@@ -41,7 +44,7 @@ class TestConfigTunnel:
         os.system("curl -s www.google.com -o /dev/null")
 
         # Let the logger handle whats up
-        await trio.sleep(0.1)
+        await trio.sleep(WAIT_TIME)
 
         # Dig sometimes gives us multiple IPs, not all of which are used.
         #  If one is used, that's a successful read.
@@ -57,6 +60,38 @@ class TestConfigTunnel:
                 break
 
         assert ipObtained
+        s.stop()
+
+    async def test_icmp(self, nursery):
+        """
+        Test that the sniffer successfully sets itself up
+        """
+        #  Start the sniffer
+        s = Sniffer(
+            config="testing",
+            openPorts=[],
+            whitelist=[],
+            honeypotIP="localhost",
+            managementIPs=(),
+            databaser=None,
+        )
+        s.start()
+
+        # Do an ICMP request to a DNS resolver
+        targets = ["9.9.9.9", "8.8.8.8", "1.1.1.1"]
+
+        for ip in targets:
+            send(IP(dst=ip) / ICMP())
+
+        # Let the logger handle whats up
+        await trio.sleep(WAIT_TIME)
+
+        for ip in targets:
+            assert ip in s.RECORD.keys()
+            assert s.RECORD[ip][0].sourceIPAddress == ip
+            assert s.RECORD[ip][0].trafficType == "ICMP"
+            print("check {}".format(ip))
+
         s.stop()
 
     async def testConfigUpdate(self):
