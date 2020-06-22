@@ -66,6 +66,7 @@ class TestLogs(unittest.TestCase):
             "192.1.1.2",
             "AA-BB-CC-DD-EE-FF",
             "TCP",
+            "20",
             True,
             "test_logs",
         )

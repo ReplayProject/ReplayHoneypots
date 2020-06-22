@@ -57,6 +57,7 @@ class TestSniffer:
                 and s.RECORD[ip][0].sourceIPAddress == ip
                 and s.RECORD[ip][0].sourcePortNumber == 80
                 and s.RECORD[ip][0].trafficType == "TCP"
+                and s.RECORD[ip][0].length != 0
             ):
                 ipObtained = True
                 break
@@ -94,7 +95,8 @@ class TestSniffer:
             assert ip in s.RECORD.keys()
             assert s.RECORD[ip][0].sourceIPAddress == ip
             assert s.RECORD[ip][0].trafficType == "ICMP"
-            print("check {}".format(ip))
+            assert s.RECORD[ip][0].length == 28
+            print("check for {}".format(ip))
 
         s.stop()
 

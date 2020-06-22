@@ -21,6 +21,7 @@ class LogEntry:
         destIPAddress,
         destMAC,
         trafficType,
+        length,
         isPortOpen,
         hostname,
     ):
@@ -32,6 +33,7 @@ class LogEntry:
         self.destMAC = destMAC
         self.timestamp = int(datetime.now().timestamp())
         self.trafficType = trafficType
+        self.length = length
         self.isPortOpen = isPortOpen
         self.hostname = hostname
 
