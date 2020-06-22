@@ -31,6 +31,8 @@ class TestSniffer:
             whitelist=[],
             honeypotIP="localhost",
             managementIPs=(),
+            port_scan_window=60,
+            port_scan_sensitivity=100,
             databaser=None,
         )
         s.start()
@@ -73,6 +75,8 @@ class TestSniffer:
             whitelist=[],
             honeypotIP="localhost",
             managementIPs=(),
+            port_scan_window=60,
+            port_scan_sensitivity=100,
             databaser=None,
         )
         s.start()
@@ -107,6 +111,8 @@ class TestSniffer:
             portWhitelist=[],
             honeypotIP=host_ip,
             managementIPs=("52.87.97.77", "54.80.228.0"),
+            port_scan_window=60,
+            port_scan_sensitivity=100,
         )
         s.start()
 
@@ -123,6 +129,8 @@ class TestSniffer:
             portWhitelist=[777, 888, 999],
             honeypotIP="192.168.42.42",
             managementIPs="54.80.228.0",
+            port_scan_window=62,
+            port_scan_sensitivity=101,
         )
         # used to flush the Sniffer
         os.system("curl -s www.google.com -o /dev/null")

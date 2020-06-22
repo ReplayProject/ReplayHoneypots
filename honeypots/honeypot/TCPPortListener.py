@@ -28,7 +28,7 @@ class TCPPortListener:
 
     async def portResponse(self, conn):
         byteData = bytes.fromhex(self.response)
-        await trio.sleep(float(self.delay))
+        await trio.sleep(self.delay)
         await conn.send(byteData)
         # TODO: check if desired behaivor
         conn.shutdown(trio.socket.SHUT_RDWR)

@@ -44,7 +44,7 @@ class PortThreadManager:
         # where the async sniffer will be located
         self.sniffer = None
         # delay specified by config file
-        self.delay = None
+        self.response_delay = None
         # whitelist of ports
         self.portWhitelist = None
         # whitelist of IPs
@@ -81,7 +81,12 @@ class PortThreadManager:
         self.HONEY_IP = config.get("IPs", "honeypotIP")
         self.MGMT_IPs = json.loads(config.get("IPs", "managementIPs"))
 
-        self.delay = config.get("Attributes", "delay")
+        self.response_delay = float(config.get("Attributes", "response_delay"))
+        self.port_scan_window = int(config.get("Attributes", "port_scan_window"))
+        self.port_scan_sensitivity = int(
+            config.get("Attributes", "port_scan_sensitivity")
+        )
+
         self.whitelist = json.loads(config.get("Whitelist", "addresses"))
         self.portWhitelist = json.loads(config.get("Whitelist", "whitelistedPorts"))
 
@@ -132,6 +137,8 @@ class PortThreadManager:
                     portWhitelist=self.portWhitelist,
                     honeypotIP=self.HONEY_IP,
                     managementIPs=self.MGMT_IPs,
+                    port_scan_window=self.port_scan_window,
+                    port_scan_sensitivity=self.port_scan_sensitivity,
                     databaser=self.db,
                 )
                 self.sniffer.start()
@@ -143,6 +150,8 @@ class PortThreadManager:
                     portWhitelist=self.portWhitelist,
                     honeypotIP=self.HONEY_IP,
                     managementIPs=self.MGMT_IPs,
+                    port_scan_window=self.port_scan_window,
+                    port_scan_sensitivity=self.port_scan_sensitivity,
                 )
                 if not self.sniffer.currentHash == oldHash:
                     retCode = 1
@@ -154,7 +163,7 @@ class PortThreadManager:
             # if (len(self.processList) == 0):
             #     for port in replayPorts:
             #         portThread = TCPPortListener(port, self.responseData[port]["TCP"],
-            #                                   self.delay)
+            #                                   self.response_delay)
             #         portThread.daemon = True
             #         portThread.start()
             #         self.processList[port] = portThread
@@ -188,7 +197,7 @@ class PortThreadManager:
             #     for p in updatedPorts:
             #         if (not p in currentPorts):
             #             portThread = TCPPortListener(p, self.responseData[p]["TCP"],
-            #                                       self.delay)
+            #                                       self.response_delay)
             #             portThread.daemon = True
             #             portThread.start()
             #             self.processList[p] = portThread
@@ -207,7 +216,10 @@ class PortThreadManager:
             async def replay_server(listener_class, sockets, config_path, nursery):
                 for port in sockets:
                     self.processList[port] = listener_class(
-                        port, self.responseData[port][config_path], self.delay, nursery
+                        port,
+                        self.responseData[port][config_path],
+                        self.response_delay,
+                        nursery,
                     )
                     nursery.start_soon(self.processList[port].handler)
 
