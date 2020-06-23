@@ -1,6 +1,7 @@
 <template>
     <section style="width: 100%;">
         <index> </index>
+        <br /><br />
         <about> </about>
     </section>
 </template>

@@ -1,12 +1,12 @@
 <template>
-    <div class="br2">
-        <div class="pa3 flex-auto bb b--white-10">
-            <h3 class="mt0 mb1 f6 ttu white o-70">{{ title }}</h3>
-            <h2 class="mv0 f2 fw5 white">{{ value }}</h2>
+    <div class="br2 cf">
+        <div class="pa3 flex-auto bb b--white-10 cf">
+            <h3 class="mt0 mb1 f6 ttu white o-70">{{ title }} time span</h3>
+            <transition name="fade">
+                <h2 v-if="timespan != 0" class="mv0 f2 fw5 white">{{ timespan }}</h2>
+            </transition>
         </div>
-        <div class="pt2">
-            <line-chart ref="chart" :chartData="chartData" :options="options" />
-        </div>
+        <line-chart class="pt2" ref="chart" :chartData="chartData" :options="options" />
     </div>
 </template>
 
@@ -19,6 +19,7 @@ export default {
     data() {
         return {
             chartData: null,
+            timespan: 0,
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
@@ -35,7 +36,12 @@ export default {
                     ],
                     yAxes: [
                         {
-                            display: false,
+                            display: true,
+                            gridLines: { color: '#00000075' },
+                            ticks: {
+                                beginAtZero: false,
+                                fontColor: '#00000075',
+                            },
                         },
                     ],
                 },
@@ -48,6 +54,23 @@ export default {
         },
     },
     methods: {
+        findTimeSpan(data) {
+            let s = data.slice(-1) - data[0]
+
+            let isSeconds = s < 60
+            let isMinutes = s >= 60 && s < 60 * 60
+            let isHours = s >= 60 * 60 && s < 60 * 60 * 24
+
+            let dumb = x => parseFloat(Number(x).toPrecision(2))
+
+            this.timespan = isSeconds
+                ? dumb(s) + ' secs'
+                : isMinutes
+                ? dumb(s / 60) + ' mins'
+                : isHours
+                ? dumb(s / (60 * 60)) + ' hrs'
+                : dumb(s / (60 * 60 * 25)) + ' days'
+        },
         async loadData() {
             this.$Progress.start()
 
@@ -99,6 +122,11 @@ export default {
                 return s.slice(0, s.indexOf(':', 9) + 3) + ' ' + s.split(' ')[2]
             })
 
+            // Find time difference (seconds then convert)
+            // let keys = Object.keys(mine) // Use group times
+            let keys = [results.docs.slice(-1)[0].timestamp, results.docs[0].timestamp] // Use result times
+            this.findTimeSpan(keys)
+
             let data = Object.values(mine).map(x => x.length)
 
             this.chartData = {
@@ -130,3 +158,14 @@ export default {
     },
 }
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.5s;
+}
+.fade-enter,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>

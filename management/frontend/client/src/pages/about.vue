@@ -54,7 +54,7 @@
             </div>
             <div class="flex flex-wrap pt3 nl3 nr3">
                 <div
-                    v-for="(data, idx) in doshit([
+                    v-for="(data, idx) in formatNames([
                         'sourceIPData',
                         'destinationIPData',
                         'sourcePortData',
@@ -105,18 +105,6 @@ export default {
         }
     },
     computed: {
-        /*
-    destIPAddress: (...)
-    destMAC: (...)
-    destPortNumber: (...)
-    hostname: (...)
-    isPortOpen: (...)
-    sourceIPAddress: (...)
-    sourceMAC: (...)
-    sourcePortNumber: (...)
-    timestamp: (...)
-    trafficType: (...)
-    */
         sourceIPData() {
             return this.frequencyField('sourceIPAddress')
         },
@@ -134,7 +122,7 @@ export default {
         },
     },
     methods: {
-        doshit(names) {
+        formatNames(names) {
             return names.map(x => {
                 let name = x.slice(0, -4)
                 name = name.charAt(0).toUpperCase() + name.slice(1)
@@ -192,7 +180,6 @@ export default {
                     $gte: Math.floor(new Date().getTime() / 1000.0) - howLongAgo,
                 },
             }
-            console.log(selector)
             // Actually do a query
             let results = await this.$pouch.find(
                 {
