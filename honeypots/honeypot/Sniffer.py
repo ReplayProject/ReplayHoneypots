@@ -40,7 +40,6 @@ class Sniffer:
         self.scan_window = port_scan_window
         self.scan_sensitivity = port_scan_sensitivity
         self.db = databaser
-        self.dbHostname = None
         # used to detect port scans
         self.portScanTimeout = None
         # also used to detect port scans
@@ -180,7 +179,7 @@ class Sniffer:
         if srcIP not in self.whitelist:
             # Testing config - does not utilize a database
             isTest = self.config == "onlyUDP" or self.config == "testing"
-            dbHostname = self.dbHostname if not isTest else "N/A"
+            dbHostname = self.db.hostname if not isTest else "N/A"
 
             trafficType = (
                 "TCP"
