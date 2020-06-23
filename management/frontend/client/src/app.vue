@@ -52,7 +52,7 @@ export default {
         try {
             await this.$databases[db_url].put(ddoc)
         } catch (err) {
-            if (err.name !== 'conflict')
+            if (err.error !== 'conflict')
                 console.log('Design Document already exists: ', err.messge)
         }
         try {

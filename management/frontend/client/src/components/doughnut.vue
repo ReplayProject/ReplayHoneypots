@@ -17,9 +17,7 @@ export default {
         },
     },
     mounted() {
-        this.renderChart(this.chartData, {
-            cutoutPercentage: 70,
-        })
+        this.renderChart(this.chartData, this.options)
     },
 }
 </script>

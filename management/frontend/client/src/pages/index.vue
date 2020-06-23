@@ -21,49 +21,63 @@
                 <div
                     v-if="hostsInfo"
                     style="margin: auto;"
-                    class="w-100 w-50-l w-75-m ph3 tc mb4 mb0-l"
+                    class="w-100 w-50-l w-75-m tc mb4 mb0-l"
                 >
-                    <div class="w-50 w-50-m w-75-l center">
-                        <doughnut
-                            :chartData="{
-                                labels: piData[1],
-                                datasets: [
-                                    {
-                                        data: piData[0],
-                                        backgroundColor: piData[2],
-                                        hoverBackgroundColor: piData[2],
-                                    },
+                    <doughnut
+                        :options="{
+                            cutoutPercentage: 65,
+                            layout: {
+                                padding: {
+                                    left: 0,
+                                    right: 0,
+                                    top: 0,
+                                    bottom: 0,
+                                },
+                            },
+                            title: {
+                                display: true,
+                                fontSize: 19,
+                                text: [
+                                    'Log Distribution',
+                                    Number(
+                                        (
+                                            $store.state.aggInfo.sizes.file / 1000000
+                                        ).toPrecision(4)
+                                    ) + ' mb',
                                 ],
-                            }"
-                        ></doughnut>
-                    </div>
-                    <h4 class="dark-gray f3 fw3 mv0">Log Distribution</h4>
-                    <h3 class="mt2 f6 fw5 silver">
-                        Disk Usage:<br />
-                        <b
-                            >{{
-                                Number(
-                                    (
-                                        $store.state.aggInfo.sizes.file / 1000000
-                                    ).toPrecision(4)
-                                )
-                            }}
-                            Mb</b
-                        >
-                    </h3>
+                            },
+                            legend: {
+                                position: 'right',
+                                display: true,
+                                labels: {
+                                    fontSize: 14,
+                                },
+                            },
+                        }"
+                        :chartData="{
+                            labels: piData[1].map((x, i) => x + ': ' + piData[0][i]),
+                            datasets: [
+                                {
+                                    data: piData[0],
+                                    backgroundColor: piData[2],
+                                    hoverBackgroundColor: piData[2],
+                                },
+                            ],
+                        }"
+                    ></doughnut>
                 </div>
             </div>
             <div class="divide tc relative">
                 <h5 class="fw4 ttu mv0 dib bg-white ph3">Quick Stats</h5>
             </div>
             <p class="tc center w-100 mv1">
-                Total device logs and a time distribution of last
+                Time distribution and clusters of the last
                 <b>{{ numLogs }}</b> logs for each device
             </p>
 
             <div class="flex flex-wrap justify-center">
                 <div
-                    v-for="n in [50, 100, 500]"
+                    v-for="n in [50, 100, 500, 1000, 2000]"
                     :key="n"
                     @click="numLogs = n"
                     class="pointer b mv1 mh2 ph4 pv2 br2 ba b--blue blue hover-bg-blue hover-white shadow-hover"
@@ -115,7 +129,7 @@ export default {
     },
     data() {
         return {
-            numLogs: 50,
+            numLogs: 200,
         }
     },
     computed: {
@@ -134,8 +148,14 @@ export default {
     },
     methods: {
         pickColor(s) {
-            let colors = ['bg-green', 'bg-red', 'bg-purple', 'bg-blue']
-            let idx = s.split('').reduce((a, x) => a + x.charCodeAt(0), 0)
+            let colors = ['bg-green', 'bg-red', 'bg-purple', 'bg-blue', 'bg-orange']
+
+            if (this.hostsInfo.length > 4) {
+                colors.push('bg-gray')
+                colors.push('bg-silver')
+            }
+
+            let idx = s.split('').reduce((a, x) => a + x.charCodeAt(0), 0) + s.length
             return colors[idx % colors.length]
         },
     },
