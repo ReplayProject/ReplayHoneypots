@@ -4,7 +4,7 @@ pexpect==4.8.0
 prompt-toolkit==1.0.14
 pycryptodome==3.9.8
 pyfiglet==0.8.post1
-Pygments==2.5.2
+Pygments==2.6.1
 PyInquirer==1.0.3
 regex==2020.1.8
 six==1.14.0
