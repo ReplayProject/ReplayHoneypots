@@ -28,7 +28,7 @@ docker service create \
   --config src="honey-cfg-$TAG",target="/properties.cfg" \
   --config src="honey-data-$TAG",target="/senddata.json" \
   --config src="honey-sslcert-$TAG",target="/cert.pem" \
-  127.0.0.1:5000/seth/replay-honeypot:latest
+  127.0.0.1:5000/replay/replay-honeypot:latest
 
 # Optional configurations
 #  --mount type=bind,src=/shared/2020SpringTeam18/honeypots/honeypot/Databaser.py,dst=/usr/src/app/honeypot/Databaser.py \

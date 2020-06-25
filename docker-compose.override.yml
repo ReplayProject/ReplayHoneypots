@@ -31,7 +31,7 @@ services:
         stdin_open: true # docker run -i
         tty: true # docker run -t
         command: '/bin/ash' # toggle to disable sample honeypot during development
-        image: 127.0.0.1:5000/seth/replay-honeypot:latest
+        image: 127.0.0.1:5000/replay/replay-honeypot:latest
         container_name: honeypot # Only works with one honeypot
         hostname: honeypot # Only works with one honeypot
         ports:

@@ -24,7 +24,7 @@ services:
 
     # Service to get manager up and running
     replay-manager:
-        image: 127.0.0.1:5000/seth/replay-manager:latest
+        image: 127.0.0.1:5000/replay/replay-manager:latest
         hostname: replay-manager
         ports:
             - 8080:8080
@@ -42,7 +42,7 @@ services:
                 condition: on-failure
 
     # replay-honeypot:
-    # image: 127.0.0.1:5000/seth/replay-honeypot:latest
+    # image: 127.0.0.1:5000/replay/replay-honeypot:latest
     # Service to get ready to run a honeypot is in ./service_deploy.sh
 
 configs:
