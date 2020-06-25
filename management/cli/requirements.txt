@@ -2,7 +2,7 @@ Click==7.0
 colorama==0.4.3
 pexpect==4.8.0
 prompt-toolkit==1.0.14
-pycryptodome==3.9.7
+pycryptodome==3.9.8
 pyfiglet==0.8.post1
 Pygments==2.5.2
 PyInquirer==1.0.3
