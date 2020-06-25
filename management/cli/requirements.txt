@@ -9,4 +9,4 @@ PyInquirer==1.0.3
 regex==2020.6.8
 six==1.14.0
 termcolor==1.1.0
-wcwidth==0.1.8
+wcwidth==0.2.5
