@@ -106,7 +106,7 @@ export default {
                     selector,
                     sort,
                     skip,
-                    fields: [],
+                    fields: ['timestamp'],
                     limit: this.numLogs,
                 },
                 this.dbURI

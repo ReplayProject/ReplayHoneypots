@@ -6,7 +6,7 @@
             'w-75-l': $route.name != 'overview',
         }"
     >
-        <component-title>At a Glance</component-title>
+        <component-title>Traffic At a Glance</component-title>
         <hr class="o-20 mt2" />
         <section
             v-if="Object.keys($store.state.hostsInfo).length == 0"
@@ -25,32 +25,51 @@
                 }"
                 class="dib b mv3 br2 ph4 pv2 mh2 ba b--blue pointer shadow-hover"
             >
-                Toggle All
+                Toggle All Data Points
             </div>
             <hr class="o-20 mt2" />
-            <div
-                @click="loadData(86400)"
-                class="dib b mv3 br2 ph4 pv2 mh2 ba b--blue pointer shadow-hover"
-            >
-                Last Day
+            <div class="flex flex-wrap justify-center">
+                <div
+                    @click="host = ''"
+                    class="pointer b mv1 mh2 ph4 pv2 br2 ba b--blue hover-bg-blue hover-white shadow-hover"
+                    :class="{
+                        'bg-blue': host == '',
+                        white: host == '',
+                        blue: host != '',
+                    }"
+                >
+                    All
+                </div>
+                <div
+                    v-for="n in $store.state.hostsInfo"
+                    :key="n.key"
+                    @click="host = n.key"
+                    class="pointer b mv1 mh2 ph4 pv2 br2 ba b--blue hover-bg-blue hover-white shadow-hover"
+                    :class="{
+                        'bg-blue': host == n.key,
+                        white: host == n.key,
+                        blue: host != n.key,
+                    }"
+                >
+                    {{ n.key | capitalize }}
+                </div>
             </div>
-            <div
-                @click="loadData(86400 * 7)"
-                class="dib b mv3 br2 ph4 pv2 mh2 ba b--blue pointer shadow-hover"
-            >
-                Last Week
-            </div>
-            <div
-                @click="loadData(86400 * 30)"
-                class="dib b mv3 br2 ph4 pv2 mh2 ba b--blue pointer shadow-hover"
-            >
-                Last 30 Days
-            </div>
-            <div
-                @click="loadData(86400 * 365)"
-                class="dib b mv3 br2 ph4 pv2 mh2 ba b--blue pointer shadow-hover"
-            >
-                Last Year
+
+            <hr class="o-20 mt2" />
+            <div class="flex flex-wrap justify-center">
+                <div
+                    v-for="n in [300, 500, 1000, 2000]"
+                    :key="n"
+                    @click="numLogs = n"
+                    class="pointer b mv1 mh2 ph4 pv2 br2 ba b--blue hover-bg-blue hover-white shadow-hover"
+                    :class="{
+                        'bg-blue': numLogs == n,
+                        white: numLogs == n,
+                        blue: numLogs != n,
+                    }"
+                >
+                    Last {{ n }}
+                </div>
             </div>
             <div class="flex flex-wrap pt3 nl3 nr3">
                 <div
@@ -60,6 +79,7 @@
                         'sourcePortData',
                         'destinationPortData',
                         'trafficData',
+                        'lengthData',
                     ])"
                     :key="idx"
                     class="w-100 w-50-l ph3 mb3 mb0-l"
@@ -102,7 +122,17 @@ export default {
             logs: null,
             error: null,
             entryLimit: 5,
+            numLogs: 300,
+            host: '',
         }
+    },
+    watch: {
+        numLogs() {
+            this.loadData()
+        },
+        host() {
+            this.loadData()
+        },
     },
     computed: {
         sourceIPData() {
@@ -119,6 +149,9 @@ export default {
         },
         trafficData() {
             return this.frequencyField('trafficType')
+        },
+        lengthData() {
+            return this.frequencyField('length')
         },
     },
     methods: {
@@ -157,11 +190,9 @@ export default {
 
             return displayObj.slice(0, this.entryLimit)
         },
-        async loadData(howLongAgo) {
+        async loadData() {
             this.$Progress.start()
-
-            let fields = ['timestamp']
-
+            let fields = ['hostname', 'timestamp']
             // Query index
             let idx = await this.$pouch.createIndex(
                 {
@@ -175,15 +206,21 @@ export default {
                 this.$toasted.show('New query index created')
             }
 
-            let selector = {
-                timestamp: {
-                    $gte: Math.floor(new Date().getTime() / 1000.0) - howLongAgo,
-                },
-            }
+            let selector = { timestamp: { $exists: true } }
+            selector.hostname = this.host == '' ? { $exists: true } : { $eq: this.host }
             // Actually do a query
             let results = await this.$pouch.find(
                 {
                     selector,
+                    fields: [
+                        'sourcePortNumber',
+                        'sourceIPAddress',
+                        'destPortNumber',
+                        'destIPAddress',
+                        'trafficType',
+                        'length',
+                    ],
+                    limit: this.numLogs,
                 },
                 this.dbURI
             )

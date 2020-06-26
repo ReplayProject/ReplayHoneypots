@@ -71,18 +71,23 @@
                 <h5 class="fw4 ttu mv0 dib bg-white ph3">Quick Stats</h5>
             </div>
             <p class="tc center w-100 mv1">
-                Time distribution and clusters of the last
-                <b>{{ numLogs }}</b> logs for each device
+                Time distribution and clusters of the <b>last {{ numLogs }}</b> logs for
+                each device
             </p>
 
             <div class="flex flex-wrap justify-center">
                 <div
-                    v-for="n in [50, 100, 500, 1000, 2000]"
+                    v-for="n in [50, 100, 200, 500, 1000, 2000]"
                     :key="n"
                     @click="numLogs = n"
-                    class="pointer b mv1 mh2 ph4 pv2 br2 ba b--blue blue hover-bg-blue hover-white shadow-hover"
+                    class="pointer b mv1 mh2 ph4 pv2 br2 ba b--blue hover-bg-blue hover-white shadow-hover"
+                    :class="{
+                        'bg-blue': numLogs == n,
+                        white: numLogs == n,
+                        blue: numLogs != n,
+                    }"
                 >
-                    Analyze Last {{ n }}
+                    {{ n }}
                 </div>
             </div>
 

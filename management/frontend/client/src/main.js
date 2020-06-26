@@ -38,6 +38,12 @@ Vue.filter('formatDBName', value => {
     )
 })
 
+Vue.filter('capitalize', function (value) {
+    if (!value) return ''
+    value = value.toString()
+    return value.charAt(0).toUpperCase() + value.slice(1)
+})
+
 // Setup for how dates work on the app
 let dateType = x =>
     new Date(x * 1000).toLocaleString().replace('/' + new Date().getFullYear(), '')

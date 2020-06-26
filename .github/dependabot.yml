@@ -1,43 +1,43 @@
 version: 2
 updates:
-- package-ecosystem: npm
-  directory: "/management/frontend"
-  schedule:
-    interval: daily
-    time: "10:00"
-  open-pull-requests-limit: 10
-  target-branch: "/development"
-- package-ecosystem: pip
-  directory: "/management/cli"
-  schedule:
-    interval: daily
-    time: "10:00"
-  open-pull-requests-limit: 10
-  target-branch: development
-  allow:
-  - dependency-type: direct
-  - dependency-type: indirect
-- package-ecosystem: docker
-  directory: "/honeypots"
-  schedule:
-    interval: daily
-    time: "10:00"
-  open-pull-requests-limit: 10
-  target-branch: development
-- package-ecosystem: pip
-  directory: "/"
-  schedule:
-    interval: daily
-    time: "10:00"
-  open-pull-requests-limit: 10
-  target-branch: development
-  allow:
-  - dependency-type: direct
-  - dependency-type: indirect
-- package-ecosystem: docker
-  directory: "/management"
-  schedule:
-    interval: daily
-    time: "10:00"
-  open-pull-requests-limit: 10
-  target-branch: development
+    - package-ecosystem: npm
+      directory: '/management/frontend'
+      schedule:
+          interval: daily
+          time: '10:00'
+      open-pull-requests-limit: 10
+      target-branch: '/development'
+    - package-ecosystem: pip
+      directory: '/management/cli'
+      schedule:
+          interval: daily
+          time: '10:00'
+      open-pull-requests-limit: 10
+      target-branch: development
+      allow:
+          - dependency-type: direct
+          - dependency-type: indirect
+    - package-ecosystem: docker
+      directory: '/honeypots'
+      schedule:
+          interval: daily
+          time: '10:00'
+      open-pull-requests-limit: 10
+      target-branch: development
+    - package-ecosystem: pip
+      directory: '/'
+      schedule:
+          interval: daily
+          time: '10:00'
+      open-pull-requests-limit: 10
+      target-branch: development
+      allow:
+          - dependency-type: direct
+          - dependency-type: indirect
+    - package-ecosystem: docker
+      directory: '/management'
+      schedule:
+          interval: daily
+          time: '10:00'
+      open-pull-requests-limit: 10
+      target-branch: development
