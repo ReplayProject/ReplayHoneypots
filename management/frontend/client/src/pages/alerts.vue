@@ -107,21 +107,6 @@ export default {
         async loadData() {
             this.$Progress.start()
 
-            let fields = ['timestamp']
-
-            // Query index
-            let idx = await this.$pouch.createIndex(
-                {
-                    index: { fields },
-                },
-                this.alertsURI
-            )
-            // Only log index creation if it was new
-            if (idx.result != 'exists') {
-                console.log('New Index created: ', idx)
-                this.$toasted.show('New query index created')
-            }
-
             let options = {
                 selector: {},
                 sort: [{ timestamp: 'desc' }],

@@ -41,6 +41,7 @@ test('sparkline.vue init', t => {
 test.only('sparkline.vue load data', async t => {
     const spy = sinon.spy()
     const createIndex = sinon.stub().returns({ result: 'exists' })
+    const query = sinon.stub().returns({ docs: [] })
     const find = sinon.stub().returns({ docs: [] })
 
     const wrapper = shallowMount(sparkline, {
@@ -51,6 +52,7 @@ test.only('sparkline.vue load data', async t => {
             $pouch: {
                 createIndex,
                 find,
+                query,
             },
             $store: store,
             $Progress: {

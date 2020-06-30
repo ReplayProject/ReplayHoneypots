@@ -15,9 +15,7 @@
             <PropagateLoader :size="20" color="#387ddb" />
         </section>
         <section v-else>
-            <div
-                class="flex-m flex-l flex-wrap items-center justify-between nl3 nr3 pt1 mb2"
-            >
+            <div class="flex-m flex-l flex-wrap items-center justify-between nl3 nr3">
                 <div
                     v-if="hostsInfo"
                     style="margin: auto;"
@@ -71,37 +69,82 @@
                 <h5 class="fw4 ttu mv0 dib bg-white ph3">Quick Stats</h5>
             </div>
             <p class="tc center w-100 mv1">
-                Time distribution and clusters of the <b>last {{ numLogs }}</b> logs for
-                each device
+                Time distribution, clusters, and total logs of the
+                <b>last active timespan</b> for each device
             </p>
 
-            <div class="flex flex-wrap justify-center">
-                <div
-                    v-for="n in [50, 100, 200, 500, 1000, 2000]"
-                    :key="n"
-                    @click="numLogs = n"
-                    class="pointer b mv1 mh2 ph4 pv2 br2 ba b--blue hover-bg-blue hover-white shadow-hover"
-                    :class="{
-                        'bg-blue': numLogs == n,
-                        white: numLogs == n,
-                        blue: numLogs != n,
-                    }"
-                >
-                    {{ n }}
+            <div class="pa2 flex flex-wrap black b">
+                <div class="dib w-50 w-25-l tc">
+                    <label for="minutes">Minutes:</label>
+                    <br />
+                    <input
+                        class="w4"
+                        :class="{
+                            'bg-light-blue': timespan.minutes != 0,
+                        }"
+                        v-model.lazy.number="timespan.minutes"
+                        type="number"
+                        name="minutes"
+                        min="0"
+                        max="60"
+                    />
+                </div>
+                <div class="dib w-50 w-25-l tc">
+                    <label for="hours">Hours:</label>
+                    <br />
+                    <input
+                        class="w4"
+                        :class="{
+                            'bg-light-blue': timespan.hours != 0,
+                        }"
+                        v-model.lazy.number="timespan.hours"
+                        type="number"
+                        name="hours"
+                        min="0"
+                        max="24"
+                    />
+                </div>
+                <div class="dib w-50 w-25-l tc">
+                    <label for="days">Days:</label>
+                    <br />
+                    <input
+                        class="w4"
+                        :class="{
+                            'bg-light-blue': timespan.days != 0,
+                        }"
+                        v-model.lazy.number="timespan.days"
+                        type="number"
+                        name="days"
+                        min="0"
+                        max="365"
+                    />
+                </div>
+                <div class="dib w-50 w-25-l tc">
+                    <label for="days">Specificity</label>
+                    <br />
+                    <input
+                        class="w4"
+                        v-model.lazy.number="timespan.specificity"
+                        type="number"
+                        name="specificity"
+                        min="1"
+                        max="4"
+                    />
                 </div>
             </div>
-
-            <div class="flex flex-wrap mt2">
+            <br />
+            <div class="flex flex-wrap">
                 <div
                     v-for="db in hostsInfo"
                     :key="db.key"
-                    class="w-100 w-50-m w-33-l mb4 mb0-l relative flex flex-column ph3 mv2"
+                    class="w-100 w-50-m w-33-l mb4 mb0-l relative flex flex-column ph2"
                 >
                     <sparkline
                         :title="db.key"
                         :class="pickColor(db.key)"
                         :value="db.value"
-                        :numLogs="numLogs"
+                        :timediff="timediff"
+                        :specificity="timespan.specificity"
                     ></sparkline>
                 </div>
             </div>
@@ -134,7 +177,12 @@ export default {
     },
     data() {
         return {
-            numLogs: 200,
+            timespan: {
+                minutes: 0,
+                hours: 1,
+                days: 0,
+                specificity: 2,
+            },
         }
     },
     computed: {
@@ -149,6 +197,14 @@ export default {
         },
         isNested() {
             return this.$route.name == 'overview'
+        },
+        timediff() {
+            // Time diff in milliseconds
+            return (
+                this.timespan.minutes * 60 * 1000 +
+                this.timespan.hours * 60 * 60 * 1000 +
+                this.timespan.days * 24 * 60 * 60 * 1000
+            )
         },
     },
     methods: {

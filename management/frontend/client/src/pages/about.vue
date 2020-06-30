@@ -7,7 +7,7 @@
         }"
     >
         <component-title>Traffic At a Glance</component-title>
-        <hr class="o-20 mt2" />
+        <hr class="o-20" />
         <section
             v-if="Object.keys($store.state.hostsInfo).length == 0"
             class="mw1 center mt6 mt6-ns"
@@ -27,7 +27,7 @@
             >
                 Toggle All Data Points
             </div>
-            <hr class="o-20 mt2" />
+            <hr class="o-20" />
             <div class="flex flex-wrap justify-center">
                 <div
                     @click="host = ''"
@@ -55,7 +55,7 @@
                 </div>
             </div>
 
-            <hr class="o-20 mt2" />
+            <hr class="o-20" />
             <div class="flex flex-wrap justify-center">
                 <div
                     v-for="n in [300, 500, 1000, 2000]"
@@ -192,20 +192,6 @@ export default {
         },
         async loadData() {
             this.$Progress.start()
-            let fields = ['hostname', 'timestamp']
-            // Query index
-            let idx = await this.$pouch.createIndex(
-                {
-                    index: { fields },
-                },
-                this.dbURI
-            )
-            // Only log index creation if it was new
-            if (idx.result != 'exists') {
-                console.log('New Index created: ', idx)
-                this.$toasted.show('New query index created')
-            }
-
             let selector = { timestamp: { $exists: true } }
             selector.hostname = this.host == '' ? { $exists: true } : { $eq: this.host }
             // Actually do a query
