@@ -137,12 +137,12 @@
                 <div
                     v-for="db in hostsInfo"
                     :key="db.key"
-                    class="w-100 w-50-m w-33-l mb4 mb0-l relative flex flex-column ph2"
+                    class="w-100 w-50-m w-33-l mb4 mb0-l relative flex flex-column ph2 pv1"
                 >
                     <sparkline
                         :title="db.key"
-                        :class="pickColor(db.key)"
-                        :value="db.value"
+                        :chartstyles="'height:15rem;'"
+                        :class="$pickColor(db.key, hostsInfo.length > 4)"
                         :timediff="timediff"
                         :specificity="timespan.specificity"
                     ></sparkline>
@@ -192,7 +192,7 @@ export default {
             return [
                 this.hostsInfo.map(x => x.value),
                 l,
-                l.map(x => this.pickColor(x).slice(3)),
+                l.map(x => this.$pickColor(x, this.hostsInfo.length > 4).slice(3)),
             ]
         },
         isNested() {
@@ -207,19 +207,5 @@ export default {
             )
         },
     },
-    methods: {
-        pickColor(s) {
-            let colors = ['bg-green', 'bg-red', 'bg-purple', 'bg-blue', 'bg-orange']
-
-            if (this.hostsInfo.length > 4) {
-                colors.push('bg-gray')
-                colors.push('bg-silver')
-            }
-
-            let idx = s.split('').reduce((a, x) => a + x.charCodeAt(0), 0) + s.length
-            return colors[idx % colors.length]
-        },
-    },
-    mounted() {},
 }
 </script>

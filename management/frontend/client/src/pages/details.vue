@@ -12,16 +12,60 @@
             <dl class="dib mr5">
                 <dd class="f6 f5-ns b ml0">Total Logs</dd>
                 <dd class="f3 f2-ns b ml0">
-                    {{ isAggregate ? $store.state.totalLogs : totalRecords }}
+                    {{ totalRecords }}
                 </dd>
             </dl>
             <dl class="dib mr5">
                 <dd class="f6 f5-ns b ml0">Location</dd>
                 <dd class="f4 f3-ns b ml0">/{{ $route.params.device }}</dd>
             </dl>
+
+            <sparkline
+                v-if="!isAggregate"
+                :title="$route.params.device"
+                :chartstyles="'height:25rem;'"
+                :class="$pickColor($route.params.device, hostsInfo.length > 4)"
+                :timediff="datepickstart"
+                :endtimespan="datepickend"
+                :specificity="specificity"
+            ></sparkline>
         </article>
+
+        <div class="cf pa2 tc b" v-if="!isAggregate">
+            <div class="fl dib w-100 w-33-l mv2">
+                Start Time
+                <datetime
+                    v-model="datepickstart"
+                    type="datetime"
+                    use12-hour
+                    title="Query Start Time"
+                    auto
+                ></datetime>
+            </div>
+            <div class="dib w-100 w-33-l mv2">
+                <label for="days">Specificity</label>
+                <br />
+                <input
+                    v-model.lazy.number="specificity"
+                    type="number"
+                    name="specificity"
+                    min="1"
+                    max="4"
+                />
+            </div>
+            <div class="fr dib w-100 w-33-l mv2">
+                End Time
+                <datetime
+                    v-model="datepickend"
+                    type="datetime"
+                    use12-hour
+                    title="Query End Time"
+                    auto
+                ></datetime>
+            </div>
+        </div>
         <hr class="o-20" />
-        <div class="mt4 w-100">
+        <div class="mv3 w-100">
             <vue-good-table
                 ref="datatable"
                 mode="remote"
@@ -58,14 +102,20 @@
 <script>
 import componentTitle from '../components/title'
 import { mapState } from 'vuex'
+import sparkline from '../components/sparkline'
 
 export default {
     name: 'deviceDetails',
     components: {
         componentTitle,
+        sparkline,
     },
     data() {
         return {
+            // Give last day as default
+            datepickstart: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+            datepickend: new Date().toISOString(),
+            specificity: 2,
             dbInfo: {},
             isLoading: false,
             totalRecords: 0,
@@ -171,7 +221,7 @@ export default {
             let d = this.$route.params.device
 
             if (this.isAggregate) {
-                this.totalRecords = this.$store.state.totalLogs
+                this.totalRecords = this.$store.getters.totalLogs
                 return
             }
 

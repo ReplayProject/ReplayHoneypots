@@ -1,14 +1,19 @@
 <template>
-    <div class="br2 cf">
-        <div class="pa3 flex-auto bb b--white-10 cf">
+    <div class="br2">
+        <div class="pa3 flex-auto bb b--white-10">
             <h3 class="mt0 mb1 f6 ttu white o-70">{{ title }} timespan</h3>
             <transition name="fade">
-                <h2 v-if="logsInFrame != 0" class="mv0 f2 fw5 white">
-                    {{ logsInFrame }}
+                <h2 class="mv0 f2 fw5 white">
+                    {{ logsInFrame ? logsInFrame : '0 logs' }}
                 </h2>
             </transition>
         </div>
-        <line-chart class="pt2" ref="chart" :chartData="chartData" :options="options" />
+        <line-chart
+            :style="chartstyles"
+            ref="chart"
+            :chartData="chartData"
+            :options="options"
+        />
     </div>
 </template>
 
@@ -17,14 +22,14 @@ import LineChart from './lineChart'
 
 export default {
     components: { LineChart },
-    props: ['title', 'value', 'timediff', 'specificity'],
+    props: ['title', 'chartstyles', 'endtimespan', 'timediff', 'specificity'],
     data() {
         return {
             chartData: null,
             logsInFrame: null,
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 elements: {
                     point: {
                         radius: 3,
@@ -52,6 +57,16 @@ export default {
     },
     watch: {
         timediff() {
+            this.init()
+        },
+        title() {
+            this.chartData = {
+                datasets: [],
+            }
+            this.logsInFrame = 0
+            this.init()
+        },
+        endtimespan() {
             this.init()
         },
         specificity() {
@@ -85,8 +100,6 @@ export default {
         },
         async loadData(bounds) {
             this.$Progress.start()
-            console.log(bounds)
-
             const div = (time, power) => Math.floor(time / Math.pow(10, power))
             const keymap = ts =>
                 [...Array(Number(4)).keys()].map(x => div(ts, x)).reverse()
@@ -116,9 +129,12 @@ export default {
             // Apply local filter or just throw it on the page
             // TODO: abstract this date logic from here and the details page
             let labels = results.rows.map(x => {
-                let s = new Date(x.key.slice(-1)[0] * 1000)
+                // Convery the varying size numbers to the same date range by filling in zeroes
+                let ts = x.key.slice(-1)[0] * Math.pow(10, 7 - this.specificity)
+                let s = new Date(ts)
                     .toLocaleString()
                     .replace('/' + new Date().getFullYear(), '')
+                // Use the pretty formatted string
                 return s.slice(0, s.indexOf(':', 9) + 3) + ' ' + s.split(' ')[2]
             })
 
@@ -140,9 +156,16 @@ export default {
             this.$Progress.finish()
         },
         async init() {
+            const parseDateString = x => new Date(x).getTime() / 1000
             // Wait till we have first status
             try {
-                await this.loadData(await this.findTimeBounds())
+                let bounds = !this.endtimespan
+                    ? await this.findTimeBounds()
+                    : [
+                          parseDateString(this.timediff),
+                          parseDateString(this.endtimespan),
+                      ]
+                await this.loadData(bounds)
             } catch (error) {
                 console.log(error)
             }

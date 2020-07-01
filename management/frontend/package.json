@@ -67,6 +67,7 @@
         "chart.js": "^2.9.3",
         "jsdom": "^16.2.2",
         "jsdom-global": "^3.0.2",
+        "luxon": "^1.24.1",
         "nyc": "^15.1.0",
         "parcel-bundler": "^1.12.4",
         "pouch-vue": "^0.3.5",
@@ -85,6 +86,7 @@
         "vue": "^2.6.11",
         "vue-axios": "^2.1.5",
         "vue-chartjs": "^3.5.0",
+        "vue-datetime": "^1.0.0-beta.13",
         "vue-good-table": "^2.19.3",
         "vue-hot-reload-api": "^2.3.4",
         "vue-json-pretty": "^1.6.3",
@@ -92,7 +94,8 @@
         "vue-router": "latest",
         "vue-template-compiler": "^2.6.11",
         "vue-toasted": "^1.1.28",
-        "vuejs-datatable": "^2.0.0-alpha.7"
+        "vuejs-datatable": "^2.0.0-alpha.7",
+        "weekstart": "^1.0.1"
     },
     "engines": {
         "node": "v12.0.0"

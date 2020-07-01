@@ -27,6 +27,11 @@ Vue.use(VueProgressBar, {
     thickness: '8px',
 })
 
+import { Datetime } from 'vue-datetime'
+import 'vue-datetime/dist/vue-datetime.css'
+Vue.use(Datetime)
+Vue.component('datetime', Datetime)
+
 Vue.filter('formatDBName', value => {
     if (!value) return ''
     value = value.toString()
@@ -62,6 +67,16 @@ Vue.prototype.$parseDateWithTime = x => {
 
 Vue.prototype.dbURI = process.env.DB_URL + '/' + 'aggregate_logs'
 Vue.prototype.alertsURI = process.env.DB_URL + '/' + 'alerts'
+
+Vue.prototype.$pickColor = (s, extras) => {
+    let colors = ['bg-green', 'bg-red', 'bg-purple', 'bg-blue', 'bg-orange']
+    if (extras) {
+        colors.push('bg-gray')
+        colors.push('bg-silver')
+    }
+    let idx = s.split('').reduce((a, x) => a + x.charCodeAt(0), 0) + s.length
+    return colors[idx % colors.length]
+}
 
 window.v = new Vue({
     el: '#app',

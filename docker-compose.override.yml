@@ -49,6 +49,7 @@ services:
         volumes:
             - './config/honeypot.cfg:/properties.cfg'
             - './config/senddata.json:/senddata.json'
+            - './config/cert.pem:/cert.pem'
             - replay-src:/src # toggle this line for dev mode (bind source code)
         environment:
             - DB_URL=http://honeypots:securehoneypassword@10.11.12.125:5984 #TODO: DB Connection string for honeypot connection
