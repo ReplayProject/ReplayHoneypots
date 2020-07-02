@@ -20,47 +20,29 @@ export default {
     },
     methods: {
         async designDocs() {
-            let host_timeframes = this.$store.state.hostsInfo.map(h => {
-                return {
-                    //  design doc for time grouping of logs
-                    _id: `_design/timestamp-${h.key}`,
+            let design_documents = [
+                {
+                    //  design doc for summary of hosts data, and a time grouping of logs
+                    _id: `_design/timespans`,
                     views: {
-                        timestamp: {
+                        hosttime: {
                             map: function (doc) {
-                                if (doc.hostname == '$HOST')
-                                    emit(
-                                        [
-                                            // This precision allows for different group by criteria on query
-                                            Math.floor(doc.timestamp / 1000),
-                                            Math.floor(doc.timestamp / 100),
-                                            Math.floor(doc.timestamp / 10),
-                                            Math.floor(doc.timestamp / 1),
-                                        ],
-                                        doc.timestamp
-                                    )
-                            }
-                                .toString()
-                                .replace('$HOST', h.key),
+                                emit(
+                                    [
+                                        doc.hostname,
+                                        // This precision allows for different group by criteria on query
+                                        Math.floor(doc.timestamp / 1000),
+                                        Math.floor(doc.timestamp / 100),
+                                        Math.floor(doc.timestamp / 10),
+                                        Math.floor(doc.timestamp / 1),
+                                    ],
+                                    null
+                                )
+                            }.toString(),
                             reduce: '_count',
                         },
                     },
-                }
-            })
-
-            let design_documents = [
-                {
-                    //  design doc for summary of hosts data
-                    _id: '_design/hostname',
-                    views: {
-                        hostname: {
-                            map: function (doc) {
-                                emit(doc.hostname, 1)
-                            }.toString(),
-                            reduce: '_sum',
-                        },
-                    },
                 },
-                ...host_timeframes,
             ]
 
             // save the various design docs
@@ -124,15 +106,19 @@ export default {
         // fetch hosts data
         try {
             let result = await this.$pouch.query(
-                'hostname',
+                `timespans/hosttime`,
                 {
                     include_docs: false,
                     reduce: true,
                     group: true,
+                    group_level: 1,
                 },
                 this.dbURI
             )
-            this.$store.commit('setHostsInfo', result.rows)
+            this.$store.commit(
+                'setHostsInfo',
+                result.rows.map(x => ({ key: x.key[0], value: x.value }))
+            )
         } catch (err) {
             console.log('Something went wrong with fetching DB info: ', err)
         }

@@ -101,17 +101,20 @@ export default {
         async loadData(bounds) {
             this.$Progress.start()
             const div = (time, power) => Math.floor(time / Math.pow(10, power))
-            const keymap = ts =>
-                [...Array(Number(4)).keys()].map(x => div(ts, x)).reverse()
+            const keymap = ts => [
+                this.title,
+                ...[...Array(Number(4)).keys()].map(x => div(ts, x)).reverse(),
+            ]
 
             let results = await this.$pouch.query(
-                `timestamp-${this.title}/timestamp`,
+                `timespans/hosttime`,
                 {
                     startkey: keymap(bounds[0]),
                     endkey: keymap(bounds[1]),
                     reduce: true,
                     group: true,
-                    group_level: this.specificity,
+                    // add one becasue of the hostname at the start
+                    group_level: this.specificity + 1,
                 },
                 this.dbURI
             )
