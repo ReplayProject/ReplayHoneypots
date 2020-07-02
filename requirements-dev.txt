@@ -1,5 +1,5 @@
 CouchDB==1.2
-pre-commit==2.5.1
+pre-commit==2.6.0
 pycryptodome==3.9.8
 pytest==5.4.3
 pytest-trio==0.6.0
