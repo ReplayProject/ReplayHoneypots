@@ -53,7 +53,6 @@ services:
             - replay-src:/src # toggle this line for dev mode (bind source code)
         environment:
             - DB_URL=http://honeypots:securehoneypassword@10.11.12.125:5984 #TODO: DB Connection string for honeypot connection
-            # - HONEY_CFG=/properties.cfg
             # Toggle below for dev
             - NODE_ENV=development
         working_dir: /src/honeypots/honeypot # comment to use bundled source code (needs fresh image)

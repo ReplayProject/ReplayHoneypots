@@ -15,7 +15,6 @@ fi
 docker service create \
   --with-registry-auth \
   --env DB_URL="http://honeypots:securehoneypassword@10.11.12.125:5984" \
-  --env HONEY_CFG="/properties.cfg" \
   --replicas "${1:-1}" \
   --replicas-max-per-node 1 \
   --reserve-memory=100m \
