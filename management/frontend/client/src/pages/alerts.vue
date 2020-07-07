@@ -104,51 +104,6 @@ export default {
                 window.open(this.dbURI + '/' + data)
             }
         },
-        async loadData() {
-            this.$Progress.start()
-
-            let options = {
-                selector: {},
-                sort: [{ timestamp: 'desc' }],
-                skip: 0,
-                fields: [],
-            }
-
-            if (this.numAlerts > 0) options.limit = this.numAlerts
-
-            // Actually do a query
-            let results = await this.$pouch.find(options, this.alertsURI)
-            this.$store.commit('setAlerts', results.docs)
-            this.$Progress.finish()
-        },
-    },
-    async mounted() {
-        this.loadData()
-
-        var changes = this.$pouch.changes(
-            {
-                since: 'now',
-                live: true,
-                include_docs: true,
-            },
-            this.alertsURI
-        )
-
-        changes.on('change', change => {
-            if (!change.deleted) {
-                this.$store.commit('unshiftList', change.doc)
-                this.$store.commit('popAlerts') // remove element to keep number the same
-                this.$toasted.show('New alert from ' + change.doc.hostname)
-            }
-        })
-
-        changes.on('complete', info => {
-            console.log('complete', info)
-        })
-
-        changes.on('error', err => {
-            console.log(err)
-        })
     },
 }
 </script>
