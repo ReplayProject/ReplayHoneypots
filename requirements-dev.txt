@@ -1,7 +1,9 @@
-CouchDB==1.2
+cloudant==2.13.0
+mock==4.0.2
 pre-commit==2.6.0
 pycryptodome==3.9.8
 pytest==5.4.3
+pytest-mock==3.1.1
 pytest-trio==0.6.0
 requests==2.24.0
 scapy==2.4.3

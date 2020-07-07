@@ -13,6 +13,7 @@ from Databaser import Databaser
 from LogEntry import LogEntry
 from NmapParser import NmapParser
 from Port import Port
+from requests.exceptions import ConnectionError
 
 
 def run_nmap():
@@ -86,7 +87,7 @@ class TestDatabaser(unittest.TestCase):
         """
         os.environ["DB_URL"] = DB_URL
         try:
-            db = Databaser()
+            db = Databaser(test=True)
             db.deleteDB()  # assuming admin
         except Exception:
             self.fail("Databaser raised an exception during teardown!")
@@ -101,7 +102,7 @@ class TestDatabaser(unittest.TestCase):
         os.environ["DB_URL"] = DB_URL
         # Successful run (assuming couch is running)
         try:
-            db = Databaser()
+            db = Databaser(test=True)
             print("Databases: ", db.listDbs())
         except Exception:
             self.fail("Databaser raised an exception unexpectedly!")
@@ -109,22 +110,22 @@ class TestDatabaser(unittest.TestCase):
     def test_fail(self):
         try:
             os.environ["DB_URL"] = DB_URL + "9"
-            Databaser()
-        except ConnectionRefusedError:
+            Databaser(test=True)
+        except ConnectionError:
             self.assertRaises(Exception)
 
     def test_fail_2(self):
         try:
             os.environ["DB_URL"] = "http://localhost:1020"
-            Databaser()
-        except ConnectionRefusedError:
+            Databaser(test=True)
+        except ConnectionError:
             self.assertRaises(Exception)
         except OSError:
             self.assertRaises(Exception)
 
         try:
             os.environ["TARGET_ADDR"] = ""
-            Databaser()
+            Databaser(test=True)
         except Exception:
             self.assertRaises(Exception)
 

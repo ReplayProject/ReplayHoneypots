@@ -19,15 +19,16 @@ docker service create \
   --replicas-max-per-node 1 \
   --reserve-memory=100m \
   --limit-memory=1GB \
-  --constraint node.role==worker \
   --placement-pref spread=node.id \
   --restart-condition on-failure \
   --network host \
   --name replay-honeypot \
-  --config src="honey-cfg-$TAG",target="/properties.cfg" \
-  --config src="honey-data-$TAG",target="/senddata.json" \
+  --config src="honey-conf-defaults-$TAG",target="/usr/src/config/defaults.json" \
   --config src="honey-sslcert-$TAG",target="/cert.pem" \
   127.0.0.1:5000/replay/replay-honeypot:latest
+
+  # --constraint node.role==worker \
+
 
 # Optional configurations
 #  --mount type=bind,src=/shared/2020SpringTeam18/honeypots/honeypot/Databaser.py,dst=/usr/src/app/honeypot/Databaser.py \

@@ -47,8 +47,6 @@ services:
         #   - couchdb
         restart: 'unless-stopped'
         volumes:
-            - './config/honeypot.cfg:/properties.cfg'
-            - './config/senddata.json:/senddata.json'
             - './config/cert.pem:/cert.pem'
             - replay-src:/src # toggle this line for dev mode (bind source code)
         environment:

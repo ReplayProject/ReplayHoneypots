@@ -20,7 +20,7 @@ class Databaser:
     DB_URL, and TARGET_ADDR
     """
 
-    def __init__(self):
+    def __init__(self, test=False):
         """
         Initialize
         """
@@ -30,6 +30,12 @@ class Databaser:
         self.alerts_db = "alerts"
         self.config_db = "configs"
         self.config_doc = None
+
+        self.test = test
+        if self.test:
+            self.logs_db += "_test"
+            self.alerts_db += "_test"
+            self.config_db += "_test"
 
         # Connect to the database
         db_url = os.getenv("DB_URL")
@@ -49,6 +55,16 @@ class Databaser:
             )
         else:
             print("No DB_URL provided, logging to stdout only")
+
+    def merge(self, source, destination):
+        for key, value in source.items():
+            if isinstance(value, dict):
+                # get node or create one
+                node = destination.setdefault(key, {})
+                self.merge(value, node)
+            else:
+                destination[key] = value
+        return destination
 
     def startReplicate(self, target):
         """
@@ -73,9 +89,12 @@ class Databaser:
         """
         Delete the database this host is bound to
         """
-        # TODO: decide if this is needed (remove testing logs from db)
-        print("Deletion like this disabled due to aggregate databases")
-        # del self.couch[self.logs_db]
+        if not self.test:
+            print("Deletion like this disabled due to aggregate databases")
+            return
+        # Attempt deletion of each required DB
+        for db in [self.logs_db, self.alerts_db, self.config_db]:
+            self.couch.delete_database(db)
 
     def createDB(self):
         """
@@ -150,10 +169,11 @@ class Databaser:
         """
         db = self.couch[self.config_db]
         conf_id = "HP-" + self.uuid
-        db[conf_id].fetch()
+        default_conf_id = "HP-default"
 
         # Check if this honeypot's unique config exists
         if conf_id in db:
+            db[conf_id].fetch()
             self.config_doc = db[conf_id]
             # do validity checks on the configuration
             # TODO: decide if this should be on couchdb's side
@@ -174,7 +194,14 @@ class Databaser:
             print("Honeypot config loaded")
             return self.config_doc
         else:
-            default = db["HP-default"]
+            # Create initial/default config
+            # But check if DB default exists first
+            if default_conf_id not in db:
+                with open("../../config/defaults.json") as f:
+                    with Document(db, default_conf_id) as document:
+                        self.merge(json.load(f), document)
+
+            default = db[default_conf_id]
             default["_id"] = conf_id
             del default["_rev"]
 
@@ -206,7 +233,7 @@ class Databaser:
                     filter="_doc_ids",
                     doc_ids=[conf_id],
                 )
-                await trio.sleep(1)  # provide a cancellation checkpoint
+                await trio.sleep(0)  # provide a cancellation checkpoint
                 for change in changes:
                     if change:
                         self.config_doc = change["doc"]
