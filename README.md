@@ -89,44 +89,41 @@ system to handle multi-node deployments.
 
 The Replay honeypots are a security tool designed to monitor and collect information
 about the networks they are deployed on. This project began in 2019, and has been
-growing in multiple ways. In June, 2020 it was made open source! The most notable
-components of the system are:
+growing in multiple ways. In July 2020 it was made open source! The most notable
+components of the system are the:
 
 -   Honeypots
 -   Management System
-    -   Data Collection / Export
+    -   Data Collection / Export Solution
     -   Frontend Analysis
     -   ReplayCLI
 -   Deployment Strategy
 
-Currently, the project supports Docker and Baremetal deployment options, although docker
-is simpler for managing multiple devices simutaneously.
+Currently, the project supports **Docker** and **Baremetal** deployment options,
+although Docker is simpler for managing multiple devices simutaneously.
 
 To expedite the analysis of honeypots’ logs, a web-based management frontend was created
-with local authentication using Passport.js, Node.js and Vue.js. The frontend provides a
-way for users to query the log database as well as be alerted of potential attacks,
+with local authentication using Node.js, Passport.js, and Vue.js. The frontend provides
+a way for users to query the log database as well as be alerted of potential attacks,
 problems, and/or configuration changes of deployed honeypots. The user may also export
 data to an external SIEM (Security Information and Event Management System) by utilizing
 the database's API.
 
 Additionally, we have created an automated deployment and configuration tool called the
-HoneyCLI. This is a command line tool that utilizes docker to install, uninstall,
-configure, start and stop honeypots. This tool assumes that the user has set up SSH keys
-to connect to the system which they intend to deploy a honeypot on. Although this tool
-uses docker for its deployment, this tool can also be configured to deploy honeypots on
-bare-metal machines.
+HoneyCLI. This is a command line tool that assists in the administration of honeypots.
+This tool assumes that the user has set up SSH keys to connect to the system which they
+intend to deploy a honeypot on. Although it uses Docker for its deployment, this tool
+can also be configured to deploy honeypots on bare-metal machines.
 
 ### Built With
 
--   [TRIO](https://trio.readthedocs.io/en/latest/index.html)
--   [Scapy](https://scapy.readthedocs.io/en/latest/index.html)
--   [CouchDB](https://docs.couchdb.org/en/stable/)
+|  Replay Honeypots   |     Replay Manager      |
+| :-----------------: | :---------------------: |
+|    [TRIO](#trio)    |     [VueJS](#vuejs)     |
+|   [Scapy](#scapy)   |  [Tachyons](#tachyons)  |
+| [CouchDB](#couchdb) | [PassportJS](#passport) |
 
 ---
-
--   [VueJS](https://vuejs.org/)
--   [Tachyons](https://tachyons.io/)
--   [PassportJS](http://www.passportjs.org/)
 
 <!-- GETTING STARTED -->
 
@@ -222,3 +219,12 @@ https://shields.io/ for a workflow
 [build-url]: https://github.com/ReplayProject/ReplayHoneypots/actions/
 [build-shield]: https://img.shields.io/badge/stability-experimental-orange.svg?style=flat-square
 -->
+
+<!-- Links for the Build With Section -->
+
+[trio]: https://trio.readthedocs.io/en/latest/index.html
+[scapy]: https://scapy.readthedocs.io/en/latest/index.html
+[couchdb]: https://docs.couchdb.org/en/stable/
+[vuejs]: https://vuejs.org/
+[tachyons]: https://tachyons.io/
+[passport]: http://www.passportjs.org/
