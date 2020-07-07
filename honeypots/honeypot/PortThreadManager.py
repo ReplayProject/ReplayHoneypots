@@ -178,6 +178,7 @@ class PortThreadManager:
                         variant="admin",
                         message="Sniffer updated during runtime by " + user,
                         hostname=self.db.hostname,
+                        uuid=self.db.uuid,
                     ).json()
                 )
             elif retCode == 2:
@@ -186,6 +187,7 @@ class PortThreadManager:
                         variant="admin",
                         message="TCP sockets updated during runtime by " + user,
                         hostname=self.db.hostname,
+                        uuid=self.db.uuid,
                     ).json()
                 )
             elif retCode == 3:
@@ -195,6 +197,7 @@ class PortThreadManager:
                         message="TCP sockets and Sniffer updated during runtime by "
                         + user,
                         hostname=self.db.hostname,
+                        uuid=self.db.uuid,
                     ).json()
                 )
             elif retCode == 0:
@@ -204,6 +207,7 @@ class PortThreadManager:
                         message="Attempted configuration change during runtime by "
                         + user,
                         hostname=self.db.hostname,
+                        uuid=self.db.uuid,
                     ).json()
                 )
             return retCode
@@ -239,6 +243,7 @@ if __name__ == "__main__":
             message="Honeypot startup.",
             references=[],
             hostname=manager.db.hostname,
+            uuid=manager.db.uuid,
         ).json()
     )
 

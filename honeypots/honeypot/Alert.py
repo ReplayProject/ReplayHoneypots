@@ -13,26 +13,25 @@ class Alert:
     timestamp - epoch time of alert
     references - a list of related Traffic IDs, if applicable
     hostname - which honeypot this came from
+    UUID - what unique honeypot this alert originated from
     """
 
     __name__ = "Alert"
 
     def __init__(
-        self, variant, message="", references=None, hostname="DefaultHostname"
+        self,
+        variant,
+        message="",
+        references=None,
+        hostname="DefaultHostname",
+        uuid="DefaultUUID",
     ):
         self.variant = variant
         self.message = message
         self.timestamp = int(datetime.now().timestamp())
         self.references = [] if references is None else references
         self.hostname = hostname
+        self.uuid = uuid
 
     def json(self):
-        return json.dumps(
-            {
-                "variant": self.variant,
-                "message": self.message,
-                "timestamp": self.timestamp,
-                "references": self.references,
-                "hostname": self.hostname,
-            }
-        )
+        return json.dumps(self.__dict__)

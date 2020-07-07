@@ -24,6 +24,7 @@ class LogEntry:
         length,
         isPortOpen,
         hostname,
+        uuid,
     ):
         self.sourcePortNumber = sourcePortNumber
         self.sourceIPAddress = sourceIPAddress
@@ -36,6 +37,7 @@ class LogEntry:
         self.length = length
         self.isPortOpen = isPortOpen
         self.hostname = hostname
+        self.uuid = uuid
 
     def json(self):
         return json.dumps(self.__dict__)
