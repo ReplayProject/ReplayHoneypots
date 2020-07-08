@@ -145,7 +145,8 @@ class Databaser:
         and if not, will generate and mark by creating an ID file
         """
         device_uuid = None
-        tagpath = "RPHP-UUID"
+        is_docker = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
+        tagpath = ("/storage/" if is_docker else "./") + "RPHP-UUID"
 
         exists = os.path.exists(tagpath)
         mode = "r" if exists else "w"

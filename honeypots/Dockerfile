@@ -17,6 +17,11 @@ EXPOSE 9998
 
 # Do not buffer python otput
 ENV PYTHONUNBUFFERED=0
+# Mark as being in container
+ENV AM_I_IN_A_DOCKER_CONTAINER=True
+
+# Persistant Storage
+VOLUME /storage
 
 WORKDIR /usr/src/app/honeypot
 CMD ["python3", "-u", "./PortThreadManager.py"]
