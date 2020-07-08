@@ -4,6 +4,8 @@ This file edits the user's crontab file to stop running restart.sh.
 Additionally, this file kills any remaining processes of PortThreadManager.py.
 
 This file should be run by the same user who initially ran PortThreadManager.py.
+
+TODO: More direct and useful testing for this file needed.
 """
 import os
 import subprocess

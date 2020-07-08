@@ -1,12 +1,8 @@
 {
     "_id": "HP-default",
     "attributes": {
-        "\\1": "# can be set to 10.0 for a 10 sec delay (increases scan times)",
         "response_delay": 0,
-        "\\5": "# the rough time period (seconds) that we check for port scans",
         "port_scan_window": 60,
-        "\\6": "# the number of packets from a host that constitutes an alert (in given window)",
-        "\\7": "# for reference, default portscans usually create > 1000 logs.",
         "port_scan_sensitivity": 100
     },
     "allowlist": {
@@ -14,15 +10,11 @@
         "ports": [5984, 8000, 2376, 2377, 5000, 7946, 4789]
     },
     "ip_addresses": {
-        "\\8": "# These IPs need to be configured for each honeypot",
         "honeypotIP": "192.168.42.55",
         "managementIPs": ["10.11.12.125", "172.18.0.1", "172.17.0.1"]
     },
     "configtunnel": {
         "port": 9998,
-        "\\9": "# baremetal",
-        "\\10": "# cert_file = ../../config/cert.pem",
-        "\\11": "# docker config /cert.pem wa",
         "cert_file": ""
     },
     "response_config": {

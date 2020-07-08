@@ -187,6 +187,9 @@ export default {
     },
     computed: {
         ...mapState(['hostsInfo']),
+        /**
+         * Detup date for the pie chart
+         */
         piData() {
             var l = this.hostsInfo.map(x => x.key)
             return [
@@ -198,6 +201,9 @@ export default {
         isNested() {
             return this.$route.name == 'overview'
         },
+        /**
+         * Convert user selections into a span of ms
+         */
         timediff() {
             // Time diff in milliseconds
             return (

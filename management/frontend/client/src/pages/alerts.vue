@@ -97,6 +97,9 @@ export default {
         },
     },
     methods: {
+        /**
+         * Redirect clicks on alert-linked logs to the raw json of that log
+         */
         jsonClick(path, data) {
             // console.log(path, data)
             if (path.includes('.references[') && data.length != 0) {

@@ -55,6 +55,9 @@ export default {
             },
         }
     },
+    /**
+     * This section reloads the chart when various bits of data change
+     */
     watch: {
         timediff() {
             this.init()
@@ -74,6 +77,9 @@ export default {
         },
     },
     methods: {
+        /**
+         * Find the bounds for a couchDB query
+         */
         async findTimeBounds() {
             let selector = { hostname: { $eq: this.title } }
             let sort = [{ timestamp: 'desc' }]
@@ -98,6 +104,10 @@ export default {
             let starttime = new Date(endtime.getTime() - this.timediff)
             return [starttime, endtime].map(x => x.getTime() / 1000)
         },
+        /**
+         * Given some time bounds, fetch data from the index, format it human reable
+         * and display it
+         */
         async loadData(bounds) {
             this.$Progress.start()
             const div = (time, power) => Math.floor(time / Math.pow(10, power))
@@ -126,7 +136,7 @@ export default {
                 this.logsInFrame = 0
                 return
             }
-
+            // Count totals
             this.logsInFrame = results.rows.reduce((a, x) => a + x.value, 0) + ' logs'
 
             // Apply local filter or just throw it on the page
@@ -158,6 +168,9 @@ export default {
             // Mark everything as done loading
             this.$Progress.finish()
         },
+        /**
+         * Kick off loading data
+         */
         async init() {
             const parseDateString = x => new Date(x).getTime() / 1000
             // Wait till we have first status

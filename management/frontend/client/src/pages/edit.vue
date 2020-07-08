@@ -1,4 +1,5 @@
 <template>
+    <!-- This page serves as a template for creating new ones! -->
     <main
         class="w-100 ph3-m ph3-l"
         :class="{

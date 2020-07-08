@@ -14,8 +14,9 @@ requests.adapters.DEFAULT_RETRIES = 0
 
 class Sniffer:
     """
-    Constructor; takes a config keyword to see what mode to run it in
-    'testing' ignores ssh spam you get
+    Constructs the sniffer object; notably takes a config
+    keyword to control what mode to run in
+    'testing' ignores ssh traffic
     """
 
     def __init__(
@@ -54,11 +55,10 @@ class Sniffer:
         self.currentHash += hash(honeypotIP)
         self.currentHash += hash(tuple(managementIPs))
 
-    """
-    Runs the thread, begins sniffing
-    """
-
     def start(self):
+        """
+        Runs the thread, begins sniffing with given config
+        """
         print("Starting async sniffer")
         # building the base filter
         fltr = "not src host {} ".format(self.honeypotIP)
@@ -90,18 +90,13 @@ class Sniffer:
 
         self.sniffer.start()
 
-    """
-    Attempts to stop the async sniffer
-    """
-
     def stop(self):
+        """
+        Attempts to stop the async sniffer
+        """
         if not self.sniffer or not self.sniffer.running:
             raise Exception("Async sniffer not initialized")
         self.sniffer.stop()
-
-    """
-    Updates configuration options during runtime
-    """
 
     def configUpdate(
         self,
@@ -113,6 +108,9 @@ class Sniffer:
         port_scan_window=None,
         port_scan_sensitivity=None,
     ):
+        """
+        Updates configuration options during runtime
+        """
         print("Async sniffer updated")
         self.running = False
         self.openPorts = [] if openPorts is None else openPorts
@@ -138,12 +136,11 @@ class Sniffer:
             print("Sniffer did not finish setting up before teardown: ", str(ex))
         self.start()
 
-    """
-    Function for recording a packet during sniff runtime
-    packet = the packet passed through the sniff function
-    """
-
     def save_packet(self, packet):
+        """
+        Function for recording a packet during sniff runtime
+        packet = the packet passed through the sniff function
+        """
         # TODO: make this work with layer 2, for now just skip filtering those packets
         if not packet.haslayer("IP"):
             return

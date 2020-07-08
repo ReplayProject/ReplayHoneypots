@@ -1,4 +1,5 @@
 <template>
+    <!-- This page shows how we can compose different full views together -->
     <section style="width: 100%;">
         <index> </index>
         <br /><br />

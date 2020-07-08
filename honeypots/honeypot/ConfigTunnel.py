@@ -9,13 +9,13 @@ class ConfigTunnel:
     """
     Handles the creation/usage of the configuration tunnel,
     which is a module to support remote/live configuration over
-    a discrete connection
+    TCP or SSL connections
     """
 
     def __init__(self, mode, port, host="", cafile=None):
         """
         Setup variables for the config tunnel to operate
-        Input: mode [server|client], host (optional ssh tunnel host)
+        Input: mode [server|client], host [IP], cafile [PATH]
         """
         self.mode = mode
         self.connectHost = host
@@ -27,7 +27,7 @@ class ConfigTunnel:
 
     def setHandler(self, trigger, handler):
         """
-        Sets a handler for a trigger keyword (triggered over socket)
+        Sets a handler for a trigger keyword (triggered via incoming message)
         """
         if trigger in self.handlers.keys():
             raise Exception("Handler for " + trigger + " already defined")
@@ -47,6 +47,7 @@ class ConfigTunnel:
 
         func = self.handlers[cmds[0]]
 
+        # Check if we are dealing with an async function or not
         if inspect.iscoroutinefunction(func):
             resp = await func(cmds[1:])
         else:
@@ -60,15 +61,12 @@ class ConfigTunnel:
         Logic for listening on a stream and triggering handlers
         """
         async with stream:
-            # try:
             async for data in stream:
                 print(self.mode + " conftunnel got: {!r}".format(data))
                 resp = await self.triggerHandler(data)
                 if resp is not None:
                     await stream.send_all(resp.encode("utf8"))
             print(self.mode + "conftunnel: connection closed")
-        # except Exception as exc:
-        #     print(self.mode +" readstream crashed: {!r}".format(exc))
 
     async def listen(self, channel=None):
         """
@@ -76,9 +74,10 @@ class ConfigTunnel:
         """
         # Decide if we are encrypting or not.
         print(self.mode + " conftunnel starting")
-        # Optional trip channel for communicating commands
+        # Optional trio channel for communicating commands
         if channel:
             self.channel = channel
+        # Optional certfile to use for a SSL connection
         if self.certfile:
             sslctx = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
             sslctx.load_cert_chain(certfile=self.certfile, keyfile=self.certfile)
@@ -88,7 +87,7 @@ class ConfigTunnel:
 
     async def connect(self, task_status=trio.TASK_STATUS_IGNORED):
         """
-        Start the config server client (and tunnel in)
+        Start the config server client
         """
         print(
             "conftunnel connecting to {}:{}".format(self.connectHost, self.serverPort)
@@ -107,6 +106,7 @@ class ConfigTunnel:
                 self.connectHost, self.serverPort
             )
 
+        # Mark task as started for parent nursery
         task_status.started()
 
         async with trio.open_nursery() as nursery:
@@ -114,7 +114,7 @@ class ConfigTunnel:
 
     async def send(self, given_line):
         """
-        Encrypt and send stdin over socket connection
+        Encrypt and send messages over connection
         """
         if not self.client_stream:
             raise Exception("no stream on client conftunnel")
@@ -123,6 +123,9 @@ class ConfigTunnel:
         await self.client_stream.send_all(given_line.encode("utf8"))
 
     async def relaytochannel(self, x):
+        """
+        Relay the incoming commands to PTM
+        """
         await self.channel.send(x)
         return
 

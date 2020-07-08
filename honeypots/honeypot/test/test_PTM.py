@@ -8,6 +8,11 @@ from PortThreadManager import PortThreadManager
 
 
 class TestRedeploy:
+    """
+    Test that runs the PTM file with different configs,
+     to check that configuration changes are handled correctly.
+    """
+
     async def test_redeploy(self, mocker, nursery):
         man = PortThreadManager()
 

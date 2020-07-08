@@ -4,6 +4,8 @@ and restarts it if not.
 
 Additionally, this file edits the user's crontab file to run restart.sh based
 on the given interval.
+
+TODO: More direct and useful testing for this file needed.
 """
 import argparse
 import os

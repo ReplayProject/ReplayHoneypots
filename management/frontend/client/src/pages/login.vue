@@ -66,6 +66,9 @@ export default {
         }
     },
     methods: {
+        /**
+         * Attempt user login
+         */
         async login(e) {
             e.preventDefault()
 

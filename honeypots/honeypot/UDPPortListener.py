@@ -1,15 +1,15 @@
-"""
-Opens one UDP port through a trio socket
-"""
 import trio
 
 
 class UDPPortListener:
     """
-    Constructor - makes a new socket
+    Opens one UDP port through a trio socket
     """
 
     def __init__(self, port, response, delay, nursery):
+        """
+        Constructor - makes a new socket
+        """
         self.port = port
         self.response = response
         self.delay = delay
@@ -19,23 +19,21 @@ class UDPPortListener:
         self.ip = ""
         self.isRunning = False
 
-    """
-    Send a response on a port
-
-    Args:
-      addr: where to send the payload to
-    """
-
     async def portResponse(self, sock, addr):
+        """
+        Send a response on a port
+
+        Args:
+          addr: where to send the payload to
+        """
         byteData = bytes.fromhex(self.response)
         await trio.sleep(self.delay)
         await sock.sendto(byteData, addr)
 
-    """
-    Listen and respond on this listener's port
-    """
-
     async def handler(self):
+        """
+        Listen and respond on this listener's port
+        """
         with trio.socket.socket(trio.socket.AF_INET, trio.socket.SOCK_DGRAM) as sock:
 
             await sock.bind((self.ip, int(self.port)))

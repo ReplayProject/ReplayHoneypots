@@ -1,15 +1,15 @@
-"""
-Opens one TCP port through a python socket
-"""
 import trio
 
 
 class TCPPortListener:
     """
-    Constructor - makes a new socket
+    Opens one TCP port through a python socket
     """
 
     def __init__(self, port, response, delay, nursery):
+        """
+        Constructor - makes a new socket
+        """
         self.port = port
         self.response = response
         self.delay = delay
@@ -19,26 +19,24 @@ class TCPPortListener:
         self.ip = ""
         self.isRunning = False
 
-    """
-    Send a response on a port
-
-    Args:
-      addr: where to send the payload to
-    """
-
     async def portResponse(self, conn):
+        """
+        Send a response on a port
+
+        Args:
+          addr: where to send the payload to
+        """
         byteData = bytes.fromhex(self.response)
         await trio.sleep(self.delay)
         await conn.send(byteData)
-        # TODO: check if desired behaivor
+        # TODO: check if desired behaivor to disconnect immediately
         conn.shutdown(trio.socket.SHUT_RDWR)
         conn.close()
 
-    """
-    Listen and respond on the given port
-    """
-
     async def handler(self):
+        """
+        Listen and respond on the given port
+        """
         with trio.socket.socket(trio.socket.AF_INET, trio.socket.SOCK_STREAM) as sock:
 
             sock.setsockopt(trio.socket.SOL_SOCKET, trio.socket.SO_REUSEADDR, 1)

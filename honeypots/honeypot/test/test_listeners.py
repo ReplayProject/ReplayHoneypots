@@ -17,7 +17,7 @@ def e(s):
 @pytest.fixture
 def udp():
     """
-    Fixture to boilerplate a function ot get UDP port listeners
+    Fixture to boilerplate a function to get UDP port listeners running
     """
 
     def _(*args, **kwargs):
@@ -29,6 +29,10 @@ def udp():
 
 
 class TestUDPListener:
+    """
+    Check behaivor of listeners and replay functionality
+    """
+
     async def testListenerInit(self, udp, nursery):
         string = "hello world"
         listener = udp(e(string), 0, nursery)
@@ -98,6 +102,10 @@ def tcp():
 
 
 class TestTCPListener:
+    """
+    Check behaivor of listeners and replay functionality
+    """
+
     async def testListenerInit(self, tcp, nursery):
         string = "hello world"
         listener = tcp(e(string), 0, nursery)

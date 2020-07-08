@@ -1,7 +1,7 @@
 """
-If testing in alpine container, may need to run
+If testing inside of an alpine container, will need to run
  apk add curl bind-tools
-honeypot_tests.sh automatically does this
+honeypot_tests.sh script automatically does this
 """
 import os
 

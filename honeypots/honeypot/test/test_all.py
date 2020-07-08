@@ -1,5 +1,5 @@
 """
-This file contains test cases for the honeypot code
+This file contains test cases for some the honeypot modules
 """
 import os
 import subprocess
@@ -12,31 +12,12 @@ from CronUninstaller import CronUninstaller
 from Databaser import Databaser
 from LogEntry import LogEntry
 from NmapParser import NmapParser
-from Port import Port
 from requests.exceptions import ConnectionError
 
 
 def run_nmap():
     time.sleep(5)
     os.system("nmap localhost")
-
-
-class TestPort(unittest.TestCase):
-    """
-    Test the Port object
-    """
-
-    def test_response(self):
-        port = Port(455, 0x11FF)
-        self.assertEqual(0x11FF, port.response())
-
-    def test_get_json(self):
-        port = Port(455, 0x11FF)
-        self.assertEqual(port.get_json(), {"port": 455, "defaultData": 4607})
-
-    def test_str(self):
-        port = Port(455, 0x11FF)
-        self.assertEqual(str(port), "Port: 455")
 
 
 class TestNmapParser(unittest.TestCase):
@@ -83,9 +64,15 @@ DB_URL = "http://admin:couchdb@10.11.12.125:5984"
 
 
 class TestDatabaser(unittest.TestCase):
+    """
+    Tests that check how the Databaser starts and runs
+    (required an instance of couchDB to be running and accessible)
+    """
+
     def tearDown(self):
         """
-        Clear out testing db (BE CAREFUL)
+        Clear out the testing DBs
+        Note that inside of databaser there is logic to create test databases
         """
         os.environ["DB_URL"] = DB_URL
         try:
@@ -110,6 +97,9 @@ class TestDatabaser(unittest.TestCase):
             self.fail("Databaser raised an exception unexpectedly!")
 
     def test_fail(self):
+        """
+        Test that connecting to a strange url responds with error
+        """
         try:
             os.environ["DB_URL"] = DB_URL + "9"
             Databaser(test=True)
@@ -117,6 +107,9 @@ class TestDatabaser(unittest.TestCase):
             self.assertRaises(Exception)
 
     def test_fail_2(self):
+        """
+        Test that connecting to a strange url responds with error
+        """
         try:
             os.environ["DB_URL"] = "http://localhost:1020"
             Databaser(test=True)
@@ -135,6 +128,8 @@ class TestDatabaser(unittest.TestCase):
 class TestCron(unittest.TestCase):
     """
     Tests CronInstaller and CronUninstaller
+    TODO: these tests need to be rewritten to not have side affects or removed
+    remember to focus on testing our code's behaivor and not cron's
     """
 
     def test_cron(self):

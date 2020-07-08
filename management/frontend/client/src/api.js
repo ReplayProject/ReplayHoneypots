@@ -1,3 +1,8 @@
+/**
+ * Sample API implementation if we were not using the PouchDB library for talking to the datbase
+ * This kind of format is what you would use for other kinds of integrations.
+ */
+
 import axios from 'axios'
 
 const DB_BASEURL = process.env.DB_URL

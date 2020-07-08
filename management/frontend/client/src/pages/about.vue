@@ -1,4 +1,5 @@
 <template>
+    <!-- This page seeks to give general info about recent logs, with summaries of data and log fields -->
     <main
         class="w-100 ph3-m ph3-l"
         :class="{
@@ -126,6 +127,9 @@ export default {
             host: '',
         }
     },
+    /**
+     * Reload when logs and host change
+     */
     watch: {
         numLogs() {
             this.loadData()
@@ -155,6 +159,9 @@ export default {
         },
     },
     methods: {
+        /**
+         * Make DB names prettier
+         */
         formatNames(names) {
             return names.map(x => {
                 let name = x.slice(0, -4)
@@ -166,6 +173,9 @@ export default {
                 }
             })
         },
+        /**
+         * Take a field and compute the relative frequency it appears in the last N logs
+         */
         frequencyField(field) {
             if (!this.data) return []
 
@@ -190,6 +200,9 @@ export default {
 
             return displayObj.slice(0, this.entryLimit)
         },
+        /**
+         * Kick off the loading of data
+         */
         async loadData() {
             this.$Progress.start()
             let selector = { timestamp: { $exists: true } }

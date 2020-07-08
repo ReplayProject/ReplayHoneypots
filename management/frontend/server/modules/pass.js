@@ -34,6 +34,8 @@ function validPassword(attempt, hash) {
 // serializing, and querying the user record by ID from the database when
 // deserializing.
 
+// TODO: revisit serialization when we have RBAC to add user data
+
 passport.serializeUser((user, cb) => {
     let foundUser = users.find(x => x.username == user.username)
     foundUser.id = require('uuid').v4() // generate and ID

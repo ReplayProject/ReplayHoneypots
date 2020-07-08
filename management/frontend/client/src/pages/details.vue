@@ -1,4 +1,8 @@
 <template>
+    <!-- This page shows a graph that lets you drill down into log distributions,
+    and a datatable for looking at logs. The searches are really slow due to full-text
+
+    The datatable component adds most of the complexity found in this file -->
     <main
         class="w-100 ph3-m ph3-l"
         :class="{
@@ -182,6 +186,9 @@ export default {
             rows: [],
         }
     },
+    /**
+     * Update component when certain data changes
+     */
     watch: {
         hostsInfo() {
             this.updateTotal()
@@ -198,6 +205,9 @@ export default {
         isAggregate() {
             return this.$route.params.device === 'aggregate'
         },
+        /**
+         * Only show hostname when in aggregate data page
+         */
         fancyColumns() {
             return [
                 {
@@ -273,7 +283,9 @@ export default {
             this.updateParams({ search: params.searchTerm, page: 1 })
             this.loadItems()
         },
-        // load items is what brings back the rows from server
+        /**
+         * load items is what brings back the rows from server
+         */
         async loadItems() {
             this.$Progress.start()
             this.isLoading = true

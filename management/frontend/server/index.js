@@ -51,13 +51,13 @@ app.get('/test', authGuard(), (req, res) =>
 // Host the app's frontend on port 8080
 const path = require('path')
 const dist = path.join(__dirname, '../dist')
-// Account for the SPA portion of the app
+// Account for the Single Page Application (SPA) aspect of the app's design
 app.use(
     require('connect-history-api-fallback')({
         logger: historyLog,
     })
 )
-// Serve application files
+// Serve application static files
 app.use(require('serve-static')(dist, { index: ['index.html'] }))
 
 // Handling deserialization errors here.
@@ -76,7 +76,7 @@ app.use(function (err, req, res, next) {
 // listen for frontend requests :)
 app.listen(port, () => log('Frontend listening on', port))
 
-// If we ever venture into direct HTTPS (watch for couchdb requests... they have to be HTTPS too)
+// If we ever venture into direct HTTPS (watch out for couchdb requests... they have to be HTTPS too)
 // var fs = require("fs");
 // var https = require("https");
 

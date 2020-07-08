@@ -1,3 +1,5 @@
+// Mock store for use in testing
+
 export default {
     state: {
         totalLogs: 1000,

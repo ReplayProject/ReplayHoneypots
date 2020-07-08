@@ -22,17 +22,14 @@ from UDPPortListener import UDPPortListener
 
 class PortThreadManager:
     """
-    Initialize the response data and port list
-
-    Args:
-        portList: a list of int port numbers
+    Initialize and control the sniffer, modules, database connection, and configtunnel
     """
 
     def __init__(self):
         self.portList = []
         # self.ip = str(get("https://api.ipify.org").text)
         self.processList = dict()
-        # where the async sniffer will be located
+        # where the async sniffer will be kept
         self.sniffer = None
         # delay specified by config file
         self.response_delay = None
@@ -52,17 +49,21 @@ class PortThreadManager:
         self.db = Databaser()
 
     def getConfigTunnelData(self):
+        """
+        Retrieve config data just for the configtunnel
+        TODO: decide if configtunnel is still necessary/used
+        """
         conf = self.db.getConfig()
 
         # Configtunnel config options
         self.confport = conf["configtunnel"]["port"]
         self.confcert = conf["configtunnel"]["cert_file"]
 
-    """
-    Gets config information; ran when PortThreadManager configuration changes
-    """
-
     def getConfigData(self):
+        """
+        Gets config information
+        ran when PortThreadManager configuration changes
+        """
         conf = self.db.getConfig()
 
         # A bunch of config options
@@ -76,18 +77,6 @@ class PortThreadManager:
         self.portWhitelist = conf["allowlist"]["ports"]
         self.responseData = conf["response_config"]
 
-    """
-    Start a thread that does the following
-    - for each port in the config file
-    - connects to the database
-    - runs sniffer class
-
-    Returns: 0 if no changes
-             1 if only Sniffer changed
-             2 if only sockets changed
-             3 if both changed
-    """
-
     async def activate(
         self,
         updateSniffer=False,
@@ -95,6 +84,17 @@ class PortThreadManager:
         user="",
         task_status=trio.TASK_STATUS_IGNORED,
     ):
+        """
+        Start a thread that does the following
+        - for each port in the config file
+        - connects to the database
+        - runs sniffer class
+
+        Returns: 0 if no changes
+                1 if only Sniffer changed
+                2 if only sockets changed
+                3 if both changed
+        """
         # Gets the info from config file initially
         self.getConfigData()
 
@@ -102,7 +102,7 @@ class PortThreadManager:
         retCode = 0
         # Convience reference
         replayPorts = self.responseData.keys()
-
+        # Setup way to cancel these tasks
         with trio.CancelScope() as scope:
             # --- Start Async Sniffer ---#
             if self.sniffer is None:
@@ -132,7 +132,7 @@ class PortThreadManager:
                 )
                 if not self.sniffer.currentHash == oldHash:
                     retCode = 1
-            # Mark trio task as started
+            # Mark trio task as started (and pass cancel scope back to nursery)
             task_status.started(scope)
 
             # --- Open async UDP & TCP Sockets ---#
@@ -143,6 +143,7 @@ class PortThreadManager:
                 filter(lambda x: "TCP" in self.responseData[x].keys(), replayPorts)
             )
 
+            # Convience method to help with setting up TCP & UDP modules
             async def replay_server(listener_class, sockets, config_path, nursery):
                 for port in sockets:
                     self.processList[port] = listener_class(
@@ -153,8 +154,8 @@ class PortThreadManager:
                     )
                     nursery.start_soon(self.processList[port].handler)
 
+            # --- Actually Start up listeners ---#
             try:
-                # --- Actually Start up listeners ---#
                 async with trio.open_nursery() as nursery:
                     nursery.start_soon(
                         replay_server, UDPPortListener, udp_sockets, "UDP", nursery

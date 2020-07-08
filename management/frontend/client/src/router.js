@@ -10,7 +10,9 @@ import PageDetails from './pages/details.vue'
 import PageLogin from './pages/login.vue'
 
 import axios from 'axios'
-
+/**
+ * Setup how we server, authenticate, and structure our application
+ */
 Vue.use(Router)
 
 let routes = [
@@ -70,7 +72,9 @@ router.beforeEach(async (to, from, next) => {
     if (shouldBeAuthed) {
         try {
             let res = await axios.get('/user')
-            // console.log(res.data) // TODO: maybe save this in app internals
+            // TODO: maybe save this in app internals,
+            //  if we need user data from Passport JS
+            // console.log(res.data)
             next()
         } catch (err) {
             v.$toasted.show('Please log in.')

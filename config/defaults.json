@@ -1,30 +1,31 @@
 {
     "_id": "HP-default",
     "attributes": {
-        "\\1": "# can be set to 10.0 for a 10 sec delay (increases scan times)",
+        "\\1": "can be set to 10.0 for a 10 sec delay (increases scan times quite a lot)",
         "response_delay": 0,
-        "\\5": "# the rough time period (seconds) that we check for port scans",
+        "\\5": "the rough time period (seconds) that we check for port scans",
         "port_scan_window": 60,
-        "\\6": "# the number of packets from a host that constitutes an alert (in given window)",
-        "\\7": "# for reference, default portscans usually create > 1000 logs.",
+        "\\6": "the number of packets from a single host that constitutes an alert (in the given window)",
+        "\\7": "for reference, default portscans usually create > 1000 logs.",
         "port_scan_sensitivity": 100
     },
     "allowlist": {
+        "\\8": "addresses and ports that logs will not be created for",
         "addresses": ["1.2.3.4", "192.2.2.1"],
         "ports": [5984, 9998, 2376, 2377, 5000, 7946, 4789]
     },
     "ip_addresses": {
-        "\\8": "# These IPs need to be configured for each honeypot",
+        "\\9": "These IPs need to be configured for each honeypot, has similar behaivor to allowlist",
         "honeypotIP": "localhost",
         "managementIPs": ["10.11.12.125", "172.18.0.1", "172.17.0.1"]
     },
     "configtunnel": {
         "port": 9998,
-        "\\9": "# baremetal",
-        "\\10": "# cert_file = ../../config/cert.pem",
-        "\\11": "# docker config /cert.pem wa",
+        "\\10": "baremetal: cert_file = ../../config/cert.pem",
+        "\\11": "docker: cert_file = /cert.pem",
         "cert_file": ""
     },
+    "\\12": "This section governs what payloads are served on what ports",
     "response_config": {
         "80": {
             "TCP": "485454502f312e3020323030204f4b0d0a436f6e6e656374696f6e3a20636c6f73650d0a436f6e74656e742d4c656e6774683a20313030436f6e74656e742d547970653a20746578742f68746d6c0d0a0d0a0d0a3c68746d6c3e3c626f64793e5468697320736974652069732072756e6e696e67203c6120687265663d27687474703a2f2f7777772e5465616d5669657765722e636f6d273e5465616d5669657765723c2f613e2e3c2f626f64793e3c2f68746d6c3e0d0a"

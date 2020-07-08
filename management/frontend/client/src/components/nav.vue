@@ -10,22 +10,22 @@
                 class="input-reset ba b--black-20 pa1 br2 f5 w-100"
             />
         </form>
-        <!-- Temporary Links -->
-        <h2 class="ttu mt0 mb2 f6 fw5 silver">Test Links</h2>
+        <!-- Main Navigation Links -->
+        <h2 class="ttu mt0 mb2 f6 fw5 silver">Main Links</h2>
         <ul class="list pl0 mt0 mb4">
-            <li class="mb2">
-                <router-link to="/" class="block link dim blue">Home</router-link>
-            </li>
-            <li class="mb2">
-                <router-link to="/about" class="block link dim blue">About</router-link>
-            </li>
-            <li class="mb2">
-                <router-link to="/alerts" class="block link dim blue"
-                    >Alerts</router-link
-                >
-            </li>
-            <li class="mb2">
-                <router-link to="/edit" class="block link dim blue">Edit</router-link>
+            <li
+                class="mb2"
+                v-for="(l, idx) in [
+                    ['Home', '/'],
+                    ['About', '/about'],
+                    ['Alerts', '/alerts'],
+                    ['Edit', '/edit'],
+                ]"
+                :key="idx"
+            >
+                <router-link :to="l[1]" class="block link dim blue">{{
+                    l[0]
+                }}</router-link>
             </li>
             <li class="mb2">
                 <div
@@ -37,7 +37,7 @@
                 </div>
             </li>
         </ul>
-        <!-- More Realistic Options -->
+        <!-- Dashboards for Individual Hosts -->
         <h2 class="ttu mt0 mb2 f6 fw5 silver">Dashboards</h2>
         <ul class="list pl0 mt0 mb4">
             <li class="mb2">

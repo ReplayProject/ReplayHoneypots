@@ -11,7 +11,7 @@ CERT_FILE = "../../config/cert.pem"
 
 class TestConfigTunnel:
     """
-    Tests are duplicated to test using SSL
+    Tests are duplicated to test using SSL connections
     """
 
     async def test_basic_handler(self, nursery):
@@ -44,6 +44,7 @@ class TestConfigTunnel:
     async def test_advanced_handler(self, nursery):
         """
         Setup both ends of the tunnel with a connection to localhost
+        and an advanced handler
         """
         stunnel = ConfigTunnel("server", TEST_PORT)
         ctunnel = ConfigTunnel("client", TEST_PORT, "localhost")
@@ -89,6 +90,9 @@ class TestConfigTunnel:
     # SSL TESTS
 
     def test_cert_exists(self):
+        """
+        Simple test to assert the existance of the certfile
+        """
         from pathlib import Path
 
         certfile = Path(CERT_FILE)
@@ -97,7 +101,7 @@ class TestConfigTunnel:
 
     async def test_ssl_basic_handler(self, nursery):
         """
-        Setup both ends of the tunnel with a connection to localhost
+        Setup both ends of the tunnel with a connection to localhost with SSL
         """
         stunnel = ConfigTunnel("server", TEST_PORT, cafile=CERT_FILE)
         ctunnel = ConfigTunnel("client", TEST_PORT, "localhost", cafile=CERT_FILE)
@@ -124,7 +128,7 @@ class TestConfigTunnel:
 
     async def test_ssl_advanced_handler(self, nursery):
         """
-        Setup both ends of the tunnel with a connection to localhost
+        Setup both ends of the tunnel with a connection to localhost with SSL
         """
         stunnel = ConfigTunnel("server", TEST_PORT, cafile=CERT_FILE)
         ctunnel = ConfigTunnel("client", TEST_PORT, "localhost", cafile=CERT_FILE)

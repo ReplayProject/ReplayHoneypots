@@ -15,14 +15,13 @@ from cloudant.document import Document
 
 class Databaser:
     """
-    Use pouch db to run the database for logging
-           Uses env Variables:
-    DB_URL, and TARGET_ADDR
+    Use cloudant to interface with the database for logging and configuration
+    Uses env Variables: DB_URL, TARGET_ADDR, and AM_I_IN_A_DOCKER_CONTAINER
     """
 
     def __init__(self, test=False):
         """
-        Initialize
+        Initialize variables and setup device "identity"
         """
         self.uuid = self.claimUUID()
         self.hostname = socket.gethostname()
@@ -31,6 +30,7 @@ class Databaser:
         self.config_db = "configs"
         self.config_doc = None
 
+        # If in test most, dont touch the real databases
         self.test = test
         if self.test:
             self.logs_db += "_test"
@@ -45,10 +45,11 @@ class Databaser:
                 creds[0], creds[1], url=db_url, connect=True, auto_renew=True
             )
             self.createDB()
-            # Decide if we should be replicating
+            # TODO: Decide if we should be replicating, and what policy we should use
             target = os.getenv("TARGET_ADDR")
             if target and target.strip() != "":
-                print("Replication Disabled")  # self.startReplicate(target)
+                print("Replication Disabled")
+                # self.startReplicate(target)
 
             print(
                 "CouchDB Is connected to {} as {}".format(self.logs_db, self.hostname)
@@ -57,9 +58,11 @@ class Databaser:
             print("No DB_URL provided, logging to stdout only")
 
     def merge(self, source, destination):
+        """
+        Recursive deepmerge
+        """
         for key, value in source.items():
             if isinstance(value, dict):
-                # get node or create one
                 node = destination.setdefault(key, {})
                 self.merge(value, node)
             else:
@@ -69,8 +72,9 @@ class Databaser:
     def startReplicate(self, target):
         """
         Attempt to setup replication
-        TODO: test this explicitly
+        TODO: test replication
         """
+        raise Exception("Replication not Implemented/Tested")
         self.couch.replicate(
             self.logs_db,
             target + "/" + self.logs_db,
@@ -87,10 +91,10 @@ class Databaser:
 
     def deleteDB(self):
         """
-        Delete the database this host is bound to
+        Delete the databases this host is depending on
         """
         if not self.test:
-            print("Deletion like this disabled due to aggregate databases")
+            print("DB Deletion disabled due to use of aggregate databases")
             return
         # Attempt deletion of each required DB
         for db in [self.logs_db, self.alerts_db, self.config_db]:
@@ -98,7 +102,7 @@ class Databaser:
 
     def createDB(self):
         """
-        Create this device's log database
+        Create the databases this host is depending on
         """
         # Attempt creation of each required DB
         for db in [self.logs_db, self.alerts_db, self.config_db]:
@@ -106,11 +110,12 @@ class Databaser:
 
     def save(self, json_raw):
         """
-        Save a json document
+        Save a JSON document to the logs DB
+        TODO: save & alert can be refactored to reduce code
         """
-        # Logic for live mode vs testing mode
+        # Logic for live mode vs testing mode (stdout)
         try:
-            # TODO: should put extra test here
+            # TODO: should put extra test here that this switch goes smoothly
             db = self.couch[self.logs_db]
             doc = db.create_document(json.loads(json_raw))
             print("Log created: %s" % doc["_id"])
@@ -124,9 +129,9 @@ class Databaser:
 
     def alert(self, json_raw):
         """
-        Save a json document (that is an alert)
+        Save a JSON document to the alerts DB
         """
-        # Logic for live mode vs testing mode
+        # Logic for live mode vs testing mode (stdout)
         try:
             db = self.couch[self.alerts_db]
             doc = db.create_document(json.loads(json_raw))
@@ -141,15 +146,18 @@ class Databaser:
 
     def claimUUID(self):
         """
-        this function will check if this honeypot has been marked with a UUID,
-        and if not, will generate and mark by creating an ID file
+        Check if this device has been marked with a UUID,
+        and if not, will generate and mark by creating an
+        ID file in the appropriate location
         """
         device_uuid = None
+        # ENV variable & volume set in replay-honeypot Dockerfile
         is_docker = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
         tagpath = ("/storage/" if is_docker else "./") + "RPHP-UUID"
 
         exists = os.path.exists(tagpath)
         mode = "r" if exists else "w"
+        # Either read or generate UUID file
         with open(tagpath, mode) as f:
             if exists:
                 device_uuid = f.readline()
@@ -166,7 +174,9 @@ class Databaser:
 
     def getConfig(self):
         """
-        Get configuration from the database, and store in self
+        Get configuration from the database,
+        if it doesn't exist, use default DB config,
+        if that doesn't exist, then use the default configs to create it
         """
         db = self.couch[self.config_db]
         conf_id = "HP-" + self.uuid
@@ -202,6 +212,7 @@ class Databaser:
                     with Document(db, default_conf_id) as document:
                         self.merge(json.load(f), document)
 
+            # Change document ID to this device's unique config
             default = db[default_conf_id]
             default["_id"] = conf_id
             del default["_rev"]
@@ -217,8 +228,8 @@ class Databaser:
 
     async def watchConfig(self, channel):
         """
-        Read from DB changed and trigger a reconfiguration on the PTM
-        (use TRIO channels for communication)
+        Read from DB changes and trigger a reconfiguration on the PTM
+        using TRIO channels for communication
         """
         db = self.couch[self.config_db]
         conf_id = "HP-" + self.uuid
@@ -226,7 +237,7 @@ class Databaser:
         print("Listening for configuration changes on:", conf_id)
         async with channel:
             while True:
-                # TODO: may want to refactor if fixing the CTRL-C delay is a priority
+                # TODO: may want to refactor if working on the CTRL-C delay
                 changes = db.infinite_changes(
                     heartbeat=3000,
                     since="now",

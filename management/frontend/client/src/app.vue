@@ -19,6 +19,9 @@ export default {
         componentNav,
     },
     methods: {
+        /**
+         * Create design documents in the DB for various things
+         */
         async designDocs() {
             let design_documents = [
                 {
@@ -54,8 +57,8 @@ export default {
                     console.log('Design Document already exists: ', err.messge)
             }
 
+            // Query index for hostname & timestamp combinations
             let fields = ['hostname', 'timestamp']
-            // Query index
             let idx = await this.$pouch.createIndex(
                 {
                     index: { fields, name: 'hostname-timestamp' },
@@ -69,9 +72,8 @@ export default {
                 this.$toasted.show('New query index created')
             }
 
+            // Query index for alerts based on timestamp
             let fields2 = ['timestamp']
-
-            // Query index
             let idx2 = await this.$pouch.createIndex(
                 {
                     index: { fields: fields2 },
@@ -84,6 +86,9 @@ export default {
                 this.$toasted.show('New query index created')
             }
         },
+        /**
+         * Fetch alerts and save them to the store
+         */
         async loadAlerts() {
             this.$Progress.start()
 
@@ -101,6 +106,9 @@ export default {
             this.$store.commit('setAlerts', results.docs)
             this.$Progress.finish()
         },
+        /**
+         * Bind event listeners to the CouchDB changed feed
+         */
         async watchAlertsDB() {
             this.loadAlerts()
 
@@ -131,7 +139,7 @@ export default {
         },
     },
     async mounted() {
-        // Check for connection in a few seconds
+        // Check for connection in a few seconds and alert user
         setTimeout(() => {
             if (this.$store.state.hostsInfo.length === 0) {
                 console.warn(
@@ -141,15 +149,15 @@ export default {
                 this.$toasted.show('No management data found')
             }
         }, 5000)
-
+        // Retrieve basic info about the DB
         console.log('Setting up DB')
         let info = await this.$pouch.info(this.dbURI)
         this.$store.commit('setAggInfo', info)
-
+        // Attempt creation of indexes
         await this.designDocs()
+        // Setup Alerts listeners
         await this.watchAlertsDB()
-
-        // fetch hosts data
+        // Fetch data about hosts in the DB and save to the store
         try {
             let result = await this.$pouch.query(
                 `timespans/hosttime`,
@@ -168,7 +176,6 @@ export default {
         } catch (err) {
             console.log('Something went wrong with fetching DB info: ', err)
         }
-
         //  [App.vue specific] When App.vue is finish loading finish the progress bar
         this.$Progress.finish()
     },

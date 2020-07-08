@@ -3,7 +3,7 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
-// Setup PouchDB Client
+// Setup PouchDB Client for talking with the CouchDB database
 
 import PouchVue from 'pouch-vue'
 import PouchDB from 'pouchdb-browser'
@@ -11,7 +11,7 @@ import PouchdbFind from 'pouchdb-find'
 PouchDB.plugin(PouchdbFind)
 PouchDB.plugin(require('pouchdb-live-find'))
 // PouchDB.plugin(require('pouchdb-authentication'));
-// TODO: when we add database auth
+// TODO: when we add database authentication and RBAC
 // https://github.com/MDSLKTR/pouch-vue
 Vue.use(PouchVue, {
     pouch: PouchDB, // optional if `PouchDB` is available on the global object
@@ -29,14 +29,18 @@ Vue.use(PouchVue, {
     // debug: "*" // optional - See `https://pouchdb.com/api.html#debug_mode` for valid settings (will be a separate Plugin in PouchDB 7.0)
 })
 
-// Setup the store
-
+/**
+ * Setup the store
+ * This will be used for any data that should be:
+ * persistant between reloads,
+ * chared between components,
+ * tracked when changed
+ */
 let store = new Vuex.Store({
     state: {
-        hostsInfo: [],
-        aggInfo: {},
-        alerts: [],
-        count: 0,
+        hostsInfo: [], // info on the different honeypots we are loading up
+        aggInfo: {}, // aggregate info about the hosts
+        alerts: [], // storage for alerts coming from CouchDB
     },
     mutations: {
         setHostsInfo(state, hostsInfo) {
@@ -48,9 +52,6 @@ let store = new Vuex.Store({
         setAlerts(state, alerts) {
             state.alerts = alerts
         },
-        increment(state) {
-            state.count++
-        },
         unshiftList(state, doc) {
             state.alerts.unshift(doc)
         },
@@ -58,13 +59,11 @@ let store = new Vuex.Store({
             state.alerts.pop()
         },
     },
-    actions: {
-        loadAlerts({ commit }) {
-            console.log(Vue)
-            console.log(vue)
-        },
-    },
+    actions: {},
     getters: {
+        /**
+         * Compute and return the total number of logs from out hosts
+         */
         totalLogs: state => {
             return state.hostsInfo.reduce((a, x) => (a += x.value), 0)
         },
