@@ -39,6 +39,10 @@
 
 </div>
 
+<p align="center">
+	<img alt="Markserv Demo" src="images/gifs/general-demo.gif" width="100%">
+</p>
+
 <div align="center">
   <h3>
     <a href="https://github.com/ReplayProject/ReplayHoneypots/wiki">
@@ -59,7 +63,7 @@
   Check out our
   <a href="https://github.com/ReplayProject/ReplayHoneypots/graphs/contributors">
     contributors
-  </a>😄
+  </a>:smile:
 </div>
 
 <!-- TABLE OF CONTENTS -->
@@ -80,42 +84,42 @@
 
 <!-- ABOUT THE PROJECT -->
 
-## About The Project
+## :sparkles: About The Project
 
 <!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
 
 This project strives to provide a highly configurable, low interaction honeypot and a
 system to handle multi-node deployments.
 
-The Replay honeypots are a security tool designed to monitor and collect information
-about the networks they are deployed on. This project began in 2019, and has been
-growing in multiple ways. In July 2020 it was made open source! The most notable
-components of the system are the:
+The Replay honeypots are a security tool designed to monitor and collect network
+information from deployment. This project began in 2019, and has been growing in
+multiple ways. In July 2020, it was made open source! The most notable components of the
+system are the:
 
 -   Honeypots
 -   Management System
     -   Data Collection / Export Solution
     -   Frontend Analysis
-    -   ReplayCLI
+    -   Replay Command Line Interface (CLI)
 -   Deployment Strategy
 
 Currently, the project supports **Docker** and **Baremetal** deployment options,
 although Docker is simpler for managing multiple devices simutaneously.
 
 To expedite the analysis of honeypots’ logs, a web-based management frontend was created
-with local authentication using Node.js, Passport.js, and Vue.js. The frontend provides
-a way for users to query the log database as well as be alerted of potential attacks,
-problems, and/or configuration changes of deployed honeypots. The user may also export
-data to an external SIEM (Security Information and Event Management System) by utilizing
-the database's API.
+with local authentication using `Node.js`, `Passport.js`, and `Vue.js`. The frontend
+provides a way for users to query the log database as well as be alerted of potential
+attacks, problems, and/or configuration changes of deployed honeypots. The user may also
+export data to an external Security Information and Event Management System **(SIEM)**
+by utilizing the database's API.
 
-Additionally, we have created an automated deployment and configuration tool called the
-HoneyCLI. This is a command line tool that assists in the administration of honeypots.
-This tool assumes that the user has set up SSH keys to connect to the system which they
-intend to deploy a honeypot on. Although it uses Docker for its deployment, this tool
-can also be configured to deploy honeypots on bare-metal machines.
+Additionally, progress is being made on an automated deployment and configuration tool
+called the ReplayCLI. This is a command line tool that assists in the administration of
+honeypots. This tool assumes that the user has set up SSH keys to connect to the system
+on which they intend to deploy a honeypot. This tool is primarily used to deploy
+honeypots on bare-metal machines.
 
-### Built With
+### :computer: Built With
 
 |  Replay Honeypots   |     Replay Manager      |
 | :-----------------: | :---------------------: |
@@ -123,11 +127,9 @@ can also be configured to deploy honeypots on bare-metal machines.
 |   [Scapy](#scapy)   |  [Tachyons](#tachyons)  |
 | [CouchDB](#couchdb) | [PassportJS](#passport) |
 
----
-
 <!-- GETTING STARTED -->
 
-## Getting Started
+## :joystick: Getting Started
 
 To get a local copy up and running follow these steps.
 
@@ -153,7 +155,7 @@ list of proposed features (and known issues).
 
 <!-- CONTRIBUTING -->
 
-## TODO: Contributing
+## TODO: :gift: Contributing
 
 <!--
 Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
