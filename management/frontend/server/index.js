@@ -1,3 +1,4 @@
+require('dotenv').config()
 // Logging setup
 const log = require('debug')('sd:status')
 const historyLog = require('debug')('sd:history')
@@ -27,11 +28,11 @@ app.use(require('body-parser').json()) // application/json
 
 // Session middleware to allow "persistant" authentication
 app.use(
-  require('express-session')({
-    secret: 'keyboard cat',
-    resave: true,
-    saveUninitialized: true
-  })
+    require('express-session')({
+        secret: 'keyboard cat',
+        resave: true,
+        saveUninitialized: true,
+    })
 )
 
 // Initialize Passport and restore authentication state, if any, from the session.
@@ -45,33 +46,60 @@ app.use(require('./modules/authroutes'))
 
 // Serve the actual frontend of the app & other routes (behind the auth guard)
 app.get('/test', authGuard(), (req, res) =>
-  res.send('you passed the authentication check')
+    res.send('you passed the authentication check')
 )
 
 // Host the app's frontend on port 8080
 const path = require('path')
 const dist = path.join(__dirname, '../dist')
-// Account for the SPA portion of the app
+// Account for the Single Page Application (SPA) aspect of the app's design
 app.use(
-  require('connect-history-api-fallback')({
-    logger: historyLog
-  })
+    require('connect-history-api-fallback')({
+        logger: historyLog,
+    })
 )
-// Serve application files
+// Serve application static files
 app.use(require('serve-static')(dist, { index: ['index.html'] }))
 
 // Handling deserialization errors here.
 app.use(function (err, req, res, next) {
-  if (err) {
-    console.log('Cookie Invalidated')
-    req.logout()
-    return res
-      .status(401)
-      .send('You are not authenticated, your cookie has been removed')
-  } else {
-    next()
-  }
+    if (err) {
+        log('deserial handler', err)
+        console.log('Cookie Invalidated')
+        req.logout()
+        return res
+            .status(401)
+            .send('You are not authenticated, your cookie has been removed')
+    } else {
+        next()
+    }
 })
 
 // listen for frontend requests :)
 app.listen(port, () => log('Frontend listening on', port))
+
+// If we ever venture into direct HTTPS (watch out for couchdb requests... they have to be HTTPS too)
+// HOWEVER, using a reverse proxy is a more reasonable approach to this.
+
+// var fs = require("fs");
+// var https = require("https");
+
+// var options = {
+//   key: fs.readFileSync("../../config/server.key"),
+//   cert: fs.readFileSync("../../config/server.cert")
+// };
+
+// https
+//   .createServer(options, app)
+//   .listen(443, () => log("Frontend HTTPS listening on", 443));
+
+// // Redirect from http port 80 to https
+// var http = require("http");
+// http
+//   .createServer(function(req, res) {
+//     res.writeHead(301, {
+//       Location: "https://" + req.headers["host"] + req.url
+//     });
+//     res.end();
+//   })
+//   .listen(80, () => log("Frontend HTTP redirect listening on", 80));

@@ -1,5 +1,5 @@
 # FROM rastasheep/ubuntu-sshd:18.04
-FROM node:13-alpine
+FROM node:14-alpine
 
 # Create app directory
 WORKDIR /usr/src/frontend

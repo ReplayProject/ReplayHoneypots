@@ -9,6 +9,6 @@ set +a
 
 read -p "What should the user's password be? " PASS
 echo -e "\nHere is your salted hash:\n"
-SALT=$(cat $AUTH_FILE | python -c "import sys, json; print(json.load(sys.stdin)['salt'])")
+SALT=$(cat $AUTH_FILE_FALLBACK | python -c "import sys, json; print(json.load(sys.stdin)['documents'][0]['value'])")
 
 echo -n "$SALT$PASS" | sha256sum -t

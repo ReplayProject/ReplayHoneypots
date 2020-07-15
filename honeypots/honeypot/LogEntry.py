@@ -1,9 +1,8 @@
-import json
-from datetime import datetime
-
 """
 Holds logging information for local logs and Modern Honey Network
 """
+import json
+from datetime import datetime
 
 
 class LogEntry:
@@ -13,7 +12,20 @@ class LogEntry:
 
     __name__ = "LogEntry"
 
-    def __init__(self, sourcePortNumber, sourceIPAddress, sourceMAC, destPortNumber, destIPAddress, destMAC, trafficType, isPortOpen, hostname):
+    def __init__(
+        self,
+        sourcePortNumber,
+        sourceIPAddress,
+        sourceMAC,
+        destPortNumber,
+        destIPAddress,
+        destMAC,
+        trafficType,
+        length,
+        isPortOpen,
+        hostname,
+        uuid,
+    ):
         self.sourcePortNumber = sourcePortNumber
         self.sourceIPAddress = sourceIPAddress
         self.sourceMAC = sourceMAC
@@ -22,8 +34,10 @@ class LogEntry:
         self.destMAC = destMAC
         self.timestamp = int(datetime.now().timestamp())
         self.trafficType = trafficType
+        self.length = length
         self.isPortOpen = isPortOpen
         self.hostname = hostname
+        self.uuid = uuid
 
     def json(self):
         return json.dumps(self.__dict__)

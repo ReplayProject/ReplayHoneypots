@@ -10,75 +10,79 @@ import PageDetails from './pages/details.vue'
 import PageLogin from './pages/login.vue'
 
 import axios from 'axios'
-
+/**
+ * Setup how we server, authenticate, and structure our application
+ */
 Vue.use(Router)
 
 let routes = [
-  {
-    path: '/',
-    name: 'index',
-    component: PageIndex
-  },
-  {
-    path: '/login',
-    name: 'login',
-    component: PageLogin
-  },
-  {
-    path: '/about',
-    name: 'about',
-    component: PageAbout
-  },
-  {
-    path: '/details/:device',
-    name: 'details',
-    component: PageDetails
-  },
-  {
-    path: '/alerts',
-    name: 'alerts',
-    component: PageAlerts
-  },
-  {
-    path: '/overview',
-    name: 'overview',
-    component: PageOverview
-  },
-  {
-    path: '/edit',
-    name: 'edit',
-    component: PageEdit
-  },
-  {
-    path: '*',
-    redirect: '/'
-  }
+    {
+        path: '/',
+        name: 'index',
+        component: PageIndex,
+    },
+    {
+        path: '/login',
+        name: 'login',
+        component: PageLogin,
+    },
+    {
+        path: '/about',
+        name: 'about',
+        component: PageAbout,
+    },
+    {
+        path: '/details/:device',
+        name: 'details',
+        component: PageDetails,
+    },
+    {
+        path: '/alerts',
+        name: 'alerts',
+        component: PageAlerts,
+    },
+    {
+        path: '/overview',
+        name: 'overview',
+        component: PageOverview,
+    },
+    {
+        path: '/edit',
+        name: 'edit',
+        component: PageEdit,
+    },
+    {
+        path: '*',
+        redirect: '/',
+    },
 ]
 
 const router = new Router({
-  mode: 'history',
-  base: '/',
-  routes
+    mode: 'history',
+    base: '/',
+    routes,
 })
 
 /**
  * Perform an authentication check on all routes except 'login'
  */
 router.beforeEach(async (to, from, next) => {
-  let shouldBeAuthed = to.name !== 'login'
+    let shouldBeAuthed = to.name !== 'login'
 
-  if (shouldBeAuthed) {
-    try {
-      let res = await axios.get('/user')
-      // console.log(res.data) // TODO: maybe save this in app internals
-      next()
-    } catch (err) {
-      v.$toasted.show('Please log in.')
-      next({ name: 'login' })
-      return
+    if (shouldBeAuthed) {
+        try {
+            let res = await axios.get('/user')
+            // TODO: maybe save this in app internals,
+            //  if we need user data from Passport JS
+            // console.log(res.data)
+            next()
+        } catch (err) {
+            v.$toasted.show('Please log in.')
+            next({ name: 'login' })
+            return
+        }
     }
-  }
-  next()
+    next()
 })
 
 export default router

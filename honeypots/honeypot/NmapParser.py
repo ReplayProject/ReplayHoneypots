@@ -1,11 +1,12 @@
-# python3 NmapParser.py <file name of nmap file>
-import sys
-import json
-
 """
 This file is used for parsing an nmap
 scan for configuration information.
+  Usage: python3 NmapParser.py <file name of nmap file>
+
+TODO: usefulness of this file need to be evaluated
 """
+import json
+import sys
 
 
 class NmapParser:
@@ -29,7 +30,7 @@ class NmapParser:
     def parseScan(self, filename):
         found_port = False
         ports = []
-        with open(filename, 'r') as f:
+        with open(filename, "r") as f:
             for line in f.readlines():
                 if "PORT" in line:
                     found_port = True
@@ -50,7 +51,7 @@ class NmapParser:
         return self.ports
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     filename = sys.argv[1]
     parser = NmapParser(filename)
     ports = parser.getPorts()

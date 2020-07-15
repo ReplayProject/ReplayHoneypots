@@ -1,207 +1,222 @@
-# python3 PortThreadManager.py
-import json
-import sys
-import os
-from threading import Thread
-import socket
-from datetime import date
-from requests import get
-from Port import Port
-import configparser
-import time
-import datetime
+"""
+Handles the modules and logic to run the honeypot
+  Usage: python3 -u ./PortThreadManager.py
+"""
 import argparse
-from NmapParser import NmapParser
-from Sniffer import Sniffer
-from PortListener import PortListener
+import configparser
+import json
+import os
+import signal
+from functools import partial
+
+import trio
+from Alert import Alert
 from ConfigTunnel import ConfigTunnel
 from Databaser import Databaser
-from Alert import Alert
-
-# default location that PortThreadManager will look for config options
-
-configpath = os.getenv('HONEY_CFG')  # will usually be '/properties.cfg'
-CONFIG_FILE_PATH = configpath if (
-    configpath and configpath.strip() != "") else r'../../config/honeypot.cfg'
-"""
-Handles the port threads to run the honeypot
-"""
+from NmapParser import NmapParser
+from requests import get
+from Sniffer import Sniffer
+from TCPPortListener import TCPPortListener
+from UDPPortListener import UDPPortListener
 
 
 class PortThreadManager:
     """
-    Initialize the response data and port list
-
-    Args:
-        portList: a list of int port numbers
+    Initialize and control the sniffer, modules, database connection, and configtunnel
     """
+
     def __init__(self):
         self.portList = []
-        self.ip = str(get('https://api.ipify.org').text)
+        # self.ip = str(get("https://api.ipify.org").text)
         self.processList = dict()
-        # where the sniffer thread will be located
-        self.snifferThread = None
-        #delay specified by config file
-        self.delay = None
-        #whitelist of ports
+        # where the async sniffer will be kept
+        self.sniffer = None
+        # delay specified by config file
+        self.response_delay = None
+        # whitelist of ports
         self.portWhitelist = None
-        #whitelist of IPs
+        # whitelist of IPs
         self.whitelist = None
-        #used to tell it to quit
-        self.keepRunning = True
-        #list containing socket responses
+        # used to tell it to quit
+        # self.keepRunning = True
+        # port for ConfigTunnel
+        self.confport = None
+        # certfile for ConfigTunnel
+        self.confcert = None
+        # list containing socket responses
         self.responseData = None
-        self.configFilePath = None
-        #database interface object
+        # database interface object
         self.db = Databaser()
 
-    """
-    Gets config information; ran when PortThreadManager configuration changes
-    """
+    def getConfigTunnelData(self):
+        """
+        Retrieve config data just for the configtunnel
+        TODO: decide if configtunnel is still necessary/used
+        """
+        conf = self.db.getConfig()
+
+        # Configtunnel config options
+        self.confport = conf["configtunnel"]["port"]
+        self.confcert = conf["configtunnel"]["cert_file"]
 
     def getConfigData(self):
-        config = configparser.RawConfigParser()
+        """
+        Gets config information
+        ran when PortThreadManager configuration changes
+        """
+        conf = self.db.getConfig()
 
-        config.read(self.configFilePath)
+        # A bunch of config options
+        self.HONEY_IP = conf["ip_addresses"]["honeypotIP"]
+        self.MGMT_IPs = conf["ip_addresses"]["managementIPs"]
+        self.response_delay = float(conf["attributes"]["response_delay"])
+        self.port_scan_window = int(conf["attributes"]["port_scan_window"])
+        self.port_scan_sensitivity = int(conf["attributes"]["port_scan_sensitivity"])
 
-        #A bunch of config options
-        self.HONEY_IP = config.get('IPs', 'honeypotIP')
-        self.MGMT_IPs = json.loads(config.get("IPs", "managementIPs"))
+        self.whitelist = conf["allowlist"]["addresses"]
+        self.portWhitelist = conf["allowlist"]["ports"]
+        self.responseData = conf["response_config"]
 
-        self.delay = config.get('Attributes', 'delay')
-        self.whitelist = json.loads(config.get("Whitelist", "addresses"))
-        self.portWhitelist = json.loads(
-            config.get("Whitelist", "whitelistedPorts"))
+    async def activate(
+        self,
+        updateSniffer=False,
+        updateOpenPorts=False,
+        user="",
+        task_status=trio.TASK_STATUS_IGNORED,
+    ):
+        """
+        Start a thread that does the following
+        - for each port in the config file
+        - connects to the database
+        - runs sniffer class
 
-        #Gets a separate file
-        dataFile = config.get('Attributes', 'pcap_data_file')
-        #Separate file contains socket response data
-        with open(dataFile, "r") as responseDataFile:
-            self.responseData = json.load(responseDataFile)
-
-    """
-    Start a thread for each port in the config file, connects to the database, runs sniffer class
-
-    Returns: 0 if no changes
-             1 if only Sniffer changed
-             2 if only sockets changed
-             3 if both changed
-    """
-
-    def activate(self,
-                 propertiesFile=CONFIG_FILE_PATH,
-                 updateSniffer=False,
-                 updateOpenPorts=False,
-                 user=""):
-        self.configFilePath = propertiesFile
-
+        Returns: 0 if no changes
+                1 if only Sniffer changed
+                2 if only sockets changed
+                3 if both changed
+        """
         # Gets the info from config file initially
         self.getConfigData()
 
-        #Return code
+        # Return code
         retCode = 0
+        # Convience reference
+        replayPorts = self.responseData.keys()
+        # Setup way to cancel these tasks
+        with trio.CancelScope() as scope:
+            # --- Start Async Sniffer ---#
+            if self.sniffer is None:
+                # TODO: Switch config="testing" to "base" when in production
+                self.sniffer = Sniffer(
+                    config="base",
+                    openPorts=list(replayPorts),
+                    whitelist=self.whitelist,
+                    portWhitelist=self.portWhitelist,
+                    honeypotIP=self.HONEY_IP,
+                    managementIPs=self.MGMT_IPs,
+                    port_scan_window=self.port_scan_window,
+                    port_scan_sensitivity=self.port_scan_sensitivity,
+                    databaser=self.db,
+                )
+                self.sniffer.start()
+            elif updateSniffer:
+                oldHash = self.sniffer.currentHash
+                self.sniffer.configUpdate(
+                    openPorts=list(replayPorts),
+                    whitelist=self.whitelist,
+                    portWhitelist=self.portWhitelist,
+                    honeypotIP=self.HONEY_IP,
+                    managementIPs=self.MGMT_IPs,
+                    port_scan_window=self.port_scan_window,
+                    port_scan_sensitivity=self.port_scan_sensitivity,
+                )
+                if not self.sniffer.currentHash == oldHash:
+                    retCode = 1
+            # Mark trio task as started (and pass cancel scope back to nursery)
+            task_status.started(scope)
 
-        #--- Sniffer Thread ---#
-        if (self.snifferThread == None):
-            # TODO: Switch config="testing" to "base" when in production
-            self.snifferThread = Sniffer(config="base",
-                                         openPorts=list(
-                                             self.responseData.keys()),
-                                         whitelist=self.whitelist,
-                                         portWhitelist=self.portWhitelist,
-                                         honeypotIP=self.HONEY_IP,
-                                         managementIPs=self.MGMT_IPs,
-                                         databaser=self.db)
-            self.snifferThread.daemon = True
-            self.snifferThread.start()
-        elif (updateSniffer == True):
-            oldHash = self.snifferThread.currentHash
+            # --- Open async UDP & TCP Sockets ---#
+            udp_sockets = list(
+                filter(lambda x: "UDP" in self.responseData[x].keys(), replayPorts)
+            )
+            tcp_sockets = list(
+                filter(lambda x: "TCP" in self.responseData[x].keys(), replayPorts)
+            )
 
-            self.snifferThread.configUpdate(openPorts=list(
-                self.responseData.keys()),
-                                            whitelist=self.whitelist,
-                                            portWhitelist=self.portWhitelist,
-                                            honeypotIP=self.HONEY_IP,
-                                            managementIPs=self.MGMT_IPs)
-            if (not self.snifferThread.currentHash == oldHash):
-                retCode = 1
+            # Convience method to help with setting up TCP & UDP modules
+            async def replay_server(listener_class, sockets, config_path, nursery):
+                for port in sockets:
+                    self.processList[port] = listener_class(
+                        port,
+                        self.responseData[port][config_path],
+                        self.response_delay,
+                        nursery,
+                    )
+                    nursery.start_soon(self.processList[port].handler)
 
-        #--- Open Sockets ---#
-        # On initial run
-        if (len(self.processList) == 0):
-            for port in self.responseData.keys():
-                portThread = PortListener(port, self.responseData[port],
-                                          self.delay)
-                portThread.daemon = True
-                portThread.start()
-                self.processList[port] = portThread
+            # --- Actually Start up listeners ---#
+            try:
+                async with trio.open_nursery() as nursery:
+                    nursery.start_soon(
+                        replay_server, UDPPortListener, udp_sockets, "UDP", nursery
+                    )
+                    nursery.start_soon(
+                        replay_server, TCPPortListener, tcp_sockets, "TCP", nursery
+                    )
+            except Exception as ex:
+                print("listener nursery exception: ", str(ex))
+            finally:
+                print("Listeners have been killed")
 
-        # Updating to new set of ports
-        elif (updateOpenPorts == True):
-            #this value keeps track of if we've made changes
-            portsAltered = False
-
-            updatedPorts = list(self.responseData.keys())
-            updatedPorts.sort()
-            currentPorts = list(self.processList.keys())
-            currentPorts.sort()
-
-            #we'll change things if these don't match
-            if (not updatedPorts == currentPorts):
-                portsAltered = True
-
-            for p in currentPorts:
-                if (not p in updatedPorts):
-                    self.processList[p].isRunning = False
-                    del self.processList[p]
-                elif (not self.processList[p].response == self.responseData[p]
-                      ):
-                    #check if we need to alter response -- just change everything, might not matter
-                    self.processList[p].response = self.responseData[p]
-                    portsAltered = True
-
-            for p in updatedPorts:
-                if (not p in currentPorts):
-                    portThread = PortListener(p, self.responseData[p],
-                                              self.delay)
-                    portThread.daemon = True
-                    portThread.start()
-                    self.processList[p] = portThread
-
-            if (portsAltered):
-                retCode += 2
-
-        #return the code here; 0 means no changes, 1 means only sniffer changed, 2 means only TCP ports were changed, 3 means both were changed
-        if (retCode == 1):
-            self.db.alert(
-                Alert(variant="admin",
-                      message="Sniffer updated during runtime by " + user,
-                      hostname=self.db.hostname).json())
-        elif (retCode == 2):
-            self.db.alert(
-                Alert(variant="admin",
-                      message="TCP sockets updated during runtime by " + user,
-                      hostname=self.db.hostname).json())
-        elif (retCode == 3):
-            self.db.alert(
-                Alert(
-                    variant="admin",
-                    message="TCP sockets and Sniffer updated during runtime by "
-                    + user,
-                    hostname=self.db.hostname).json())
-        elif (retCode == 0):
-            self.db.alert(
-                Alert(
-                    variant="admin",
-                    message="Attempted configuration change during runtime by "
-                    + user,
-                    hostname=self.db.hostname).json())
-        return retCode
+            # return the code here;
+            # 0 means no changes,
+            # 1 means only sniffer changed,
+            # 2 means only TCP ports were changed,
+            # 3 means both were changed
+            if retCode == 1:
+                self.db.alert(
+                    Alert(
+                        variant="admin",
+                        message="Sniffer updated during runtime by " + user,
+                        hostname=self.db.hostname,
+                        uuid=self.db.uuid,
+                    ).json()
+                )
+            elif retCode == 2:
+                self.db.alert(
+                    Alert(
+                        variant="admin",
+                        message="TCP sockets updated during runtime by " + user,
+                        hostname=self.db.hostname,
+                        uuid=self.db.uuid,
+                    ).json()
+                )
+            elif retCode == 3:
+                self.db.alert(
+                    Alert(
+                        variant="admin",
+                        message="TCP sockets and Sniffer updated during runtime by "
+                        + user,
+                        hostname=self.db.hostname,
+                        uuid=self.db.uuid,
+                    ).json()
+                )
+            elif retCode == 0:
+                self.db.alert(
+                    Alert(
+                        variant="admin",
+                        message="Attempted configuration change during runtime by "
+                        + user,
+                        hostname=self.db.hostname,
+                        uuid=self.db.uuid,
+                    ).json()
+                )
+            return retCode
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Deploy the honeypot')
-    parser.add_argument('-n', '--nmap', help='nmap file')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Deploy the honeypot")
+    parser.add_argument("-n", "--nmap", help="nmap file")
     args = parser.parse_args()
 
     portList = []
@@ -209,28 +224,73 @@ if __name__ == '__main__':
         parser = NmapParser(args.nmap)
         portList = parser.getPorts()
 
+    async def control_c_handler(nursery):
+        with trio.open_signal_receiver(signal.SIGINT) as batched_signal_aiter:
+            async for _ in batched_signal_aiter:
+                print("\nAttempting graceful honeypot shutdown")
+                nursery.cancel_scope.cancel()
+                # We exit the loop, restoring the normal behavior of
+                # control-C. This way hitting control-C once will try to
+                # do a polite shutdown, but if that gets stuck the user
+                # can hit control-C again to raise KeyboardInterrupt and
+                # force things to exit.
+                break
+
     manager = PortThreadManager()
-    manager.activate(user="system")
-    #initial creation alert
+    # initial creation alert
     manager.db.alert(
-        Alert(variant="meta",
-              message="Honeypot startup.",
-              references=[],
-              hostname=manager.db.hostname).json())
+        Alert(
+            variant="meta",
+            message="Honeypot startup.",
+            references=[],
+            hostname=manager.db.hostname,
+            uuid=manager.db.uuid,
+        ).json()
+    )
 
-    def reconfigure(args):
-        manager.activate(updateSniffer='sniff' in args,
-                         updateOpenPorts='ports' in args,
-                         user=args[-1] if 'user' in args else 'blank_user')
-        print("Reconfiguring Replay Manager: ", args)
+    # --- ConfigTunnel - connection allows for live configuration options ---#
+    # manager.getConfigTunnelData()
+    # tunnel = ConfigTunnel(
+    #     "server",
+    #     manager.confport,
+    #     cafile=None if manager.confcert == "" else manager.confcert,
+    # )
+    # tunnel.setHandler(
+    #     "reconfigure", tunnel.relaytochannel
+    # )  # TODO: change when we have other tunnel actions to worry about
 
-    # ConfigTunnel connection allows for live configuration options
-    stunnel = ConfigTunnel('server')
-    stunnel.setHandler("reconfigure", reconfigure)
-    stunnel.start()
+    async def main():
+        async with trio.open_nursery() as nursery:
+            # Get our CTRL-C handler, tunnel, and trio channels running
+            nursery.start_soon(control_c_handler, nursery)
 
-    print("Listening")
+            send_channel, receive_channel = trio.open_memory_channel(0)
+            async with send_channel, receive_channel:
+                # Start the configtunnel listener
+                # nursery.start_soon(tunnel.listen, send_channel.clone())
+                # Start the database listener
+                nursery.start_soon(manager.db.watchConfig, send_channel.clone())
 
-    # keep main thread alive
-    while True:
-        time.sleep(5)
+                everything_else = await nursery.start(
+                    partial(manager.activate, user="system")
+                )
+                # Respond to incoming updates
+                async for command in receive_channel:
+                    print("config command '{!r}' received".format(command))
+
+                    everything_else.cancel()  # clean tasks
+                    manager.processList = dict()  # clean listener objects
+
+                    print("Reconfiguring Replay Manager: ", command)
+                    everything_else = await nursery.start(
+                        partial(
+                            manager.activate,
+                            updateSniffer="sniff" in command,
+                            updateOpenPorts="ports" in command,
+                            user=command[-1] if "user" in command else "system",
+                        )
+                    )
+
+    trio.run(main)
+
+    manager.db.couch.disconnect()
