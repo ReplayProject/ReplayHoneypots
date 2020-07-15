@@ -17,7 +17,7 @@ services:
         container_name: replay-manager
         restart: 'no'
         volumes:
-            - './config/frontend_auth.json:/frontend_auth.json'
+            - './config/frontend_users_seed.json:/frontend_users_seed.json'
         # Toggle the config below for "live mode" meaning code changes will sync into the container
         #   - replay-src:/src
         #   - "./management/frontend/node_modules:/src/node_modules" # may need to check if dependencies map properly like this

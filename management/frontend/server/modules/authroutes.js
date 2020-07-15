@@ -12,13 +12,21 @@ const users = require('./pass')
 /**
  * Used to check if the user is authenticated on every page change on the frontend
  */
-router.get('/user', authGuard(), (req, res) => {
-    let user = users.find(u => {
-        if (req.session && req.session.passport)
-            return u.id === req.session.passport.user
-        return false
-    })
-    res.send(user ? { userId: user.id } : { userID: 'undefined' })
+router.get('/user', authGuard(), async (req, res) => {
+    try {
+        authLog('user passed auth check')
+        if (
+            req.session &&
+            req.session.passport &&
+            req.session.passport.user &&
+            req.session.passport.user != ''
+        )
+            res.send({ userId: req.session.passport.user })
+        else throw Error('ID Mismatch')
+    } catch (error) {
+        authLog('/user guard', error)
+        res.send({ userID: 'undefined' })
+    }
 })
 
 /**
@@ -67,7 +75,7 @@ router.post('/login', (req, res, next) => {
 
 // Perform a logout by removing the req.user property and clearing the login session (if any).
 router.get('/logout', (req, res) => {
-    authLog('logout: ', req.user)
+    authLog('logout:', req.session.passport.user)
     req.logout()
     res.send('logged out')
     // res.redirect('/')

@@ -29,8 +29,8 @@ services:
         ports:
             - 8080:8080
         configs:
-            - source: frontend_auth
-              target: /frontend_auth.json
+            - source: frontend_users_seed
+              target: /frontend_users_seed.json
         depends_on:
             - couchdb
         deploy:
@@ -46,8 +46,8 @@ services:
     # Service to get ready to run a honeypot is in ./service_deploy.sh
 
 configs:
-    frontend_auth:
-        file: ./config/frontend_auth.json
+    frontend_users_seed:
+        file: ./config/frontend_users_seed.json
 
 volumes:
     replay-db:

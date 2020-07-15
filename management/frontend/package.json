@@ -50,9 +50,7 @@
         "nodemon": "^2.0.4",
         "passport": "^0.4.1",
         "passport-local": "^1.0.0",
-        "serve-static": "^1.14.1",
-        "uuid": "^8.1.0",
-        "vuex": "^3.4.0"
+        "serve-static": "^1.14.1"
     },
     "devDependencies": {
         "@babel/core": "7.10.4",
@@ -95,6 +93,7 @@
         "vue-template-compiler": "^2.6.11",
         "vue-toasted": "^1.1.28",
         "vuejs-datatable": "^2.0.0-alpha.7",
+        "vuex": "^3.4.0",
         "weekstart": "^1.0.1"
     },
     "engines": {

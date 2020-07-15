@@ -1,3 +1,4 @@
+require('dotenv').config()
 // Logging setup
 const log = require('debug')('sd:status')
 const historyLog = require('debug')('sd:history')
@@ -63,6 +64,7 @@ app.use(require('serve-static')(dist, { index: ['index.html'] }))
 // Handling deserialization errors here.
 app.use(function (err, req, res, next) {
     if (err) {
+        log('deserial handler', err)
         console.log('Cookie Invalidated')
         req.logout()
         return res
@@ -77,6 +79,8 @@ app.use(function (err, req, res, next) {
 app.listen(port, () => log('Frontend listening on', port))
 
 // If we ever venture into direct HTTPS (watch out for couchdb requests... they have to be HTTPS too)
+// HOWEVER, using a reverse proxy is a more reasonable approach to this.
+
 // var fs = require("fs");
 // var https = require("https");
 
