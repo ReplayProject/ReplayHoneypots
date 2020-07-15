@@ -205,10 +205,14 @@ class Databaser:
             print("Honeypot config loaded")
             return self.config_doc
         else:
+            # Select base config
+            is_docker = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
+            conf_path = "/" if is_docker else "../../config/"
+
             # Create initial/default config
             # But check if DB default exists first
             if default_conf_id not in db:
-                with open("../../config/defaults.json") as f:
+                with open(conf_path + "default_hp_config.json") as f:
                     with Document(db, default_conf_id) as document:
                         self.merge(json.load(f), document)
 

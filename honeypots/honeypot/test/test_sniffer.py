@@ -50,19 +50,13 @@ class TestSniffer:
 
         # Dig sometimes gives us multiple IPs, not all of which are used.
         #  If one is used, that's a successful read.
-        ipObtained = False
         for ip in responseIPs:
-            if (
-                ip in s.RECORD.keys()
-                and s.RECORD[ip][0].sourceIPAddress == ip
-                and s.RECORD[ip][0].sourcePortNumber == 80
-                and s.RECORD[ip][0].trafficType == "TCP"
-                and s.RECORD[ip][0].length != 0
-            ):
-                ipObtained = True
-                break
+            assert ip in s.RECORD.keys()
+            assert s.RECORD[ip][0].sourceIPAddress == ip
+            assert s.RECORD[ip][0].sourcePortNumber == 80
+            assert s.RECORD[ip][0].trafficType == "TCP"
+            assert s.RECORD[ip][0].length != 0
 
-        assert ipObtained
         s.stop()
 
     async def test_icmp(self, nursery):
@@ -89,7 +83,7 @@ class TestSniffer:
             send(IP(dst=ip) / ICMP())
 
         # Let the logger handle whats up
-        await trio.sleep(WAIT_TIME)
+        await trio.sleep(WAIT_TIME * 4)
 
         for ip in targets:
             assert ip in s.RECORD.keys()

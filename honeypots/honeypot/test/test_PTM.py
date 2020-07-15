@@ -17,7 +17,7 @@ class TestRedeploy:
         man = PortThreadManager()
 
         m1 = mocker.patch.object(man.db, "getConfig")
-        with open("../../config/defaults.json") as f:
+        with open("../../config/default_hp_config.json") as f:
             m1.return_value = json.load(f)
 
         mocker.patch.object(man.db, "alert")

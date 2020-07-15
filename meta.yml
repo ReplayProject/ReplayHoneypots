@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+    # Optional service to run swarm state visualizer
+    # https://github.com/dockersamples/docker-swarm-visualizer
+    viz:
+        image: dockersamples/visualizer:stable
+        ports:
+            - 8082:8080
+        stop_grace_period: 1m30s
+        volumes:
+            - '/var/run/docker.sock:/var/run/docker.sock'
+        deploy:
+            placement:
+                constraints:
+                    - 'node.role==manager'
+    # Required service to hold the images for our custom containers
+    registry:
+        image: registry:2
+        container_name: registry
+        ports:
+            - 5000:5000
+        deploy:
+            replicas: 1
+            placement:
+                constraints:
+                    - 'node.role==manager'
+            restart_policy:
+                condition: on-failure

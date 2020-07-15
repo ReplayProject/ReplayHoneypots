@@ -1,6 +1,6 @@
 # This file is for development and will not work with stack deploy
 
-version: '3.7'
+version: '3.8'
 
 services:
     ### Build & Development Settings ###
@@ -40,17 +40,14 @@ services:
             - 1337:1337
             - 8085:80
         build:
-            # network: "host"
+            network: 'host'
             context: './honeypots'
             dockerfile: Dockerfile
-        # depends_on:
-        #   - couchdb
         restart: 'unless-stopped'
         volumes:
             - './config/cert.pem:/cert.pem'
             - replay-src:/src # toggle this line for dev mode (bind source code)
         environment:
-            - DB_URL=http://honeypots:securehoneypassword@10.11.12.125:5984 #TODO: DB Connection string for honeypot connection
             # Toggle below for dev
             - NODE_ENV=development
         working_dir: /src/honeypots/honeypot # comment to use bundled source code (needs fresh image)

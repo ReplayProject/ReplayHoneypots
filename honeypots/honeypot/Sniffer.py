@@ -200,7 +200,7 @@ class Sniffer:
                 ipLayer.len,
                 destPort in self.openPorts,
                 dbHostname,
-                self.db.uuid,
+                self.db.uuid if self.db else "",
             )
 
             # self.RECORD is where we save logs for easy testing
@@ -230,7 +230,7 @@ class Sniffer:
                             message="Port scan detected from IP {}".format(srcIP),
                             references=list(self.PS_RECORD[srcIP].values()),
                             hostname=self.db.hostname,
-                            uuid=self.db.uuid,
+                            uuid=self.db.uuid if self.db else "",
                         ).json()
                     )
                     self.PS_RECORD[srcIP] = dict()
