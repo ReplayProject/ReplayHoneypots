@@ -3,19 +3,37 @@ version: '3.8'
 services:
     # # Service to get a database up and running with CORS
     couchdb:
-        image: bitnami/couchdb:3
-        container_name: couchdb
+        image: bitnami/couchdb:3 # Normal deployments
+        # image: treehouses/couchdb:latest # image for ARM - ARM_DEP
+        # container_name: couchdb
         hostname: couchdb
+        networks:
+            - honey-infra
         environment:
             - COUCHDB_USER=admin # TODO: change creds or use default: "admin"
             - COUCHDB_PASSWORD=couchdb # TODO: change creds or use default: "couchdb"
+        expose:
+            - '5984'
         ports:
             - 5984:5984
             - 4369:4369
             - 9100:9100
-        volumes:
-            # - couchdb_data:/bitnami/couchdb # make data persistant here
-            - ./config/couch_defaults.ini:/opt/bitnami/couchdb/etc/local.d/cutom-local.ini
+        # The first config must be enabled for non ARM deployments ARM_DEP
+        # configs:
+        # - source: couch_config
+        #   target: /opt/bitnami/couchdb/etc/local.d/cutom-local.ini
+        # - source: couch_config
+        # target: /opt/couchdb/etc/local.d/local.ini
+        # TODO: test configs volumes when in compose mode
+        # volumes:
+        # - ./config/couch_defaults.ini:/opt/couchdb/etc/local.d/custom-local.ini
+        # - couchdb_data:/bitnami/couchdb # make data persistant here
+        healthcheck:
+            test: ['CMD', 'curl', '-f', 'http://localhost:5984']
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
         deploy:
             replicas: 1
             placement:
@@ -27,6 +45,10 @@ services:
         image: 127.0.0.1:5000/replay/replay-manager:latest
         container_name: manager
         hostname: replay-manager
+        environment:
+            - DB_URL=http://admin:couchdb@couchdb:5984
+        networks:
+            - honey-infra
         ports:
             - 8080:8080
         configs:
@@ -34,6 +56,22 @@ services:
               target: /frontend_users_seed.json
         depends_on:
             - couchdb
+        healthcheck:
+            test:
+                [
+                    'CMD',
+                    'wget',
+                    '--quiet',
+                    '--tries=1',
+                    '--spider',
+                    'http://localhost:8080/user',
+                    '||',
+                    'exit 1',
+                ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
         deploy:
             replicas: 1
             placement:
@@ -46,10 +84,10 @@ services:
     replay-honeypot:
         image: 127.0.0.1:5000/replay/replay-honeypot:latest
         container_name: honeypot
-        # Toggle if you want a specific hostname to appear in the logs
-        # hostname: replay-honeypot
+        # Toggle if you do not want this hostname to appear in the logs
+        hostname: replay-honeypot
         environment:
-            - DB_URL=http://honeypots:securehoneypassword@10.11.12.125:5984
+            - DB_URL=http://admin:couchdb@couchdb:5984
         configs:
             - source: default_hp_config
               target: /default_hp_config.json
@@ -65,6 +103,7 @@ services:
             mode: global
             placement:
                 max_replicas_per_node: 1
+                # Toggle to limit honeypot deployment to manager node
                 # constraints:
                 #     - 'node.role==manager'
                 preferences:
@@ -82,6 +121,8 @@ networks:
     hostnet:
         external: true
         name: host
+    honey-infra:
+        external: true
 
 configs:
     # Seed data for frontend auth database

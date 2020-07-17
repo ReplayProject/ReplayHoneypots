@@ -178,6 +178,9 @@ class Databaser:
         if it doesn't exist, use default DB config,
         if that doesn't exist, then use the default configs to create it
         """
+        if not self.couch:
+          raise Exception('No database to watch config on!')
+
         db = self.couch[self.config_db]
         conf_id = "HP-" + self.uuid
         default_conf_id = "HP-default"
