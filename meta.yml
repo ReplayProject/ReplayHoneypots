@@ -35,3 +35,5 @@ services:
 networks:
     honey-infra:
         external: true
+# Command to create network
+# docker network create -d overlay --attachable honey-infra

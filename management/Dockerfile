@@ -5,8 +5,9 @@ RUN apk --update --no-cache add --virtual native-deps \
   g++ gcc libgcc libstdc++ linux-headers make python
 
 WORKDIR /src
-COPY ./frontend/package* ./
-RUN npm ci
+COPY ./frontend/package.json ./
+RUN npm install
+
 # Setup parcel workers
 ENV PARCEL_WORKERS 1
 
@@ -34,8 +35,9 @@ RUN chmod +x /opt/bin/wait-for-it.sh
 WORKDIR /usr/src/frontend
 
 # Install running deps
-COPY ./frontend/package* ./
-RUN npm install --only=production
+COPY --from=build /src/package* ./
+RUN npm ci
+RUN npm prune --production
 RUN apk del native-deps
 
 COPY --from=build /src/dist ./dist
