@@ -175,8 +175,7 @@ class Sniffer:
         # Whitelist check
         if srcIP not in self.whitelist:
             # Testing config - does not utilize a database
-            isTest = self.config == "onlyUDP" or self.config == "testing"
-            dbHostname = self.db.hostname if not isTest else "N/A"
+            # isTest = self.config == "onlyUDP" or self.config == "testing"
 
             trafficType = (
                 "TCP"
@@ -199,8 +198,6 @@ class Sniffer:
                 trafficType,
                 ipLayer.len,
                 destPort in self.openPorts,
-                dbHostname,
-                self.db.uuid if self.db else "",
             )
 
             # self.RECORD is where we save logs for easy testing
@@ -211,7 +208,7 @@ class Sniffer:
 
             # saving the database ID in case of port scan detection
             if self.config == "base":
-                dbID = self.db.save(log.json())
+                dbID = self.db.save(log)
             else:
                 return
 
@@ -229,8 +226,6 @@ class Sniffer:
                             variant="alert",
                             message="Port scan detected from IP {}".format(srcIP),
                             references=list(self.PS_RECORD[srcIP].values()),
-                            hostname=self.db.hostname,
-                            uuid=self.db.uuid if self.db else "",
-                        ).json()
+                        )
                     )
                     self.PS_RECORD[srcIP] = dict()

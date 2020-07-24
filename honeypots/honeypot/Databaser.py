@@ -108,41 +108,38 @@ class Databaser:
         for db in [self.logs_db, self.alerts_db, self.config_db]:
             self.couch[db] if db in self.couch else self.couch.create_database(db)
 
-    def save(self, json_raw):
+    def save_document(self, document, db_url):
         """
-        Save a JSON document to the logs DB
-        TODO: save & alert can be refactored to reduce code
+        General function to save alerts and logs
         """
+        # Add the hostname and uuid into the log
+        document.hostname = self.hostname
+        document.uuid = self.uuid
+
         # Logic for live mode vs testing mode (stdout)
         try:
-            # TODO: should put extra test here that this switch goes smoothly
-            db = self.couch[self.logs_db]
-            doc = db.create_document(json.loads(json_raw))
+            db = self.couch[db_url]
+            doc = db.create_document(json.loads(document.json()))
             print("Log created: %s" % doc["_id"])
             return doc["_id"]
         except Exception:
-            print("DB Save Error:", json_raw)
+            print("DB Save Error:", document.json())
             return None
         except AttributeError:
-            print("Attr Warning:", json_raw)
+            print("Attr Warning:", document)
             return None
 
-    def alert(self, json_raw):
+    def save(self, json):
+        """
+        Save a JSON document to the logs DB
+        """
+        return self.save_document(json, self.logs_db)
+
+    def alert(self, json):
         """
         Save a JSON document to the alerts DB
         """
-        # Logic for live mode vs testing mode (stdout)
-        try:
-            db = self.couch[self.alerts_db]
-            doc = db.create_document(json.loads(json_raw))
-            print("Alert created: %s" % doc["_id"])
-            return doc["_id"]
-        except Exception:
-            print("Alert DB Save Error:", json_raw)
-            return None
-        except AttributeError:
-            print("Alert Attr Warning:", json_raw)
-            return None
+        return self.save_document(json, self.alerts_db)
 
     def claimUUID(self):
         """
@@ -179,7 +176,7 @@ class Databaser:
         if that doesn't exist, then use the default configs to create it
         """
         if not self.couch:
-          raise Exception('No database to watch config on!')
+            raise Exception("No database to watch config on!")
 
         db = self.couch[self.config_db]
         conf_id = "HP-" + self.uuid

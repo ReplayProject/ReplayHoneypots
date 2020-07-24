@@ -19,19 +19,12 @@ class Alert:
     __name__ = "Alert"
 
     def __init__(
-        self,
-        variant,
-        message="",
-        references=None,
-        hostname="DefaultHostname",
-        uuid="DefaultUUID",
+        self, variant, message="", references=None,
     ):
         self.variant = variant
         self.message = message
         self.timestamp = int(datetime.now().timestamp())
         self.references = [] if references is None else references
-        self.hostname = hostname
-        self.uuid = uuid
 
     def json(self):
         return json.dumps(self.__dict__)
