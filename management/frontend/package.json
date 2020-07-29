@@ -6,6 +6,7 @@
     "scripts": {
         "build": "parcel build ./client/index.html --no-source-maps --public-url 'http://10.11.12.125:8080' ",
         "build-watch": "parcel watch ./client/index.html --public-url 'http://10.11.12.125:8080' ",
+        "generate-lock": "npm i --package-lock-only",
         "dev": "concurrently --kill-others \"npm run start-watch\" \"npm run build-watch\"",
         "dev2": "concurrently --kill-others \"npm run start-serve\" \"npm run build-watch\"",
         "format": "prettier --list-different --write \"test/**\" \"server/**\" \"client/**\" \"./**.{json, babelrc}\" \"!.cache\" && sort-package-json",

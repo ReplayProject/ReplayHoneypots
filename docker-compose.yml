@@ -53,22 +53,6 @@ services:
               target: /frontend_users_seed.json
         depends_on:
             - couchdb
-        healthcheck:
-            test:
-                [
-                    'CMD',
-                    'wget',
-                    '--quiet',
-                    '--tries=1',
-                    '--spider',
-                    'http://localhost:8080/user',
-                    '||',
-                    'exit 1',
-                ]
-            interval: 30s
-            timeout: 10s
-            retries: 3
-            start_period: 10s
         deploy:
             replicas: 1
             placement:
@@ -86,7 +70,7 @@ services:
         # Toggle if you do not want this hostname to appear in the logs
         # hostname: replay-honeypot # Toggle for all logs to group together
         # Toggle this in network=host mode
-        # command: ["localhost:5984", "--", "python3", "-u", "./PortThreadManager.py"]
+        command: ['localhost:5984', '--', 'python3', '-u', './PortThreadManager.py']
         # Toggle this in docker-compose mode
         # command: ["couchdb:5984", "--", "python3", "-u", "./PortThreadManager.py"]
         environment:
