@@ -2,9 +2,8 @@
 
 # Installs reqs to run the honeypot test suite
 # (expected to be installed inside of the replay-honeypot docker image)
-
-pip3 install -r requirements-dev.txt
+pip3 install -r ../requirements.txt # honeypot reqs
+pip3 install -r ../../requirements-dev.txt # honeypot testing reqs
 command -v apk >/dev/null 2>&1 || { echo >&2 "I require apk but it's not installed.  Aborting."; exit 1; }
-apk add curl bind-tools
-cd honeypots/honeypot
-python3 -m pytest test -vk 'not Cron'
+apk add -U curl bind-tools # testing tools needed for sniffing
+python3 -m pytest ./test/ --cov="." -vk "not Cron" # run and report on tests

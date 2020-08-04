@@ -1,15 +1,3 @@
-<!--
-*** Thanks for checking out this README Template. If you have a suggestion that would
-*** make this better, please fork the repo and create a pull request or simply open
-*** an issue with the tag "enhancement".
-*** Thanks again! Now go create something AMAZING! :D
-***
-***
-***
-*** To avoid retyping too much info. Do a search and replace for the following:
-*** ReplayProject, ReplayHoneypots, twitter_handle, email
--->
-
 <!-- PROJECT LOGO -->
 <h1 align="center">Replay Honeypots</h1>
 <!-- <div align="center">
@@ -19,7 +7,6 @@
   A <code>performant & low interaction</code> honeypot solution
 </div>
 <br />
-
 <div align="center">
 
 <!-- PROJECT SHIELDS -->
@@ -33,14 +20,14 @@
 
 [![Issues][issues-shield]][issues-url]
 [![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url] [![Stargazers][stars-shield]][stars-url]
+[![GNU GPLv3][license-shield]][license-url] [![Stargazers][stars-shield]][stars-url]
 [![Overall Stability][stability-shield]][stability-url]
 [![Black][black-shield]][black-url]
 
 </div>
 
 <p align="center">
-	<img alt="Markserv Demo" src="images/gifs/general-demo.gif" width="100%">
+	<img alt="Replay Manager Demo" src="images/gifs/general-demo.gif" width="100%">
 </p>
 
 <div align="center">
@@ -70,17 +57,17 @@
 
 ## Table of Contents
 
--   [About the Project](#about-the-project)
-    -   [Built With](#built-with)
--   [Getting Started](#getting-started)
-    -   [Prerequisites](#prerequisites)
-    -   [Installation](#installation)
--   [Usage](#usage)
--   [Roadmap](#roadmap)
--   [Contributing](#contributing)
+-   [Table of Contents](#table-of-contents)
+-   [:sparkles: About The Project](#sparkles-about-the-project)
+    -   [:computer: Built With](#computer-built-with)
+-   [:joystick: Getting Started](#joystick-getting-started)
+-   [:dizzy: Usage](#dizzy-usage)
+-   [:blue_car: Roadmap](#blue_car-roadmap)
+-   [:gift: Contributing](#gift-contributing)
+    -   [Ground Rules](#ground-rules)
+    -   [General Steps](#general-steps)
 -   [License](#license)
 -   [Contact](#contact)
--   [Acknowledgements](#acknowledgements)
 
 <!-- ABOUT THE PROJECT -->
 
@@ -91,10 +78,10 @@
 This project strives to provide a highly configurable, low interaction honeypot and a
 system to handle multi-node deployments.
 
-The Replay honeypots are a security tool designed to monitor and collect network
-information from deployment. This project began in 2019, and has been growing in
-multiple ways. In July 2020, it was made open source! The most notable components of the
-system are the:
+The Replay honeypots are a security tool designed to monitor and collect useful network
+information from active deployments. This project began in 2019, and has been growing in
+multiple ways ever since. In August 2020, it was made open source! The most notable
+components of the system are the:
 
 -   Honeypots
 -   Management System
@@ -103,15 +90,15 @@ system are the:
     -   Replay Command Line Interface (CLI)
 -   Deployment Strategy
 
-Currently, the project supports **Docker** and **Baremetal** deployment options,
-although Docker is simpler for managing multiple devices simutaneously.
+Currently, the project supports **Docker** and **Bare Metal** deployment options,
+although Docker is simpler for managing multiple devices and complex setups.
 
-To expedite the analysis of honeypots’ logs, a web-based management frontend was created
+To expedite the analysis of honeypot logs, a web-based, management frontend was created
 with local authentication using `Node.js`, `Passport.js`, and `Vue.js`. The frontend
-provides a way for users to query the log database as well as be alerted of potential
-attacks, problems, and/or configuration changes of deployed honeypots. The user may also
-export data to an external Security Information and Event Management System **(SIEM)**
-by utilizing the database's API.
+provides a way for users to do basic queries to the log database as well as be alerted
+of potential attacks, problems, and/or configuration changes of deployed honeypots. The
+user may also export data to an external Security Information and Event Management
+System **(SIEM)** by utilizing the database's API.
 
 Additionally, progress is being made on an automated deployment and configuration tool
 called the ReplayCLI. This is a command line tool that assists in the administration of
@@ -131,13 +118,15 @@ honeypots on bare-metal machines.
 
 ## :joystick: Getting Started
 
-To get a local copy up and running follow these steps.
+To get a local copy up and running follow these guides
 
-### TODO: Install & Development Guides
+| [Install](#install) | [Development](#development) | [Users](#users) |
+| :-----------------: | :-------------------------: | :-------------: |
+
 
 <!-- USAGE EXAMPLES -->
 
-## Usage
+## :dizzy: Usage
 
 Use this space to show useful examples of how a project can be used. Additional
 screenshots, code examples and demos work well in this space. You may also link to more
@@ -148,35 +137,62 @@ _For more examples, please refer to the
 
 <!-- ROADMAP -->
 
-## TODO: Roadmap
+## :blue_car: Roadmap
 
-See the [open issues](https://github.com/ReplayProject/ReplayHoneypots/issues) for a
-list of proposed features (and known issues).
+See the [open issues](https://github.com/ReplayProject/ReplayHoneypots/issues) and
+[projects](https://github.com/ReplayProject/ReplayHoneypots/projects) for a list of
+proposed features (and problems we are addressing).
 
 <!-- CONTRIBUTING -->
 
-## TODO: :gift: Contributing
+## :gift: Contributing
 
-<!--
-Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+First off, thank you for considering contributing to the Replay Honeypots. Contributions
+are what make the open source community such an amazing place to be. Any contributions
+you make are **greatly appreciated**.
+
+There are many ways to help, documenting use cases, improving the various guides,
+finding bugs, adding to the roadmap with ideas and improvements, or of course writing
+code to enhance the system.
+
+### Ground Rules
+
+Development responsibilities
+
+-   Ensure cross-platform compatibility for every change that's accepted. ARM, Intel,
+    Baremetal, Docker Containers, and focused on Debian & Ubuntu Linux.
+-   Create issues for any major changes and enhancements that you wish to make. Be
+    transparent and look for feedback.
+-   Run the test suites and `pre-commmit` checks _(see the Development guide for more
+    details)_
+-   Update guides and readme if changing anything important that is mentioned/explained
+
+At this point, you're ready to make your changes! Feel free to ask for help; everyone is
+a beginner at first 😸
+
+> If a maintainer asks you to "rebase" your PR, they're saying that a lot of code has
+> changed, and that you need to update your branch so it's easier to merge.
+
+### General Steps
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
--->
+5. Open a Pull Request and explain what is going on
 
-<!--
-TODO: LICENSE
+<!-- LICENSE -->
+
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
--->
+Distributed under the GNU GPLv3 License. See `LICENSE` for more information.
 
 <!-- CONTACT -->
 
 ## Contact
+
+Felix Ritscher Montilla -
+[RitscherMontillaF@prahs.com](mailto:RitscherMontillaF@prahs.com?subject=ReplayProject%3A)
 
 Seth Parrish -
 [ParrishSeth@prahs.com](mailto:parrishseth@prahs.com?subject=ReplayProject%3A)
@@ -187,19 +203,18 @@ Project Link:
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-[issues-url]: https://github.com/othneildrew/Best-README-Template/issues
+[issues-url]: https://github.com/ReplayProject/ReplayHoneypots/issues
 [issues-shield]:
-    https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=flat-square
-[contributors-url]:
-    https://github.com/othneildrew/Best-README-Template/graphs/contributors
+    https://img.shields.io/github/issues/ReplayProject/ReplayHoneypots.svg?style=flat-square
+[contributors-url]: https://github.com/ReplayProject/ReplayHoneypots/graphs/contributors
 [contributors-shield]:
-    https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=flat-square
-[forks-url]: https://github.com/othneildrew/Best-README-Template/network/members
-[forks-shield]:
-    https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=flat-square
-[stars-url]: https://github.com/othneildrew/Best-README-Template/stargazers
+    https://img.shields.io/github/contributors/ReplayProject/ReplayHoneypots.svg?style=flat-square
+[license-url]: https://github.com/ReplayProject/ReplayHoneypots/blob/master/LICENSE
+[license-shield]:
+    https://img.shields.io/github/license/ReplayProject/ReplayHoneypots.svg?style=flat-square
+[stars-url]: https://github.com/ReplayProject/ReplayHoneypots/stargazers
 [stars-shield]:
-    https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=flat-square
+    https://img.shields.io/github/stars/ReplayProject/ReplayHoneypots.svg?style=flat-square
 [stability-url]: https://nodejs.org/api/documentation.html#documentation_stability_index
 [stability-shield]:
     https://img.shields.io/badge/stability-experimental-orange.svg?style=flat-square
@@ -210,10 +225,12 @@ Project Link:
 
 <!--
 TODO: Badges
-License
-[![MIT License][license-shield]][license-url]
-[license-url]: https://github.com/othneildrew/Best-README-Template/blob/master/LICENSE.txt
-[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=flat-square
+[![Forks][forks-shield]][forks-url]
+
+[forks-url]: https://github.com/othneildrew/
+Best-README-Template/network/members
+[forks-shield]:
+    https://img.shields.io/github/forks/ReplayProject/ReplayHoneypots.svg?style=flat-square
 
 Build
 https://shields.io/ for a workflow
@@ -221,6 +238,12 @@ https://shields.io/ for a workflow
 [build-url]: https://github.com/ReplayProject/ReplayHoneypots/actions/
 [build-shield]: https://img.shields.io/badge/stability-experimental-orange.svg?style=flat-square
 -->
+
+<!-- Guide Links -->
+
+[install]: https://github.com/ReplayProject/ReplayHoneypots/wiki
+[development]: https://github.com/ReplayProject/ReplayHoneypots/wiki
+[users]: https://github.com/ReplayProject/ReplayHoneypots/wiki
 
 <!-- Links for the Build With Section -->
 

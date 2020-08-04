@@ -178,18 +178,14 @@ class PortThreadManager:
                     Alert(
                         variant="admin",
                         message="Sniffer updated during runtime by " + user,
-                        hostname=self.db.hostname,
-                        uuid=self.db.uuid,
-                    ).json()
+                    )
                 )
             elif retCode == 2:
                 self.db.alert(
                     Alert(
                         variant="admin",
                         message="TCP sockets updated during runtime by " + user,
-                        hostname=self.db.hostname,
-                        uuid=self.db.uuid,
-                    ).json()
+                    )
                 )
             elif retCode == 3:
                 self.db.alert(
@@ -197,9 +193,7 @@ class PortThreadManager:
                         variant="admin",
                         message="TCP sockets and Sniffer updated during runtime by "
                         + user,
-                        hostname=self.db.hostname,
-                        uuid=self.db.uuid,
-                    ).json()
+                    )
                 )
             elif retCode == 0:
                 self.db.alert(
@@ -207,9 +201,7 @@ class PortThreadManager:
                         variant="admin",
                         message="Attempted configuration change during runtime by "
                         + user,
-                        hostname=self.db.hostname,
-                        uuid=self.db.uuid,
-                    ).json()
+                    )
                 )
             return retCode
 
@@ -238,15 +230,7 @@ if __name__ == "__main__":
 
     manager = PortThreadManager()
     # initial creation alert
-    manager.db.alert(
-        Alert(
-            variant="meta",
-            message="Honeypot startup.",
-            references=[],
-            hostname=manager.db.hostname,
-            uuid=manager.db.uuid,
-        ).json()
-    )
+    manager.db.alert(Alert(variant="meta", message="Honeypot startup.", references=[]))
 
     # --- ConfigTunnel - connection allows for live configuration options ---#
     # manager.getConfigTunnelData()

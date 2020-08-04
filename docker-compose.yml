@@ -3,9 +3,12 @@ version: '3.8'
 services:
     # # Service to get a database up and running with CORS
     couchdb:
-        image: bitnami/couchdb:3
+        image: bitnami/couchdb:3 # Normal deployments
+        # image: treehouses/couchdb:latest # image for ARM - ARM_DEP
         container_name: couchdb
         hostname: couchdb
+        networks:
+            - honey-infra
         environment:
             - COUCHDB_USER=admin # TODO: change creds or use default: "admin"
             - COUCHDB_PASSWORD=couchdb # TODO: change creds or use default: "couchdb"
@@ -13,9 +16,21 @@ services:
             - 5984:5984
             - 4369:4369
             - 9100:9100
-        volumes:
-            # - couchdb_data:/bitnami/couchdb # make data persistant here
-            - ./config/couch_defaults.ini:/opt/bitnami/couchdb/etc/local.d/cutom-local.ini
+        configs:
+            # This configuratin is for the bitnami (non ARM) image ARM_DEP
+            - source: couch_config
+              target: /opt/bitnami/couchdb/etc/local.d/cutom-local.ini
+            # This configuratin is for the ARM image ARM_DEP
+            # - source: couch_config
+            #   target: /opt/couchdb/etc/local.d/cutom-local.ini
+        # volumes:
+        # - couchdb_data:/bitnami/couchdb # make data persistant here
+        healthcheck:
+            test: ['CMD', 'curl', '-f', 'http://admin:couchdb@localhost:5984']
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
         deploy:
             replicas: 1
             placement:
@@ -27,6 +42,10 @@ services:
         image: 127.0.0.1:5000/replay/replay-manager:latest
         container_name: manager
         hostname: replay-manager
+        environment:
+            - DB_URL=http://admin:couchdb@couchdb:5984
+        networks:
+            - honey-infra
         ports:
             - 8080:8080
         configs:
@@ -43,13 +62,21 @@ services:
                 condition: on-failure
 
     # Service (global) to deploy the actual honeypot instances
+    # Due to host mode networking in swarm, use "localhost" for DB,
+    # in compose mode, use "couchdb"
     replay-honeypot:
         image: 127.0.0.1:5000/replay/replay-honeypot:latest
         container_name: honeypot
-        # Toggle if you want a specific hostname to appear in the logs
-        # hostname: replay-honeypot
+        # Toggle if you do not want this hostname to appear in the logs
+        # hostname: replay-honeypot # Toggle for all logs to group together
+        # Toggle this in network=host mode
+        command: ['localhost:5984', '--', 'python3', '-u', './PortThreadManager.py']
+        # Toggle this in docker-compose mode
+        # command: ["couchdb:5984", "--", "python3", "-u", "./PortThreadManager.py"]
         environment:
-            - DB_URL=http://honeypots:securehoneypassword@10.11.12.125:5984
+            - DB_URL=http://admin:couchdb@localhost:5984 # Toggle when in network=host mode
+            # - DB_URL=http://admin:couchdb@couchdb:5984 # Toggle when in docker-compose mode
+            # - DB_URL= # Use this to make honeypot crash becasue of unset DB_URL
         configs:
             - source: default_hp_config
               target: /default_hp_config.json
@@ -65,6 +92,7 @@ services:
             mode: global
             placement:
                 max_replicas_per_node: 1
+                # Toggle to limit honeypot deployment to manager node
                 # constraints:
                 #     - 'node.role==manager'
                 preferences:
@@ -82,6 +110,8 @@ networks:
     hostnet:
         external: true
         name: host
+    honey-infra:
+        external: true
 
 configs:
     # Seed data for frontend auth database
@@ -93,6 +123,9 @@ configs:
     #  Optional cert for TLS connections from the honeypots
     cert:
         file: ./config/cert.pem
+    # Config for couchdb configuration
+    couch_config:
+        file: ./config/couch_defaults.ini
 
 volumes:
     # Persist data from couchdb

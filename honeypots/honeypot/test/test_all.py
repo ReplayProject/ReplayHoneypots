@@ -50,12 +50,9 @@ class TestLogs(unittest.TestCase):
             "TCP",
             "20",
             True,
-            "test_logs",
-            "unique_uuid",
         )
         self.assertEqual("80", entry.sourcePortNumber)
         self.assertTrue(type(entry.timestamp) is int)
-        self.assertTrue(entry.uuid == "unique_uuid")
 
 
 # TODO: DB conenction string for testing

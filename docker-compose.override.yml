@@ -7,33 +7,54 @@ services:
     couchdb:
         logging:
             driver: none
+        volumes:
+            # This config is for non ARM
+            - ./config/couch_defaults.ini:/opt/bitnami/couchdb/etc/local.d/cutom-local.ini
+            # This config is for ARM couchdb Image - ARM_DEB
+            # - ./config/couch_defaults.ini:/opt/couchdb/etc/local.d/custom-local.ini
 
     # Service to define how the manager gets built
     replay-manager:
-        command: '' # Toggle this link to disable the management frontend during development
+        # Toggle to enable the service
+        # entrypoint: ['echo', 'Service replay-manager disabled']
+
         build:
             context: './management'
             dockerfile: Dockerfile
-        container_name: replay-manager
-        restart: 'no'
+            # dockerfile: Dockerfile.dev # Toggle for live mode
+        environment:
+            - NODE_ENV=development
+            - PARCEL_WORKERS=1
+        # Toggle these commands to start and pause without doing anything
+        # Useful when you want to attach yourself manually to test things
+        # Use these to edit how the image starts or deviate from baked in url
+        command: ['couchdb:5984', '--', 'tail', '-f', '/dev/null']
+        # command: ["couchdb:5984", "--", "npm", "run", "start-serve" ]
+        # command: ["testingcouchdb:5984", "--", "npm", "run", "dev2" ]
+
+        # Toggle the following 2 configs, and enable the "/src" & modules volume for what I call "live mode"
+        # Like this, your code changes will sync into the container (may have to run npm i)
+        working_dir: /src/management/frontend
+        # command: ["couchdb:5984", "--", "npm", "run", "dev2" ]
+
         volumes:
-            - './config/frontend_users_seed.json:/frontend_users_seed.json'
-        # Toggle the config below for "live mode" meaning code changes will sync into the container
-        #   - replay-src:/src
-        #   - "./management/frontend/node_modules:/src/node_modules" # may need to check if dependencies map properly like this
-        # command: "npm run dev2"
-        # working_dir: /src/management/frontend # comment to use bundled source code (needs fresh image)
-        # environment:
-        #   - NODE_ENV=development
+            # this maps seed data config (configs do not work in compose mode)
+            - ./config/frontend_users_seed.json:/frontend_users_seed.json
+            # Live mode, source files bind
+            - replay-src:/src
+            # - ./management/frontend/node_modules:/src/node_modules # some containers do not like this option
+        restart: 'no' # kept like this to show errors when failing
 
     # Service to define how the honeypots get built
     replay-honeypot:
-        stdin_open: true # docker run -i
-        tty: true # docker run -t
-        command: '/bin/ash' # toggle to disable sample honeypot during development
-        image: 127.0.0.1:5000/replay/replay-honeypot:latest
-        container_name: honeypot # Only works with one honeypot
-        hostname: honeypot # Only works with one honeypot
+        # Toggle to disable the service
+        # entrypoint: ['echo', 'Service replay-honeypot disabled']
+
+        # Toggle this commands to start and pause without doing anything
+        # Useful when you want to attach yourself manually to test things
+        command: ['couchdb:5984', '--', 'tail', '-f', '/dev/null']
+
+        # Port exposed because locally we cannot go into dev mode
         ports:
             - 9998:9998
             - 1337:1337/udp
@@ -43,14 +64,21 @@ services:
             network: 'host'
             context: './honeypots'
             dockerfile: Dockerfile
-        restart: 'unless-stopped'
-        volumes:
-            - './config/cert.pem:/cert.pem'
-            - replay-src:/src # toggle this line for dev mode (bind source code)
-        environment:
-            # Toggle below for dev
-            - NODE_ENV=development
+        # Toggle this config, and the source volume below for dev mode (bind source code)
         working_dir: /src/honeypots/honeypot # comment to use bundled source code (needs fresh image)
+        volumes:
+            - ./config/default_hp_config.json:/default_hp_config.json
+            - ./config/cert.pem:/cert.pem
+            # volume for source code!
+            - replay-src:/src
+        restart: 'no'
+
+# Let docker-compose manage this network
+networks:
+    # Host network, overridden to allow development access to other services
+    hostnet:
+        external: true
+        name: honey-infra
 
 volumes:
     # This volume gives access to the source code for the system (runtime binding)

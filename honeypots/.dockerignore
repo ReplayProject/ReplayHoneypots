@@ -42,6 +42,8 @@ __pycache__/
 .coverage
 */htmlcov
 */.coverage
+
+# Honeypot Stuff
 honeypots/.vscode/settings.json
 logs/database/log.txt
 honeypots/config/dbconfig.json
@@ -54,9 +56,10 @@ dist
 .cache
 .nyc_output
 .data
+# Source Code
+client
 
 #Configuration files
-# properties.cfg
 restart.sh
 
 # Misc
@@ -65,8 +68,6 @@ src_data
 pcap
 nmap
 
-# Frontend src
-client
 
 # Misc excludes
 src_data
