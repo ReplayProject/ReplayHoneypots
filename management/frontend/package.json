@@ -1,5 +1,6 @@
 {
     "name": "replay-frontend",
+    "license": "GNU GPLv3",
     "version": "0.0.1",
     "description": "A tiny VueJS app bundled using ParcelJS && Pouch Database & Frontend",
     "main": "index.html",
