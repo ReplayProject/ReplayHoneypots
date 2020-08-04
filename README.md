@@ -19,6 +19,9 @@
 -->
 
 [![Issues][issues-shield]][issues-url]
+
+<!-- [![Build Status][build-shield]][build-url] -->
+
 [![Contributors][contributors-shield]][contributors-url]
 [![GNU GPLv3][license-shield]][license-url] [![Stargazers][stars-shield]][stars-url]
 [![Overall Stability][stability-shield]][stability-url]
@@ -27,7 +30,7 @@
 </div>
 
 <p align="center">
-	<img alt="Replay Manager Demo" src="images/gifs/general-demo.gif" width="100%">
+	<img alt="Replay Manager Demo" src="https://raw.githubusercontent.com/wiki/ReplayProject/ReplayHoneypots/images/gifs/general-demo.gif" width="100%">
 </p>
 
 <div align="center">
@@ -206,6 +209,9 @@ Project Link:
 [issues-url]: https://github.com/ReplayProject/ReplayHoneypots/issues
 [issues-shield]:
     https://img.shields.io/github/issues/ReplayProject/ReplayHoneypots.svg?style=flat-square
+[build-url]: https://github.com/ReplayProject/ReplayHoneypots/actions/
+[build-shield]:
+    https://img.shields.io/github/workflow/status/ReplayProject/ReplayHoneypots/pytest/development?style=flat-square
 [contributors-url]: https://github.com/ReplayProject/ReplayHoneypots/graphs/contributors
 [contributors-shield]:
     https://img.shields.io/github/contributors/ReplayProject/ReplayHoneypots.svg?style=flat-square
@@ -231,12 +237,6 @@ TODO: Badges
 Best-README-Template/network/members
 [forks-shield]:
     https://img.shields.io/github/forks/ReplayProject/ReplayHoneypots.svg?style=flat-square
-
-Build
-https://shields.io/ for a workflow
-[![Build Status][build-shield]][build-url]
-[build-url]: https://github.com/ReplayProject/ReplayHoneypots/actions/
-[build-shield]: https://img.shields.io/badge/stability-experimental-orange.svg?style=flat-square
 -->
 
 <!-- Guide Links -->
