@@ -1,0 +1,26 @@
+on:
+  push:
+    branches:
+      - master
+      - development
+  pull_request:
+    branches:
+      - master
+      - development
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.6
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.6
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r honeypots/requirements.txt # honeypot reqs
+          pip install -r requirements-dev.txt       # honeypot testing reqs
+      - name: Test with pytest
+        run: python3 -m pytest ./test/ --cov="." -vk "not Cron" # run and report on tests
