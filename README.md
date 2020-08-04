@@ -20,7 +20,7 @@
 
 [![Issues][issues-shield]][issues-url]
 [![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url] [![Stargazers][stars-shield]][stars-url]
+[![GNU GPLv3][license-shield]][license-url] [![Stargazers][stars-shield]][stars-url]
 [![Overall Stability][stability-shield]][stability-url]
 [![Black][black-shield]][black-url]
 
@@ -66,6 +66,7 @@
 -   [:gift: Contributing](#gift-contributing)
     -   [Ground Rules](#ground-rules)
     -   [General Steps](#general-steps)
+-   [License](#license)
 -   [Contact](#contact)
 
 <!-- ABOUT THE PROJECT -->
@@ -180,16 +181,18 @@ a beginner at first 😸
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request and explain what is going on
 
-<!--
-TODO: LICENSE
+<!-- LICENSE -->
+
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
--->
+Distributed under the GNU GPLv3 License. See `LICENSE` for more information.
 
 <!-- CONTACT -->
 
 ## Contact
+
+Felix Ritscher Montilla -
+[RitscherMontillaF@prahs.com](mailto:RitscherMontillaF@prahs.com?subject=ReplayProject%3A)
 
 Seth Parrish -
 [ParrishSeth@prahs.com](mailto:parrishseth@prahs.com?subject=ReplayProject%3A)
@@ -200,19 +203,18 @@ Project Link:
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-[issues-url]: https://github.com/othneildrew/Best-README-Template/issues
+[issues-url]: https://github.com/ReplayProject/ReplayHoneypots/issues
 [issues-shield]:
-    https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=flat-square
-[contributors-url]:
-    https://github.com/othneildrew/Best-README-Template/graphs/contributors
+    https://img.shields.io/github/issues/ReplayProject/ReplayHoneypots.svg?style=flat-square
+[contributors-url]: https://github.com/ReplayProject/ReplayHoneypots/graphs/contributors
 [contributors-shield]:
-    https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=flat-square
-[forks-url]: https://github.com/othneildrew/Best-README-Template/network/members
-[forks-shield]:
-    https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=flat-square
-[stars-url]: https://github.com/othneildrew/Best-README-Template/stargazers
+    https://img.shields.io/github/contributors/ReplayProject/ReplayHoneypots.svg?style=flat-square
+[license-url]: https://github.com/ReplayProject/ReplayHoneypots/blob/master/LICENSE
+[license-shield]:
+    https://img.shields.io/github/license/ReplayProject/ReplayHoneypots.svg?style=flat-square
+[stars-url]: https://github.com/ReplayProject/ReplayHoneypots/stargazers
 [stars-shield]:
-    https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=flat-square
+    https://img.shields.io/github/stars/ReplayProject/ReplayHoneypots.svg?style=flat-square
 [stability-url]: https://nodejs.org/api/documentation.html#documentation_stability_index
 [stability-shield]:
     https://img.shields.io/badge/stability-experimental-orange.svg?style=flat-square
@@ -223,10 +225,12 @@ Project Link:
 
 <!--
 TODO: Badges
-License
-[![MIT License][license-shield]][license-url]
-[license-url]: https://github.com/othneildrew/Best-README-Template/blob/master/LICENSE.txt
-[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=flat-square
+[![Forks][forks-shield]][forks-url]
+
+[forks-url]: https://github.com/othneildrew/
+Best-README-Template/network/members
+[forks-shield]:
+    https://img.shields.io/github/forks/ReplayProject/ReplayHoneypots.svg?style=flat-square
 
 Build
 https://shields.io/ for a workflow
