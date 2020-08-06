@@ -1,0 +1,94 @@
+name: 'Docker Builds'
+
+on:
+    push:
+        branches:
+            - master
+            - development
+
+env:
+    COUCHDB_USER: admin
+    COUCHDB_PASSWORD: password # Cannot be changed here
+
+jobs:
+    compose-tests:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Setup the network
+              run: docker network create -d bridge --attachable honey-infra
+            # Pull the latest image to build, and avoid caching pull-only images.
+            # (docker pull is faster than caching in most cases.)
+            # - run: docker-compose pull --ignore-pull-failure
+            # In this step, this action saves a list of existing images,
+            # the cache is created without them in the post run.
+            # It also restores the cache if it exists.
+            - uses: satackey/action-docker-layer-caching@v0.0.5
+            - run: docker-compose up --build -d
+            - name: Sleep
+              uses: jakejarvis/wait-action@master
+              with:
+                  time: '60s'
+            - name: Check running containers
+              run: docker ps
+            - name: Test Honeypot
+              run: |
+                  docker container ls
+                  docker container exec honeypot /src/misc_scripts/honeypot_tests.sh
+            - name: Test Manager
+              run: |
+                  docker container exec manager pwd
+                  docker container exec manager ls -la
+                  docker container exec manager cd npm run test
+    # testbox:
+    #     runs-on: ubuntu-latest
+    #     container:
+    #         image: python:3.8-alpine
+    #     steps:
+    #         - uses: actions/checkout@v2
+    #         - name: What OS is running
+    #           shell: sh
+    #           run: uname -a
+    # container:
+    #     runs-on: ubuntu-latest
+    #     container:
+    #         image: python:3.8-alpine
+    #     steps:
+    #         - name: Clone Repository
+    #           uses: actions/checkout@v2
+    #         - name: Install curl
+    #           shell: sh
+    #           run: apk add -Uq curl
+    #         - name: Run in container
+    #           shell: sh
+    #           run: |
+    #               echo This job does specify a container.
+    #               echo It runs in the container instead of the VM.
+    #               curl -L sethp.cc
+    # THIS WORKS
+    # test-honeypots:
+    #     name: Test honeypots with CouchDB ${{ matrix.couchdb }} on ${{ matrix.os }}
+    #     runs-on: ubuntu-latest
+    #     strategy:
+    #         fail-fast: false
+    #         matrix:
+    #             os: [ubuntu-latest]
+    #             couchdb: ['3.1']
+    #     steps:
+    #         - name: Start CouchDB
+    #           uses: iamssen/couchdb-github-action@master
+    #           with:
+    #               args: ${{matrix.couchdb}}
+    #               couchdb-version: ${{matrix.couchdb}}
+    #         - name: Test endpoint & auth
+    #           run: |
+    #               curl -f http://127.0.0.1:5984/
+    #               curl -X POST -H "Content-Type: application/json; charset=utf-8" -d '{"name": "admin", "password": "password"}' http://127.0.0.1:5984/_session
+    #         - name: Clone Repository
+    #           uses: actions/checkout@v2
+    #         - name: Test from Alpine
+    #           uses: docker://127.0.0.1:5000/replay/replay-honeypot:latest
+    #           working-directory: honeypots/honeypot
+    #           with:
+    #               entrypoint: /bin/ash -c
+    #               args: "misc_scripts/honeypot_tests.sh"
