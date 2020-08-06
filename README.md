@@ -96,7 +96,7 @@ components of the system are the:
 Currently, the project supports **Docker** and **Bare Metal** deployment options,
 although Docker is simpler for managing multiple devices and complex setups.
 
-To expedite the analysis of honeypot logs, a web-based, management frontend was created
+To expedite the analysis of honeypot logs, a web-based management frontend was created
 with local authentication using `Node.js`, `Passport.js`, and `Vue.js`. The frontend
 provides a way for users to do basic queries to the log database as well as be alerted
 of potential attacks, problems, and/or configuration changes of deployed honeypots. The
@@ -111,11 +111,11 @@ honeypots on bare-metal machines.
 
 ### :computer: Built With
 
-|  Replay Honeypots   |     Replay Manager      |
-| :-----------------: | :---------------------: |
-|    [TRIO](#trio)    |     [VueJS](#vuejs)     |
-|   [Scapy](#scapy)   |  [Tachyons](#tachyons)  |
-| [CouchDB](#couchdb) | [PassportJS](#passport) |
+|  Replay Honeypots  |     Replay Manager     |
+| :----------------: | :--------------------: |
+|    [TRIO][trio]    |     [VueJS][vuejs]     |
+|   [Scapy][scapy]   |  [Tachyons][tachyons]  |
+| [CouchDB][couchdb] | [PassportJS][passport] |
 
 <!-- GETTING STARTED -->
 
@@ -123,8 +123,8 @@ honeypots on bare-metal machines.
 
 To get a local copy up and running follow these guides
 
-| [Install](#install) | [Development](#development) | [Users](#users) |
-| :-----------------: | :-------------------------: | :-------------: |
+| [Install][install] | [Development][development] | [Users][users] |
+| :----------------: | :------------------------: | :------------: |
 
 
 <!-- USAGE EXAMPLES -->
@@ -154,8 +154,8 @@ First off, thank you for considering contributing to the Replay Honeypots. Contr
 are what make the open source community such an amazing place to be. Any contributions
 you make are **greatly appreciated**.
 
-There are many ways to help, documenting use cases, improving the various guides,
-finding bugs, adding to the roadmap with ideas and improvements, or of course writing
+There are many ways to help: documenting use cases, improving the various guides,
+finding bugs, adding to the roadmap with ideas and improvements, or, of course, writing
 code to enhance the system.
 
 ### Ground Rules
@@ -163,12 +163,13 @@ code to enhance the system.
 Development responsibilities
 
 -   Ensure cross-platform compatibility for every change that's accepted. ARM, Intel,
-    Baremetal, Docker Containers, and focused on Debian & Ubuntu Linux.
+    Baremetal, Docker Containers, and Ubuntu Linux.
 -   Create issues for any major changes and enhancements that you wish to make. Be
     transparent and look for feedback.
 -   Run the test suites and `pre-commmit` checks _(see the Development guide for more
     details)_
 -   Update guides and readme if changing anything important that is mentioned/explained
+-   Mention an issue number with your commits
 
 At this point, you're ready to make your changes! Feel free to ask for help; everyone is
 a beginner at first 😸
@@ -195,10 +196,9 @@ Distributed under the GNU GPLv3 License. See `LICENSE` for more information.
 ## Contact
 
 Felix Ritscher Montilla -
-[RitscherMontillaF@prahs.com](mailto:RitscherMontillaF@prahs.com?subject=ReplayProject%3A)
+[Felix.Ritcher@gmail.com](mailto:Felix.Ritcher@gmail.com?subject=ReplayProject%3A)
 
-Seth Parrish -
-[ParrishSeth@prahs.com](mailto:parrishseth@prahs.com?subject=ReplayProject%3A)
+Seth Parrish - [me@sethp.cc](mailto:me@sethp.cc?subject=ReplayProject%3A)
 
 Project Link:
 [https://github.com/ReplayProject/ReplayHoneypots](https://github.com/ReplayProject/ReplayHoneypots)
@@ -241,15 +241,15 @@ Best-README-Template/network/members
 
 <!-- Guide Links -->
 
-[install]: https://github.com/ReplayProject/ReplayHoneypots/wiki
-[development]: https://github.com/ReplayProject/ReplayHoneypots/wiki
-[users]: https://github.com/ReplayProject/ReplayHoneypots/wiki
+[install]: https://github.com/ReplayProject/ReplayHoneypots/wiki/Guide:-Install
+[development]: https://github.com/ReplayProject/ReplayHoneypots/wiki/Guide:-Developers
+[users]: https://github.com/ReplayProject/ReplayHoneypots/wiki/Guide:-Users
 
 <!-- Links for the Build With Section -->
 
-[trio]: https://trio.readthedocs.io/en/latest/index.html
-[scapy]: https://scapy.readthedocs.io/en/latest/index.html
-[couchdb]: https://docs.couchdb.org/en/stable/
+[trio]: https://trio.readthedocs.io/en/stable/
 [vuejs]: https://vuejs.org/
+[scapy]: https://scapy.net/
 [tachyons]: https://tachyons.io/
+[couchdb]: https://couchdb.apache.org/
 [passport]: http://www.passportjs.org/
