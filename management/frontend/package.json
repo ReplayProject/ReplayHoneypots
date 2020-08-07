@@ -64,7 +64,7 @@
         "@saeris/vue-spinners": "^1.0.8",
         "@vue/component-compiler-utils": "^3.1.2",
         "@vue/test-utils": "^1.0.3",
-        "ava": "^3.9.0",
+        "ava": "^3.11.1",
         "axios": "^0.19.2",
         "babel-polyfill": "^6.26.0",
         "chart.js": "^2.9.3",
