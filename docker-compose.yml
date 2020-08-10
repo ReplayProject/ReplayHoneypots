@@ -70,12 +70,12 @@ services:
         # Toggle if you do not want this hostname to appear in the logs
         # hostname: replay-honeypot # Toggle for all logs to group together
         # Toggle this in network=host mode
-        command: ['localhost:5984', '--', 'python3', '-u', './PortThreadManager.py']
+        # command: ['localhost:5984', '--', 'python3', '-u', './PortThreadManager.py']
         # Toggle this in docker-compose mode
-        # command: ["couchdb:5984", "--", "python3", "-u", "./PortThreadManager.py"]
+        command: ['couchdb:5984', '--', 'python3', '-u', './PortThreadManager.py']
         environment:
-            - DB_URL=http://admin:couchdb@localhost:5984 # Toggle when in network=host mode
-            # - DB_URL=http://admin:couchdb@couchdb:5984 # Toggle when in docker-compose mode
+            # - DB_URL=http://admin:couchdb@localhost:5984 # Toggle when in network=host mode
+            - DB_URL=http://admin:couchdb@couchdb:5984 # Toggle when in docker-compose mode
             # - DB_URL= # Use this to make honeypot crash becasue of unset DB_URL
         configs:
             - source: default_hp_config
