@@ -56,8 +56,9 @@ class TestLogs(unittest.TestCase):
 
 
 # TODO: DB conenction string for testing
+# make sure this url resolves correctly
 # Default 'http://admin:couchdb@127.0.0.1:5984'
-DB_URL = "http://admin:couchdb@10.11.12.125:5984"
+DB_URL = "http://admin:couchdb@couchdb:5984"  # Docker compose mode
 
 
 class TestDatabaser(unittest.TestCase):
