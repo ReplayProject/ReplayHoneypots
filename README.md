@@ -196,7 +196,7 @@ Distributed under the GNU GPLv3 License. See `LICENSE` for more information.
 ## Contact
 
 Felix Ritscher Montilla -
-[Felix.Ritcher@gmail.com](mailto:Felix.Ritcher@gmail.com?subject=ReplayProject%3A)
+[Felix.Ritscher@gmail.com](mailto:Felix.Ritscher@gmail.com?subject=ReplayProject%3A)
 
 Seth Parrish - [me@sethp.cc](mailto:me@sethp.cc?subject=ReplayProject%3A)
 
