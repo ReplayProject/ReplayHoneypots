@@ -50,7 +50,7 @@
         "express-session": "^1.17.1",
         "helmet": "^4.0.0",
         "memdown": "^5.1.0",
-        "node-gyp": "^7.0.0",
+        "node-gyp": "^7.1.0",
         "nodemon": "^2.0.4",
         "passport": "^0.4.1",
         "passport-local": "^1.0.0",
