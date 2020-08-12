@@ -93,7 +93,7 @@
         "vue-hot-reload-api": "^2.3.4",
         "vue-json-pretty": "^1.6.7",
         "vue-progressbar": "^0.7.5",
-        "vue-router": "^3.4.2",
+        "vue-router": "^3.4.3",
         "vue-template-compiler": "^2.6.11",
         "vue-toasted": "^1.1.28",
         "vuejs-datatable": "^2.0.0-alpha.7",
