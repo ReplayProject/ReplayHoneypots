@@ -1,4 +1,4 @@
-cloudant==2.13.0
+cloudant==2.14.0
 pycryptodome==3.9.8
 requests==2.24.0
 scapy==2.4.3
