@@ -52,7 +52,7 @@
         "helmet": "^4.0.0",
         "helmet-csp": "3.1.0",
         "memdown": "^5.1.0",
-        "node-gyp": "^7.0.0",
+        "node-gyp": "^7.1.2",
         "nodemon": "^2.0.4",
         "passport": "^0.4.1",
         "passport-local": "^1.0.0",
