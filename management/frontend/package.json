@@ -68,7 +68,7 @@
         "@babel/runtime": "^7.11.2",
         "@saeris/vue-spinners": "^1.0.8",
         "@vue/component-compiler-utils": "^3.2.0",
-        "@vue/test-utils": "^1.0.3",
+        "@vue/test-utils": "^1.1.2",
         "ava": "^3.11.1",
         "axios": "^0.19.2",
         "babel-polyfill": "^6.26.0",
