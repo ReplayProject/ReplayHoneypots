@@ -81,7 +81,7 @@
         "require-extension-hooks-babel": "^1.0.0",
         "require-extension-hooks-vue": "^3.0.0",
         "sass": "^1.26.8",
-        "sinon": "^9.0.2",
+        "sinon": "^9.2.3",
         "sort-package-json": "^1.44.0",
         "supports-color": "^7.1.0",
         "tachyons": "^4.12.0",
