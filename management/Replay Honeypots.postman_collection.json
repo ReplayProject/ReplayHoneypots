@@ -1,0 +1,1340 @@
+{
+	"info": {
+		"_postman_id": "fbd69ebe-d811-4136-94fd-8a6b8436743a",
+		"name": "Replay Honeypots",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Config",
+			"item": [
+				{
+					"name": "Get Configs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4bd26046-b8f3-473d-a2e2-83cf11b7c20d",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Returns object with docs array\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.docs).to.be.an(\"array\")\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Config docs have correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.docs[0]).to.have.keys(\"_id\", \"_rev\", \"response_delay\", \"portscan_window\", \"portscan_threshold\", \r",
+									"    \"whitelist_addrs\", \"whitelist_ports\", \"os\", \"fingerprint\", \"filtered_ports\", \"services\").and.be.an(\"object\")\r",
+									"    pm.expect(responseJson.docs[0].services[0]).to.have.keys(\"name\", \"port\", \"protocol\", \"service_data\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/config",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"config"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Config",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "5dcc1a25-6388-470e-9229-dfa1c268de5b",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Config doc has correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"response_delay\", \"portscan_window\", \"portscan_threshold\", \"whitelist_addrs\", \"whitelist_ports\", \"os\", \"fingerprint\", \"filtered_ports\", \"services\").and.be.an(\"object\")\r",
+									"    pm.expect(responseJson.services).to.have.keys(\"name\", \"port\", \"protocol\", \"service_data\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiPath}}/config",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"config"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Config",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "efd9f8ce-464d-4e30-8510-675251aa1f57",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Config doc has correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"response_delay\", \"portscan_window\", \"portscan_threshold\", \"whitelist_addrs\", \"whitelist_ports\", \"os\", \"fingerprint\", \"filtered_ports\", \"services\").and.be.an(\"object\")\r",
+									"    pm.expect(responseJson.services[0]).to.have.keys(\"name\", \"port\", \"protocol\", \"service_data\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/config/:configId",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"config",
+								":configId"
+							],
+							"variable": [
+								{
+									"key": "configId",
+									"value": "configDefault"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Config",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b073ebd1-6b78-4937-83d4-107204494104",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Config doc has correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"response_delay\", \"portscan_window\", \"portscan_threshold\", \"whitelist_addrs\", \"whitelist_ports\", \"os\", \"fingerprint\", \"filtered_ports\", \"services\").and.be.an(\"object\")\r",
+									"    pm.expect(responseJson.services).to.have.keys(\"name\", \"port\", \"protocol\", \"service_data\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/config/:configId",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"config",
+								":configId"
+							],
+							"variable": [
+								{
+									"key": "configId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Config",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "88995ea2-5b4a-4b51-8f57-dd543f287193",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Config doc has correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"response_delay\", \"portscan_window\", \"portscan_threshold\", \"whitelist_addrs\", \"whitelist_ports\", \"os\", \"fingerprint\", \"filtered_ports\", \"services\").and.be.an(\"object\")\r",
+									"    pm.expect(responseJson.services).to.have.keys(\"name\", \"port\", \"protocol\", \"service_data\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/config/:configId",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"config",
+								":configId"
+							],
+							"variable": [
+								{
+									"key": "configId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Honeypot",
+			"item": [
+				{
+					"name": "Get Honeypots",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "146d9736-19d9-4de8-9ab4-804bac2c7192",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Returns object with docs array\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.docs).to.be.an(\"array\")\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Honeypot docs have correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.docs[0]).to.have.keys(\"_id\", \"_rev\", \"ip_addr\", \"auth_group_id\", \"config_id\", \"tags\", \"deleted\", \"hostname\").and.be.an(\"object\")\r",
+									"    pm.expect(responseJson.docs[0].tags).to.be.an(\"array\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/honeypot",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"honeypot"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Honeypot",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f7c6a92a-de92-4009-9a0f-788171ce713e",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Honeypot doc has correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"ip_addr\", \"auth_group_id\", \"config_id\", \"tags\", \"deleted\", \"hostname\").and.be.an(\"object\")\r",
+									"    pm.expect(responseJson.tags).to.be.an(\"array\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/honeypot",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"honeypot"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Honeypot",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "68268a22-e07d-4f2e-9c1f-5fbf0f57c09f",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Honeypot doc has correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"ip_addr\", \"auth_group_id\", \"config_id\", \"tags\", \"deleted\", \"hostname\").and.be.an(\"object\")\r",
+									"    pm.expect(responseJson.tags).to.be.an(\"array\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/honeypot/:honeypotId",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"honeypot",
+								":honeypotId"
+							],
+							"variable": [
+								{
+									"key": "honeypotId",
+									"value": "5fd88868126a4438bb00dafeeada4bc5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Honeypot",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "30d84685-0a19-497d-a8ed-111c76b02cb1",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Honeypot doc has correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"ip_addr\", \"auth_group_id\", \"config_id\", \"tags\", \"deleted\", \"hostname\").and.be.an(\"object\")\r",
+									"    pm.expect(responseJson.tags).to.be.an(\"array\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/honeypot/:honeypotId",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"honeypot",
+								":honeypotId"
+							],
+							"variable": [
+								{
+									"key": "honeypotId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Honeypot",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9db1b1c5-6b77-4270-9c58-4978da7c44bf",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Honeypot doc has correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"ip_addr\", \"auth_group_id\", \"config_id\", \"tags\", \"deleted\", \"hostname\").and.be.an(\"object\")\r",
+									"    pm.expect(responseJson.tags).to.be.an(\"array\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/honeypot/:honeypotId",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"honeypot",
+								":honeypotId"
+							],
+							"variable": [
+								{
+									"key": "honeypotId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Role",
+			"item": [
+				{
+					"name": "Get Roles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a1e2ec57-ce16-42bc-be86-25b89dc6044d",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Returns object with docs array\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.docs).to.be.an(\"array\")\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Role docs have correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.docs[0]).to.have.keys(\"_id\", \"_rev\", \"name\", \"admin\", \"users\", \"adminLogs\", \"traffLogs\", \"devices\", \"authGroupsMgmt\", \"configs\", \"authGroupsList\").and.be.an(\"object\")\r",
+									"    pm.expect(responseJson.docs[0].authGroupsList).to.be.an(\"array\")\r",
+									"    pm.expect(responseJson.docs[0].authGroupsList[0]).to.have.keys(\"id\", \"access\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/role",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"role"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "c79e778d-b0be-496f-a1d0-5c418d812fb4",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Role doc has correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"name\", \"admin\", \"users\", \"adminLogs\", \"traffLogs\", \"devices\", \"authGroupsMgmt\", \"configs\", \"authGroupsList\").and.be.an(\"object\")\r",
+									"    pm.expect(responseJson.authGroupsList).to.be.an(\"array\")\r",
+									"    pm.expect(responseJson.authGroupsList[0]).to.have.keys(\"id\", \"access\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/role",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"role"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "6b03034d-32ad-4a36-a243-ed2027f8165d",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Role doc has correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"name\", \"admin\", \"users\", \"adminLogs\", \"traffLogs\", \"devices\", \"authGroupsMgmt\", \"configs\", \"authGroupsList\").and.be.an(\"object\")\r",
+									"    pm.expect(responseJson.authGroupsList).to.be.an(\"array\")\r",
+									"    pm.expect(responseJson.authGroupsList[0]).to.have.keys(\"id\", \"access\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/role/:roleId",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"role",
+								":roleId"
+							],
+							"variable": [
+								{
+									"key": "roleId",
+									"value": "roleAdminDefault"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1f1bcb7a-2b36-459a-969e-0babe6e0b006",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Role doc has correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"name\", \"admin\", \"users\", \"adminLogs\", \"traffLogs\", \"devices\", \"authGroupsMgmt\", \"configs\", \"authGroupsList\").and.be.an(\"object\")\r",
+									"    pm.expect(responseJson.authGroupsList).to.be.an(\"array\")\r",
+									"    pm.expect(responseJson.authGroupsList[0]).to.have.keys(\"id\", \"access\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/role/:roleId",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"role",
+								":roleId"
+							],
+							"variable": [
+								{
+									"key": "roleId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "c84247b3-734f-4406-9700-f45d0c772615",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Role doc has correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"name\", \"admin\", \"users\", \"adminLogs\", \"traffLogs\", \"devices\", \"authGroupsMgmt\", \"configs\", \"authGroupsList\").and.be.an(\"object\")\r",
+									"    pm.expect(responseJson.authGroupsList).to.be.an(\"array\")\r",
+									"    pm.expect(responseJson.authGroupsList[0]).to.have.keys(\"id\", \"access\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/role/:roleId",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"role",
+								":roleId"
+							],
+							"variable": [
+								{
+									"key": "roleId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Get Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "0e205c63-75ac-4301-b465-e9d4268860fc",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Returns object with docs array\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.docs).to.be.an(\"array\")\r",
+									"});\r",
+									"\r",
+									"pm.test(\"User docs have correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.docs[0]).to.have.keys(\"_id\", \"_rev\", \"firstname\", \"lastname\", \"username\", \"role\", \"local\", \"enabled\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/user",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e18077db-a65a-44d0-b296-02cdd2e29f2e",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"User doc have correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"firstname\", \"lastname\", \"username\", \"role\", \"local\", \"enabled\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/user",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d1d89fa5-76aa-4865-a064-a58cf55c2f7e",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"User doc have correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"firstname\", \"lastname\", \"username\", \"role\", \"local\", \"enabled\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/user/:userId",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"user",
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "samlTestUserDefault"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b447c36c-a7dd-49b4-a477-75405aecc665",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"User doc have correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"firstname\", \"lastname\", \"username\", \"role\", \"local\", \"enabled\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/user/:userId",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"user",
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "8ca373df-9a4b-4690-9575-2de912cf5b2b",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"User doc have correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"firstname\", \"lastname\", \"username\", \"role\", \"local\", \"enabled\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/user/:userId",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"user",
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Auth Groups",
+			"item": [
+				{
+					"name": "Get Auth Groups",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "53d7f868-9035-4ca2-a0c9-ac0aa2527491",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Returns object with docs array\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.docs).to.be.an(\"array\")\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Auth Group docs have correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.docs[0]).to.have.keys(\"_id\", \"_rev\", \"name\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/auth_group",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"auth_group"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Auth Group",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "23527497-7f69-4a72-ba07-28572ca4cc94",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Auth Group doc have correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"name\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/auth_group",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"auth_group"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Auth Group",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "88ca1fd3-5359-4242-b83d-9c28b53aa4a6",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Auth Group doc have correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"name\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/auth_group/:authGroupId",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"auth_group",
+								":authGroupId"
+							],
+							"variable": [
+								{
+									"key": "authGroupId",
+									"value": "authGroupDefault"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Auth Group",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f3a09f3f-ce9a-4b95-8b4a-7dfd1e512325",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Auth Group doc have correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"name\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/auth_group/:authGroupId",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"auth_group",
+								":authGroupId"
+							],
+							"variable": [
+								{
+									"key": "authGroupId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Auth Group",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "728cddb8-4e1d-4898-a657-60a251372061",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Auth Group doc have correct fields\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.have.keys(\"_id\", \"_rev\", \"name\").and.be.an(\"object\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{apiPath}}/auth_group/:authGroupId",
+							"host": [
+								"{{apiPath}}"
+							],
+							"path": [
+								"auth_group",
+								":authGroupId"
+							],
+							"variable": [
+								{
+									"key": "authGroupId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "6c512764-c8b2-4677-b329-fc3001362666",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Returns 'logged in'\", function () {\r",
+							"  pm.expect(pm.response.text()).to.eql(\"logged in\")\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Logs",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c4a977bb-9ffc-4f21-88e6-b9bad983d8c7",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Returns object with docs array\", function () {\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson.docs).to.be.an(\"array\")\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Doc objects have correct fields\", function () {\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson.docs[0]).to.have.keys(\"_id\", \"_rev\", \"sourcePortNumber\", \"sourceIPAddress\", \"sourceMAC\", \"destPortNumber\", \"destIPAddress\", \"destMAC\", \"timestamp\",\r",
+							"                                                 \"trafficType\", \"length\", \"isPortOpen\", \"hostname\", \"uuid\").and.be.an(\"object\")\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{apiPath}}/logs",
+					"host": [
+						"{{apiPath}}"
+					],
+					"path": [
+						"logs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Log DB Info",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "07da45a5-385e-4d75-80df-bc490702d91b",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"logInfo object has correct fields\", function () {\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson).to.have.keys(\"db_name\", \"purge_seq\", \"update_seq\", \"sizes\", \"props\", \"doc_del_count\", \"doc_count\", \"disk_format_version\", \"compact_running\",\r",
+							"                                                 \"cluster\", \"instance_start_time\", \"host\", \"auto_compaction\", \"adapter\").and.be.an(\"object\")\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{apiPath}}/logDBInfo",
+					"host": [
+						"{{apiPath}}"
+					],
+					"path": [
+						"logDBInfo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Alerts",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "1644be62-250e-4a3a-ad17-a216aa1af6d6",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Returns object with docs array\", function () {\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson.docs).to.be.an(\"array\")\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Alert doc objects have correct fields\", function () {\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson.docs[0]).to.have.keys(\"_id\", \"_rev\", \"variant\", \"message\", \"timestamp\", \"references\", \"hostname\", \"uuid\").and.be.an(\"object\")\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{apiPath}}/alerts",
+					"host": [
+						"{{apiPath}}"
+					],
+					"path": [
+						"alerts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Host Info",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b688894b-fd67-4f31-a709-78f2d94855cd",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Returns object with rows array\", function () {\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson.rows).to.be.an(\"array\")\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Rows have correct fields\", function () {\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson.rows[0]).to.have.keys(\"key\", \"value\").and.be.an(\"object\")\r",
+							"    pm.expect(responseJson.rows[0].key).to.be.an(\"array\")\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{apiPath}}/hostInfo",
+					"host": [
+						"{{apiPath}}"
+					],
+					"path": [
+						"hostInfo"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "b2ccbc4b-c7c6-46cf-af3d-a9599607a3f5",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "2ed3625d-9003-4dce-93e9-69bc3bbfbfc6",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "1c0ebafa-8467-439c-b066-ee167f953c5f",
+			"key": "baseUrl",
+			"value": ""
+		},
+		{
+			"id": "61279ce0-2054-4b47-a426-c75912bcb972",
+			"key": "apiPath",
+			"value": ""
+		}
+	],
+	"protocolProfileBehavior": {}
+}

@@ -1,0 +1,12 @@
+
+Configuration
+
+    9 filtered ports were found.
+    4 open ports were found.
+
+    Detected Services
+
+        ssh: 22 (tcp)
+        http: 80 (tcp)
+        nping-echo: 9929 (tcp)
+        tcpwrapped: 31337 (tcp)

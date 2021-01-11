@@ -6,7 +6,10 @@
             'w-75-l': $route.name != 'overview',
         }"
     >
-        <component-title>Sign In</component-title>
+        <component-title>
+            <template v-slot:pageCategory>Welcome</template>
+            <template v-slot:pageName>Login</template>
+        </component-title>
         <hr class="o-20" />
         <main class="black-80">
             <form class="measure" @submit="login" autocomplete="off" ref="form">
@@ -31,17 +34,29 @@
                             id="password"
                         />
                     </div>
-                    <!-- <label class="pa0 ma0 lh-copy f6 pointer"
-            ><input type="checkbox" /> Remember me</label
-          > -->
                 </fieldset>
                 <div class="">
                     <input
                         class="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib"
                         type="submit"
+                        name="btnSignIn"
                         value="Sign in"
                     />
+                    <input
+                        class="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib"
+                        type="button"
+                        value="SSO Portal"
+                        onclick="window.location.href='/login/sso';"
+                    />
                 </div>
+
+                <section class="ph2 pt2">
+                    <p class="ma3 pa2 i tc w-100">
+                        If you get redirected here after a SAML SSO login, your SSO
+                        account does not have access to this application, or your local
+                        account is disabled. Contact your IT department.
+                    </p>
+                </section>
                 <!-- <div class="lh-copy mt3">
           <a href="#0" class="f6 link dim black db">Sign up</a>
           <a href="#0" class="f6 link dim black db">Forgot your password?</a>
@@ -79,9 +94,9 @@ export default {
 
             try {
                 let res = await this.axios.post('/login', data)
-                console.log('Logged in')
                 this.$toasted.show('Authenticated')
                 this.$router.push('/dashboard')
+                this.$root.$emit('login')
             } catch (error) {
                 this.$toasted.show('Failed to Login. Error: ' + error.message)
                 if (process.env.NODE_ENV != 'test') console.log('Cannot log in', error)

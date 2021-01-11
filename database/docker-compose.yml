@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+    # # Service to get a database up and running with CORS
+    couchdb:
+        container_name: ReplayDatabase
+        image: couchdb:3.0 # NON-ARM Deployment Image
+        # image: treehouses/couchdb:2.3.1 # ARM Deployment Image - ARM_DEP
+        environment:
+            - COUCHDB_USER=admin # TODO: change creds or use default: "admin"
+            - COUCHDB_PASSWORD=couchdb # TODO: change creds or use default: "couchdb"
+        ports:
+            - 5984:5984
+            - 6984:6984
+            - 4369:4369
+            - 9101:9100
+        volumes:
+            - couchdb_data:/usr/local/var/lib/couchdb # NON-ARM Data Persistence
+            # - couchdb_data:/treehouses/couchdb # ARM Data Persistence - ARM_DEP
+            - ./config:/opt/couchdb/etc/local.d # System Config File - Architecture Independent
+            - ./cert:/opt/couchdb/etc/cert/ # Cert Data - Architecture Independent
+        healthcheck:
+            test: ['CMD', 'curl', '-f', 'https://admin:couchdb@localhost:6984']
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
+        deploy:
+            replicas: 1
+            placement:
+                constraints:
+                    - 'node.role==manager'
+
+volumes:
+    # Persist data from couchdb
+    couchdb_data:
+        name: ReplayDatabaseVol

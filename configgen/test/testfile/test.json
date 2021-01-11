@@ -1,0 +1,94 @@
+{
+    "filtered_ports": [],
+    "fingerprint": "SCAN(V=7.80%E=4%D=8/21%OT=22%CT=1%CU=34705%PV=Y%DS=1%DC=D%G=Y%M=B827EB%TM=5F404AC8%P=x86_64-apple-darwin17.7.0)SEQ(SP=103%GCD=1%ISR=10C%TI=Z%CI=Z%II=I%TS=A)OPS(O1=M5B4ST11NW7%O2=M5B4ST11NW7%O3=M5B4NNT11NW7%O4=M5B4ST11NW7%O5=M5B4ST11NW7%O6=M5B4ST11)WIN(W1=FE88%W2=FE88%W3=FE88%W4=FE88%W5=FE88%W6=FE88)ECN(R=Y%DF=Y%T=40%W=FAF0%O=M5B4NNSNW7%CC=Y%Q=)T1(R=Y%DF=Y%T=40%S=O%A=S+%F=AS%RD=0%Q=)T2(R=N)T3(R=N)T4(R=Y%DF=Y%T=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)T5(R=Y%DF=Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)T6(R=Y%DF=Y%T=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)T7(R=Y%DF=Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)U1(R=Y%DF=N%T=40%IPL=164%UN=0%RIPL=G%RID=G%RIPCK=G%RUCK=G%RUD=G)IE(R=Y%DFI=N%T=40%CD=S)",
+    "os": "Linux 2.6.32",
+    "portscan_threshold": 1000,
+    "portscan_window": 100,
+    "response_delay": 0,
+    "services": [
+        {
+            "name": "ssh",
+            "port": 22,
+            "protocol": "tcp",
+            "service_data": [
+                {
+                    "script": {
+                        "@id": "ssh-hostkey",
+                        "@output": "\n  2048 4d:b8:2d:e1:18:c8:54:c3:00:29:5e:ea:e0:6a:a7:36 (RSA)\nssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSWhi1z3c8i6p1oUBr0diewjvz0XFQb+N3AH6EweBvsL0aD9CWIbyOg0InlhJd0sYoKlO6gZaCp0hscpwyw1COzVRjhy6tcK5wIaWF7z0qIfMgDtnDTg0Cg52PS3Xnj8lUj2YfCw24Zslss383NL7N/mHcX0JwBFf7WgedLAaDzf3U4BCLe59f3f8yy2a/PmM/DYmpvQPi2M8rX0/ysF4facQI2DbTuQ7kEZwyKPTFI9sG2KGhlgY6HvcDtEMTnaDtFApu8q0wuOhmTuv+ZFeUg1ox1pqwlRPqtk6tPd0wy46zjJP19b2Ww/oiNfre44ku8ukxERnJDYJOXj0DgyTF\n  256 76:3b:c0:af:f7:9c:ee:bf:d2:f7:fb:91:d7:56:a5:90 (ECDSA)\necdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBDs5CenPNG1BntFqeCtWHC6HYPkW1jKe+7iCNrI7WhEdoPeB3RJCuCQMQJZDAO+kpTSTGjT72ZOsPxrDMfxtfRU=\n  256 91:b3:e5:16:73:2f:ab:c7:2b:21:c5:99:7a:ff:f2:2c (ED25519)\nssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAG6sIl7gDy/j/CVMcKVpa+ifStuKowiHpKlA9nnHa+P",
+                        "table": [
+                            {
+                                "elem": [
+                                    {
+                                        "#text": "4db82de118c854c300295eeae06aa736",
+                                        "@key": "fingerprint"
+                                    },
+                                    {
+                                        "#text": "2048",
+                                        "@key": "bits"
+                                    },
+                                    {
+                                        "#text": "ssh-rsa",
+                                        "@key": "type"
+                                    },
+                                    {
+                                        "#text": "AAAAB3NzaC1yc2EAAAADAQABAAABAQDSWhi1z3c8i6p1oUBr0diewjvz0XFQb+N3AH6EweBvsL0aD9CWIbyOg0InlhJd0sYoKlO6gZaCp0hscpwyw1COzVRjhy6tcK5wIaWF7z0qIfMgDtnDTg0Cg52PS3Xnj8lUj2YfCw24Zslss383NL7N/mHcX0JwBFf7WgedLAaDzf3U4BCLe59f3f8yy2a/PmM/DYmpvQPi2M8rX0/ysF4facQI2DbTuQ7kEZwyKPTFI9sG2KGhlgY6HvcDtEMTnaDtFApu8q0wuOhmTuv+ZFeUg1ox1pqwlRPqtk6tPd0wy46zjJP19b2Ww/oiNfre44ku8ukxERnJDYJOXj0DgyTF",
+                                        "@key": "key"
+                                    }
+                                ]
+                            },
+                            {
+                                "elem": [
+                                    {
+                                        "#text": "763bc0aff79ceebfd2f7fb91d756a590",
+                                        "@key": "fingerprint"
+                                    },
+                                    {
+                                        "#text": "256",
+                                        "@key": "bits"
+                                    },
+                                    {
+                                        "#text": "ecdsa-sha2-nistp256",
+                                        "@key": "type"
+                                    },
+                                    {
+                                        "#text": "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBDs5CenPNG1BntFqeCtWHC6HYPkW1jKe+7iCNrI7WhEdoPeB3RJCuCQMQJZDAO+kpTSTGjT72ZOsPxrDMfxtfRU=",
+                                        "@key": "key"
+                                    }
+                                ]
+                            },
+                            {
+                                "elem": [
+                                    {
+                                        "#text": "91b3e516732fabc72b21c5997afff22c",
+                                        "@key": "fingerprint"
+                                    },
+                                    {
+                                        "#text": "256",
+                                        "@key": "bits"
+                                    },
+                                    {
+                                        "#text": "ssh-ed25519",
+                                        "@key": "type"
+                                    },
+                                    {
+                                        "#text": "AAAAC3NzaC1lZDI1NTE5AAAAIAG6sIl7gDy/j/CVMcKVpa+ifStuKowiHpKlA9nnHa+P",
+                                        "@key": "key"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "whitelist_addrs": [
+        "192.168.86.159",
+        "1.1.1.1",
+        "1.2.3.4"
+    ],
+    "whitelist_ports": [
+        5555,
+        8080
+    ]
+}

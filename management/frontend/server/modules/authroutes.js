@@ -43,42 +43,55 @@ router.post('/login', (req, res, next) => {
             authLog('login error: ', err)
             return next(err)
         }
+
         if (!user) {
             authLog('login request failed', info, user)
             return res.status(400).send([user, 'Cannot log in', info])
         }
+
         req.logIn(user, err => {
             if (err) return next(err)
             authLog('successful login: ', user)
-
-            res.send('logged in')
-
-            // Follow saved state vs returning user object (with saved id)
-            // return req.session.returnTo
-            //   ? res.redirect(req.session.returnTo)
-            //   : res.send(user)
-            // return res.redirect('/')
+            res.send(user._id)
         })
     })(req, res, next)
 })
 
-/**
- * Simple version of login route, can be used later probably
- */
-// router.post(
-//     '/login',
-//     passport.authenticate('local', {
-//         successReturnToOrRedirect: '/',
-//         failureRedirect: '/login',
-//     })
-// )
+router.get(
+    '/login/sso',
+    passport.authenticate('saml', {
+        successReturnToOrRedirect: '/',
+    })
+)
+
+router.post('/login/callback', (req, res, next) => {
+    passport.authenticate('saml', (err, user, info) => {
+        // Logging return to sessions
+        if (req.session.returnTo) authLog('Requested return to', req.session.returnTo)
+
+        if (err) {
+            authLog('login error: ', err)
+            return next(err)
+        }
+        if (!user) {
+            authLog('login request failed', info, user)
+            res.redirect('/')
+            // return res.status(400).send([user, 'Cannot log in', info])
+        } else {
+            req.logIn(user, err => {
+                if (err) return next(err)
+                authLog('successful login: ', user)
+                res.redirect('/')
+            })
+        }
+    })(req, res, next)
+})
 
 // Perform a logout by removing the req.user property and clearing the login session (if any).
 router.get('/logout', (req, res) => {
     authLog('logout:', req.session.passport.user)
     req.logout()
     res.send('logged out')
-    // res.redirect('/')
 })
 
 module.exports = router

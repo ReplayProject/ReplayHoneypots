@@ -13,7 +13,8 @@ export default {
                 value: 2730,
             },
         ],
-        aggInfo: {
+        logsInfo: {
+            docs: [],
             sizes: {
                 file: 1000,
             },

@@ -5,18 +5,16 @@ ARG NODE_VERSION=14-alpine
 
 FROM node:${NODE_VERSION} AS build
 
-RUN apk --update --no-cache add --virtual native-deps \
-  g++ gcc libgcc libstdc++ linux-headers make python
+RUN apk --update --no-cache add --virtual native-deps g++ gcc libgcc libstdc++ linux-headers make python
 
 WORKDIR /src
 COPY ./frontend/package* ./
 RUN npm ci
-
 # Setup parcel workers
 ENV PARCEL_WORKERS 1
 
 # Copy source files
-COPY ./frontend/.env .
+COPY ./frontend/.env ./
 COPY ./frontend/client ./client
 RUN npm run build
 
@@ -27,11 +25,8 @@ RUN npm prune --production && apk del native-deps
 # Next Layer!
 FROM node:${NODE_VERSION}
 
-# Get curl and bash for healthcheck / waitfor script
+# Get curl and bash for healthcheck
 RUN apk add --no-cache bash curl
-# Get wait for it, for DB
-ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /opt/bin/
-RUN chmod +x /opt/bin/wait-for-it.sh
 
 # Create app directory
 WORKDIR /usr/src/frontend
@@ -46,11 +41,7 @@ COPY ./frontend/.env .
 # Create Port Mappings for frontend & database
 EXPOSE 8080
 
-HEALTHCHECK --interval=5s \
-  --timeout=5s \
-  --retries=6 \
-  CMD curl -fs http://localhost:8080/ || exit 1
+HEALTHCHECK --interval=15s --timeout=5s --retries=3 CMD curl -kfs https://localhost:8443 || exit 1
 
 # Image default start strategy
-ENTRYPOINT ["/opt/bin/wait-for-it.sh", "-s", "-t", "0"]
-CMD ["couchdb:5984", "--", "npm", "run", "start-serve" ]
+CMD ["npm", "run", "start-serve"]

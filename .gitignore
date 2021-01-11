@@ -5,6 +5,7 @@
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.idea/
 
 ### VirtualEnv ###
 # Virtualenv
@@ -47,13 +48,14 @@ honeypots/database/log.txt
 honeypots/config/dbconfig.json
 management/cli/honeycli.cfg
 
-# Frontend Stuff
+# Frontend Stuffg
 node_modules
 npm-debug.log
 dist
 .cache
 .nyc_output
 .data
+package-lock.json
 
 #Configuration files
 honeypot.cfg

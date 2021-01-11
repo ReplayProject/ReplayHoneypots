@@ -6,10 +6,13 @@
             'w-75-l': $route.name != 'overview',
         }"
     >
-        <component-title>General Stats</component-title>
+        <component-title>
+            <template v-slot:pageCategory>Home</template>
+            <template v-slot:pageName>General Stats</template>
+        </component-title>
         <hr class="o-20" />
         <section
-            v-if="Object.keys(hostsInfo).length == 0"
+            v-if="!hostsData"
             class="mw1 center mt6 mt6-ns"
         >
             <PropagateLoader :size="20" color="#387ddb" />
@@ -17,7 +20,7 @@
         <section v-else>
             <div class="flex-m flex-l flex-wrap items-center justify-between nl3 nr3">
                 <div
-                    v-if="hostsInfo"
+                    v-if="hostsData"
                     style="margin: auto;"
                     class="w-100 w-50-l w-75-m tc mb4 mb0-l"
                 >
@@ -38,19 +41,20 @@
                                 text: [
                                     'Log Distribution',
                                     Number(
+                                        //TODO: Get file size
                                         (
-                                            $store.state.aggInfo.sizes.file / 1000000
+                                            logsData.sizes.file / 1000000
                                         ).toPrecision(4)
                                     ) + ' mb',
                                 ],
                             },
-                            legend: {
-                                position: 'right',
-                                display: true,
-                                labels: {
-                                    fontSize: 14,
-                                },
-                            },
+                            //legend: {
+                            //    position: 'bottom',
+                            //    display: true,
+                            //    labels: {
+                            //        fontSize: 14,
+                            //    },
+                            //},
                         }"
                         :chartData="{
                             labels: piData[1].map((x, i) => x + ': ' + piData[0][i]),
@@ -63,89 +67,6 @@
                             ],
                         }"
                     ></doughnut>
-                </div>
-            </div>
-            <div class="divide tc relative">
-                <h5 class="fw4 ttu mv0 dib bg-white ph3">Quick Stats</h5>
-            </div>
-            <p class="tc center w-100 mv1">
-                Time distribution, clusters, and total logs of the
-                <b>last active timespan</b> for each device
-            </p>
-
-            <div class="pa2 flex flex-wrap black b">
-                <div class="dib w-50 w-25-l tc">
-                    <label for="minutes">Minutes:</label>
-                    <br />
-                    <input
-                        class="w4"
-                        :class="{
-                            'bg-light-blue': timespan.minutes != 0,
-                        }"
-                        v-model.lazy.number="timespan.minutes"
-                        type="number"
-                        name="minutes"
-                        min="0"
-                        max="60"
-                    />
-                </div>
-                <div class="dib w-50 w-25-l tc">
-                    <label for="hours">Hours:</label>
-                    <br />
-                    <input
-                        class="w4"
-                        :class="{
-                            'bg-light-blue': timespan.hours != 0,
-                        }"
-                        v-model.lazy.number="timespan.hours"
-                        type="number"
-                        name="hours"
-                        min="0"
-                        max="24"
-                    />
-                </div>
-                <div class="dib w-50 w-25-l tc">
-                    <label for="days">Days:</label>
-                    <br />
-                    <input
-                        class="w4"
-                        :class="{
-                            'bg-light-blue': timespan.days != 0,
-                        }"
-                        v-model.lazy.number="timespan.days"
-                        type="number"
-                        name="days"
-                        min="0"
-                        max="365"
-                    />
-                </div>
-                <div class="dib w-50 w-25-l tc">
-                    <label for="days">Specificity</label>
-                    <br />
-                    <input
-                        class="w4"
-                        v-model.lazy.number="timespan.specificity"
-                        type="number"
-                        name="specificity"
-                        min="1"
-                        max="4"
-                    />
-                </div>
-            </div>
-            <br />
-            <div class="flex flex-wrap">
-                <div
-                    v-for="db in hostsInfo"
-                    :key="db.key"
-                    class="w-100 w-50-m w-33-l mb4 mb0-l relative flex flex-column ph2 pv1"
-                >
-                    <sparkline
-                        :title="db.key"
-                        :chartstyles="'height:15rem;'"
-                        :class="$pickColor(db.key, hostsInfo.length > 4)"
-                        :timediff="timediff"
-                        :specificity="timespan.specificity"
-                    ></sparkline>
                 </div>
             </div>
         </section>
@@ -166,6 +87,7 @@ import componentTitle from '../components/title'
 import doughnut from '../components/doughnut'
 import sparkline from '../components/sparkline'
 import { mapState } from 'vuex'
+import api from '../api.js'
 
 export default {
     name: 'index',
@@ -177,6 +99,8 @@ export default {
     },
     data() {
         return {
+            hostsData: null,
+            logsData: null,
             timespan: {
                 minutes: 0,
                 hours: 1,
@@ -191,11 +115,11 @@ export default {
          * Detup date for the pie chart
          */
         piData() {
-            var l = this.hostsInfo.map(x => x.key)
+            var l = this.hostsData.map(x => x.key)
             return [
-                this.hostsInfo.map(x => x.value),
+                this.hostsData.map(x => x.value),
                 l,
-                l.map(x => this.$pickColor(x, this.hostsInfo.length > 4).slice(3)),
+                l.map(x => this.$pickColor(x, this.hostsData.length > 4).slice(3)),
             ]
         },
         isNested() {
@@ -212,6 +136,22 @@ export default {
                 this.timespan.days * 24 * 60 * 60 * 1000
             )
         },
+    },
+    methods: {
+        async loadData() {
+            // Retrieve basic info about the DB
+            try {
+                const logInfo = await api.getLogDBInfo()
+                this.logsData = logInfo.data
+                const hostsInfo = await api.getHostsInfo()
+                this.hostsData = hostsInfo.data.rows.map(x => ({ key: x.key[0], value: x.value }))
+            } catch (err) {
+                console.log(err)
+            }
+        },
+    },
+    beforeMount() {
+        this.loadData()
     },
 }
 </script>

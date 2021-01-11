@@ -7,32 +7,14 @@ import time
 import unittest
 from unittest.mock import MagicMock
 
-from CronInstaller import CronInstaller
-from CronUninstaller import CronUninstaller
 from Databaser import Databaser
 from LogEntry import LogEntry
-from NmapParser import NmapParser
 from requests.exceptions import ConnectionError
 
 
 def run_nmap():
     time.sleep(5)
     os.system("nmap localhost")
-
-
-class TestNmapParser(unittest.TestCase):
-    """
-    Test the NmapParser class
-    """
-
-    def test_invalid_filename(self):
-        with self.assertRaises(FileNotFoundError):
-            NmapParser("wrongfilename")
-
-    def test_ports(self):
-        parser = NmapParser("../../logs/nmap/default.nmap")
-        self.assertTrue(5040 in parser.getPorts())
-
 
 class TestLogs(unittest.TestCase):
     """
@@ -58,7 +40,7 @@ class TestLogs(unittest.TestCase):
 # TODO: DB conenction string for testing
 # make sure this url resolves correctly
 # Default 'http://admin:couchdb@127.0.0.1:5984'
-DB_URL = "http://admin:couchdb@couchdb:5984"  # Docker compose mode
+DB_URL = "http://admin:couchdb@host.docker.internal:5984"  # Docker compose mode
 
 
 class TestDatabaser(unittest.TestCase):
@@ -75,7 +57,7 @@ class TestDatabaser(unittest.TestCase):
         os.environ["DB_URL"] = DB_URL
         try:
             db = Databaser(test=True)
-            db.deleteDB()  # assuming admin
+            # db.deleteDB()  # assuming admin
         except Exception:
             self.fail("Databaser raised an exception during teardown!")
 
@@ -91,6 +73,36 @@ class TestDatabaser(unittest.TestCase):
         try:
             db = Databaser(test=True)
             print("Databases: ", db.listDbs())
+        except Exception:
+            self.fail("Databaser raised an exception unexpectedly!")
+
+    def test_claim_uuid(self):
+        """
+        Test that the honeypot can claim a UUID
+        """
+        # Env Variables
+        os.environ["DB_URL"] = DB_URL
+        # Successful run (assuming couch is running)
+        try:
+            db = Databaser(test=True)
+            uuid = db.claimUUID()
+            self.assertIsNotNone(uuid)
+        except Exception:
+            self.fail("Databaser raised an exception unexpectedly!")
+
+    def test_get_config(self):
+        """
+        Test that the honeypot can claim a UUID
+        """
+        # Env Variables
+        os.environ["DB_URL"] = DB_URL
+        # Successful run (assuming couch is running)
+        try:
+            db = Databaser(test=True)
+            config = db.getConfig()
+            self.assertIsNotNone(config)
+            self.assertIsNotNone(config["id"])
+            self.assertIsNotNone(uuid)
         except Exception:
             self.fail("Databaser raised an exception unexpectedly!")
 
@@ -111,9 +123,7 @@ class TestDatabaser(unittest.TestCase):
         try:
             os.environ["DB_URL"] = "http://localhost:1020"
             Databaser(test=True)
-        except ConnectionError:
-            self.assertRaises(Exception)
-        except OSError:
+        except:
             self.assertRaises(Exception)
 
         try:
@@ -121,239 +131,6 @@ class TestDatabaser(unittest.TestCase):
             Databaser(test=True)
         except Exception:
             self.assertRaises(Exception)
-
-
-class TestCron(unittest.TestCase):
-    """
-    Tests CronInstaller and CronUninstaller
-    TODO: these tests need to be rewritten to not have side affects or removed
-    remember to focus on testing our code's behaivor and not cron's
-    """
-
-    def test_cron(self):
-        """
-        Setup
-        """
-
-        # Confirm that the user has root access
-        self.assertEqual(os.geteuid(), 0)
-
-        # Before installing/uninstalling Cron, check for any existing Cron jobs
-        process = subprocess.Popen(
-            ["crontab", "-l"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-
-        # If there are previous Cron jobs, save them before clearing out Cron
-        previous = False
-        if stdout:
-            previous = True
-            crontab_file = open("previous", "w")
-            crontab_file.write(stdout.decode())
-            crontab_file.close()
-            process = subprocess.Popen(
-                ["crontab", "-r"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
-            stdout, stderr = process.communicate()
-        """
-        Test CronInstaller's argparser
-        """
-
-        with self.assertRaises(SystemExit):
-            CronInstaller.main([])
-        with self.assertRaises(FileNotFoundError):
-            CronInstaller.main(["-p", "badfilepath"])
-        with self.assertRaises(FileNotFoundError):
-            CronInstaller.main(["-p", "PortThreadManager.py", "-n", "badfilepath"])
-        CronInstaller.main(["-p", "PortThreadManager.py"])
-        CronUninstaller.uninstall()
-        CronInstaller.main(
-            ["-p", "PortThreadManager.py", "-n", "../../logs/nmap/default.nmap"]
-        )
-        CronUninstaller.uninstall()
-        """
-        Install Cron when there is no existing Cron file.
-        We expect the installer to:
-        - Create/edit the restart script
-        - Create a Cron file for the user
-        - Use the correct absolute paths for both files
-
-        Uninstall Cron when there is only our job.
-        We expect the uninstaller to simply delete the Cron file.
-        """
-
-        CronInstaller.install(
-            "PortThreadManager.py", "-n", "../../logs/nmap/default.nmap"
-        )
-        self.assertTrue(os.path.exists("restart.sh"))
-        restart_script = open("restart.sh", "r")
-        script_file = os.path.abspath("PortThreadManager.py")
-        config_file = os.path.abspath("../../logs/nmap/default.nmap")
-        self.assertEqual(
-            restart_script.read(),
-            "#!/bin/bash\n\n"
-            + "var=$(pgrep -af PortThreadManager.py | wc -l)\n\n"
-            + "if [ $var -le 0 ]\n"
-            + "then\n"
-            + "\tcd "
-            + os.path.dirname(os.path.dirname(script_file))
-            + " && pip3 install -r requirements.txt\n"
-            + "\techo $(date) 'Running: sudo python3 "
-            + script_file
-            + " -n "
-            + config_file
-            + ".' >> "
-            + os.path.dirname(os.path.dirname(os.path.dirname(script_file)))
-            + "/logs/logs/cron.txt\n"
-            + "\tcd "
-            + os.path.dirname(script_file)
-            + " && sudo python3 "
-            + script_file
-            + " -n "
-            + config_file
-            + "\n"
-            + "fi\n",
-        )
-        restart_script.close()
-        process = subprocess.Popen(
-            ["crontab", "-l"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        self.assertEqual(
-            stdout.decode(),
-            "* * * * * /bin/bash "
-            + os.path.dirname(os.path.abspath(__file__))
-            + "/restart.sh >> "
-            + os.path.dirname(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            )
-            + "/logs/logs/restart.txt 2>&1\n",
-        )
-        CronUninstaller.uninstall()
-        process = subprocess.Popen(
-            ["crontab", "-l"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        self.assertEqual(stderr.decode(), "no crontab for root\n")
-        """
-        Install Cron when there is already an existing Cron file, and
-        that file contains our job. We expect the installer to identify
-        our job and not duplicate the Cron job.
-        """
-
-        CronInstaller.install(
-            "PortThreadManager.py", "-n", "../../logs/nmap/default.nmap"
-        )
-        CronInstaller.install(
-            "PortThreadManager.py", "-n", "../../logs/nmap/default.nmap"
-        )
-        process = subprocess.Popen(
-            ["crontab", "-l"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        self.assertEqual(
-            stdout.decode(),
-            "* * * * * /bin/bash "
-            + os.path.dirname(os.path.abspath(__file__))
-            + "/restart.sh >> "
-            + os.path.dirname(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            )
-            + "/logs/logs/restart.txt 2>&1\n",
-        )
-        CronUninstaller.uninstall()
-        """
-        Install Cron when there is already an existing Cron file, and that
-         file does not contain our job.
-        We expect the installer to:
-        - Preserve the previous contents of the Cron file
-        - Add our job to the Cron file
-
-        Uninstall Cron when there are other jobs besides our own.
-        We expect the uninstaller to:
-        - Preserve the previous contents of the Cron file
-        - Remove our job from the Cron file
-        """
-
-        crontab_file = open("not_honeypot", "w")
-        crontab_file.write("* * * * * Hello World!\n")
-        crontab_file.close()
-        process = subprocess.Popen(
-            ["crontab", "not_honeypot"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        os.remove("not_honeypot")
-        CronInstaller.install(
-            "PortThreadManager.py", "-n", "../../logs/nmap/default.nmap"
-        )
-        process = subprocess.Popen(
-            ["crontab", "-l"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        self.assertEqual(
-            stdout.decode(),
-            "* * * * * Hello World!\n* * * * * /bin/bash "
-            + os.path.dirname(os.path.abspath(__file__))
-            + "/restart.sh >> "
-            + os.path.dirname(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            )
-            + "/logs/logs/restart.txt 2>&1\n",
-        )
-        CronUninstaller.uninstall()
-        process = subprocess.Popen(
-            ["crontab", "-l"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        self.assertEqual(stdout.decode(), "* * * * * Hello World!\n\n")
-        process = subprocess.Popen(
-            ["crontab", "-r"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        """
-        Uninstall Cron when there is no Cron file.
-        We expect the uninstaller to throw an error.
-        """
-        with self.assertRaises(FileNotFoundError):
-            CronUninstaller.uninstall()
-        """
-        Uninstall Cron when there are is a Cron file, but it does not contain our job.
-        We expect the uninstaller to:
-        - Preserve the previous contents of the Cron file
-        - Throw an error
-        """
-        crontab_file = open("not_honeypot", "w")
-        crontab_file.write("* * * * * Hello World!\n")
-        crontab_file.close()
-        process = subprocess.Popen(
-            ["crontab", "not_honeypot"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        os.remove("not_honeypot")
-        with self.assertRaises(LookupError):
-            CronUninstaller.uninstall()
-        process = subprocess.Popen(
-            ["crontab", "-l"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        self.assertEqual(stdout.decode(), "* * * * * Hello World!\n")
-        process = subprocess.Popen(
-            ["crontab", "-r"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        """
-        Teardown
-        """
-        if previous:  # If there were previous Cron jobs:
-            # Restore them
-            process = subprocess.Popen(
-                ["crontab", "previous"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
-            stdout, stderr = process.communicate()
-
-            # Remove generated files
-            os.remove("previous")
-
 
 if __name__ == "__main__":
     unittest.main()

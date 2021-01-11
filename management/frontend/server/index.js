@@ -8,10 +8,16 @@ historyLog.log = console.log.bind(console)
 
 // Get dependencies
 const express = require('express')
-const port = process.env.PORT || 8080
+// const port = process.env.PORT || 8080
 const passport = require('passport')
 require('./modules/pass')
 const authGuard = require('./modules/authGuard')
+var fs = require('fs')
+var https = require('https')
+const key = fs.readFileSync('./server/cert/key.pem')
+const cert = fs.readFileSync('./server/cert/cert.pem')
+const db = require('./db.js')
+const path = require('path')
 
 // Start setting up express
 var app = express()
@@ -20,6 +26,22 @@ var app = express()
 app.use(require('cors')())
 app.use(require('helmet')())
 app.use(require('cookie-parser')())
+
+// Enable a valid CSP
+const csp = require('helmet-csp')
+
+app.use(
+    csp({
+        directives: {
+            defaultSrc: [`'self'`],
+            connectSrc: [`*`],
+            imgSrc: [`https:`, `data:`, `*`],
+            styleSrc: [`'self'`, `*`, `'unsafe-inline'`],
+            scriptSrc: [`'self'`, `*`, `'unsafe-inline'`, `'unsafe-eval'`],
+            fontSrc: [`*`],
+        },
+    })
+)
 
 // Parse body of requests
 app.use(require('body-parser').urlencoded({ extended: true })) // application/x-www-form-urlencoded
@@ -43,14 +65,30 @@ app.use(passport.session())
 app.use(require('./modules/authroutes'))
 
 // Define actual routes
+app.use(require('./modules/api'))
 
 // Serve the actual frontend of the app & other routes (behind the auth guard)
 app.get('/test', authGuard(), (req, res) =>
     res.send('you passed the authentication check')
 )
 
+// Set up the database design documents
+db.setupDesignDocuments()
+    .then(() => {
+        db.importAllIndexes()
+            .then(() => {
+                db.importAllDefaults()
+            })
+            .catch( err => {
+                console.log(err)
+            })
+    })
+    .catch(err => {
+        console.log(err)
+        // Do nothing - error is logged upstream
+    })
+
 // Host the app's frontend on port 8080
-const path = require('path')
 const dist = path.join(__dirname, '../dist')
 // Account for the Single Page Application (SPA) aspect of the app's design
 app.use(
@@ -58,6 +96,7 @@ app.use(
         logger: historyLog,
     })
 )
+
 // Serve application static files
 app.use(require('serve-static')(dist, { index: ['index.html'] }))
 
@@ -75,31 +114,8 @@ app.use(function (err, req, res, next) {
     }
 })
 
-// listen for frontend requests :)
-app.listen(port, () => log('Frontend listening on', port))
+const httpsServer = https.createServer({ key: key, cert: cert }, app)
 
-// If we ever venture into direct HTTPS (watch out for couchdb requests... they have to be HTTPS too)
-// HOWEVER, using a reverse proxy is a more reasonable approach to this.
-
-// var fs = require("fs");
-// var https = require("https");
-
-// var options = {
-//   key: fs.readFileSync("../../config/server.key"),
-//   cert: fs.readFileSync("../../config/server.cert")
-// };
-
-// https
-//   .createServer(options, app)
-//   .listen(443, () => log("Frontend HTTPS listening on", 443));
-
-// // Redirect from http port 80 to https
-// var http = require("http");
-// http
-//   .createServer(function(req, res) {
-//     res.writeHead(301, {
-//       Location: "https://" + req.headers["host"] + req.url
-//     });
-//     res.end();
-//   })
-//   .listen(80, () => log("Frontend HTTP redirect listening on", 80));
+httpsServer.listen(8443, () => {
+    console.log('listening on 8443')
+})

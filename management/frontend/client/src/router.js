@@ -6,10 +6,26 @@ import PageAbout from './pages/about.vue'
 import PageAlerts from './pages/alerts.vue'
 import PageEdit from './pages/edit.vue'
 import PageOverview from './pages/overview.vue'
-import PageDetails from './pages/details.vue'
 import PageLogin from './pages/login.vue'
+import PageMetrics from './pages/metrics.vue'
+import PageUsers from './pages/users.vue'
+import PageAddUser from './pages/userAdd.vue'
+import PageUserDetails from './pages/userDetails.vue'
+import PageConfigs from './pages/configs.vue'
+import PageAddConfig from './pages/configAdd.vue'
+import PageConfigDetails from './pages/configDetails.vue'
+import PageHoneypots from './pages/honeypots.vue'
+import PageHoneypotDetails from './pages/honeypotDetails.vue'
+import PageAuthGroups from './pages/authGroups.vue'
+import PageAuthGroupsAdd from './pages/authGroupsAdd.vue'
+import PageRoles from './pages/roles.vue'
+import PageAddRole from './pages/roleAdd.vue'
+import PageEditRole from './pages/roleDetails.vue'
+import PagePasswordExpired from './pages/passwordExp.vue'
+import PageAdminLogs from './pages/adminLogs.vue'
 
-import axios from 'axios'
+import api from './api.js'
+
 /**
  * Setup how we server, authenticate, and structure our application
  */
@@ -32,9 +48,14 @@ let routes = [
         component: PageAbout,
     },
     {
-        path: '/details/:device',
-        name: 'details',
-        component: PageDetails,
+        path: '/honeypots',
+        name: 'honeypots',
+        component: PageHoneypots,
+    },
+    {
+        path: '/honeypots/:device',
+        name: 'honeypotDetails',
+        component: PageHoneypotDetails,
     },
     {
         path: '/alerts',
@@ -52,6 +73,76 @@ let routes = [
         component: PageEdit,
     },
     {
+        path: '/metrics',
+        name: 'metrics',
+        component: PageMetrics,
+    },
+    {
+        path: '/users',
+        name: 'users',
+        component: PageUsers,
+    },
+    {
+        path: '/users/new',
+        name: 'userAdd',
+        component: PageAddUser,
+    },
+    {
+        path: '/users/:user',
+        name: 'userDetails',
+        component: PageUserDetails,
+    },
+    {
+        path: '/configs',
+        name: 'configs',
+        component: PageConfigs,
+    },
+    {
+        path: '/configs/new',
+        name: 'configAdd',
+        component: PageAddConfig,
+    },
+    {
+        path: '/configs/:config',
+        name: 'configDetails',
+        component: PageConfigDetails,
+    },
+    {
+        path: '/authGroups',
+        name: 'authGroups',
+        component: PageAuthGroups,
+    },
+    {
+        path: '/authGroups/new',
+        name: 'authGroupsAdd',
+        component: PageAuthGroupsAdd,
+    },
+    {
+        path: '/roles',
+        name: 'roles',
+        component: PageRoles,
+    },
+    {
+        path: '/roles/new',
+        name: 'rolesAdd',
+        component: PageAddRole,
+    },
+    {
+        path: '/roles/:role',
+        name: 'editRole',
+        component: PageEditRole,
+    },
+    {
+        path: '/passwordexpired',
+        name: 'passwordExpired',
+        component: PagePasswordExpired
+    },
+    {
+        path: '/adminLogs',
+        name: 'adminLogs',
+        component: PageAdminLogs
+    },
+    {
         path: '*',
         redirect: '/',
     },
@@ -67,17 +158,21 @@ const router = new Router({
  * Perform an authentication check on all routes except 'login'
  */
 router.beforeEach(async (to, from, next) => {
-    let shouldBeAuthed = to.name !== 'login'
-
-    if (shouldBeAuthed) {
+    if (to.name !== 'login') {
         try {
-            let res = await axios.get('/user')
-            // TODO: maybe save this in app internals,
-            //  if we need user data from Passport JS
-            // console.log(res.data)
-            next()
+            let response = await api.getSessionData()
+            v.$store.commit('setUserData', response.data[0])
+            v.$store.commit('setPermsData', response.data[1])
+            if (v.$store.state.userData.otp === true && to.name !== 'passwordExpired') {
+                v.$toasted.show('Password Expired. Reset your password.')
+                next({ name: 'passwordExpired' })
+            } else {
+                next()
+            }
         } catch (err) {
             v.$toasted.show('Please log in.')
+            v.$store.commit('setUserData', undefined)
+            v.$store.commit('setPermsData', undefined)
             next({ name: 'login' })
             return
         }

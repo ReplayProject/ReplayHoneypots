@@ -7,20 +7,23 @@
             'w-75-l': $route.name != 'overview',
         }"
     >
-        <component-title>Traffic At a Glance</component-title>
+        <component-title>
+            <template v-slot:pageCategory>Dashboards</template>
+            <template v-slot:pageName>Traffic at a Glance</template>
+        </component-title>
         <hr class="o-20" />
         <section
-            v-if="Object.keys($store.state.hostsInfo).length == 0"
+            v-if="!this.data"
             class="mw1 center mt6 mt6-ns"
         >
             <PropagateLoader :size="20" color="#387ddb" />
         </section>
         <section v-else>
             <div
-                @click="entryLimit > 0 ? (entryLimit = -1) : (entryLimit = 5)"
+                @click="entryLimit > 0 ? (entryLimit = 0) : (entryLimit = 300)"
                 :class="{
-                    'bg-blue': entryLimit < 0,
-                    white: entryLimit < 0,
+                    'bg-blue': entryLimit < 1,
+                    white: entryLimit < 1,
                     'bg-white': entryLimit > 0,
                     blue: entryLimit > 0,
                 }"
@@ -42,17 +45,17 @@
                     All
                 </div>
                 <div
-                    v-for="n in $store.state.hostsInfo"
-                    :key="n.key"
-                    @click="host = n.key"
+                    v-for="n in this.honeypotIDs"
+                    :key="n"
+                    @click="host = n"
                     class="pointer b mv1 mh2 ph4 pv2 br2 ba b--blue hover-bg-blue hover-white shadow-hover"
                     :class="{
-                        'bg-blue': host == n.key,
-                        white: host == n.key,
-                        blue: host != n.key,
+                        'bg-blue': host == n,
+                        white: host == n,
+                        blue: host != n,
                     }"
                 >
-                    {{ n.key | capitalize }}
+                    {{ n }}
                 </div>
             </div>
 
@@ -61,12 +64,12 @@
                 <div
                     v-for="n in [300, 500, 1000, 2000]"
                     :key="n"
-                    @click="numLogs = n"
+                    @click="entryLimit = n"
                     class="pointer b mv1 mh2 ph4 pv2 br2 ba b--blue hover-bg-blue hover-white shadow-hover"
                     :class="{
-                        'bg-blue': numLogs == n,
-                        white: numLogs == n,
-                        blue: numLogs != n,
+                        'bg-blue': entryLimit == n,
+                        white: entryLimit == n,
+                        blue: entryLimit != n,
                     }"
                 >
                     Last {{ n }}
@@ -109,6 +112,7 @@
 import { PropagateLoader } from '@saeris/vue-spinners'
 import componentTitle from '../components/title'
 import metricListItem from '../components/metric-list-item'
+import api from '../api.js'
 
 export default {
     name: 'about',
@@ -120,10 +124,9 @@ export default {
     data() {
         return {
             data: null,
-            logs: null,
-            error: null,
-            entryLimit: 5,
-            numLogs: 300,
+            entryLimit: 300,
+            totalLogs: 0,
+            honeypotIDs: [],
             host: '',
         }
     },
@@ -131,7 +134,10 @@ export default {
      * Reload when logs and host change
      */
     watch: {
-        numLogs() {
+        entryLimit() {
+            this.loadData()
+        },
+        totalLogs() {
             this.loadData()
         },
         host() {
@@ -205,44 +211,40 @@ export default {
          */
         async loadData() {
             this.$Progress.start()
-            let selector = { timestamp: { $exists: true } }
-            selector.hostname = this.host == '' ? { $exists: true } : { $eq: this.host }
-            // Actually do a query
-            let results = await this.$pouch.find(
-                {
-                    selector,
-                    fields: [
-                        'sourcePortNumber',
-                        'sourceIPAddress',
-                        'destPortNumber',
-                        'destIPAddress',
-                        'trafficType',
-                        'length',
-                    ],
-                    limit: this.numLogs,
-                },
-                this.dbURI
-            )
-            // Lets do something with this data
-            this.data = results.docs
-            this.totalLogs = results.docs.length
+            let selector = this.host
+            let sort = 'desc'
+            let skip = 0
+            let fields = []
+
+            //Get the logs
+            try {
+                const results = await api.getLogs(
+                    this.host == '' ? undefined : this.host,
+                    undefined,
+                    0,
+                    undefined,
+                    this.entryLimit
+                )
+                // Lets do something with this data
+                this.data = results.data.docs
+                this.totalLogs = results.data.docs.length
+
+                this.honeypotIDs = []
+                for (let i = 0; i < this.data.length; i++) {
+                    if (this.honeypotIDs.includes(this.data[i].uuid) === false) {
+                        this.honeypotIDs.push(this.data[i].uuid)
+                    }
+                }
+            } catch (err) {
+                console.log(err)
+            }
+
             // Mark everything as done loading
             this.$Progress.finish()
         },
-        setData(err, logs) {
-            if (err) {
-                this.error = err.toString()
-            } else {
-                this.logs = logs
-            }
-        },
     },
-    async mounted() {
-        try {
-            await this.loadData(86400)
-        } catch (error) {
-            console.log(error)
-        }
+    beforeMount() {
+        this.loadData()
     },
 }
 </script>

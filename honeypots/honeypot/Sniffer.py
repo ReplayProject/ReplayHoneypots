@@ -1,16 +1,20 @@
 """
 Uses Scapy library to examine all incoming traffic
 """
+import socket
+import binascii
+from netifaces import interfaces, ifaddresses, AF_INET
 from datetime import datetime
 
 import requests
 from Alert import Alert
 from LogEntry import LogEntry
-from scapy.all import AsyncSniffer
+from scapy.all import AsyncSniffer, TCP, IP, send, NoPayload, Raw, raw, bytes_hex
 from scapy.error import Scapy_Exception
+from difflib import SequenceMatcher
 
 requests.adapters.DEFAULT_RETRIES = 0
-
+SIMILARITY_SCORE_THRESHOLD = 0.9
 
 class Sniffer:
     """
@@ -20,27 +24,13 @@ class Sniffer:
     """
 
     def __init__(
-        self,
-        config="base",
-        openPorts=None,
-        whitelist=None,
-        portWhitelist=None,
-        honeypotIP=None,
-        managementIPs=None,
-        port_scan_window=None,
-        port_scan_sensitivity=None,
-        databaser=None,
+        self, config, mode="base", databaser=None, send_channel=None
     ):
 
         self.config = config
-        self.openPorts = [] if openPorts is None else openPorts
-        self.whitelist = [] if whitelist is None else whitelist
-        self.honeypotIP = honeypotIP
-        self.portWhitelist = [] if portWhitelist is None else portWhitelist
-        self.managementIPs = managementIPs
-        self.scan_window = port_scan_window
-        self.scan_sensitivity = port_scan_sensitivity
+        self.mode = mode
         self.db = databaser
+        self.channel = send_channel
         # used to detect port scans
         self.portScanTimeout = None
         # also used to detect port scans
@@ -50,41 +40,65 @@ class Sniffer:
         # Hash used to tell if we properly updated Sniffer class;
         # there is probably a better way of making this hash
         self.currentHash = hash(self.config)
-        self.currentHash += hash(tuple(self.openPorts))
-        self.currentHash += hash(tuple(self.whitelist))
-        self.currentHash += hash(honeypotIP)
-        self.currentHash += hash(tuple(managementIPs))
+        self.index_map = {}
+        for port in self.config.open_ports:
+            self.index_map[port] = {}
 
     def start(self):
         """
         Runs the thread, begins sniffing with given config
         """
         print("Starting async sniffer")
-        # building the base filter
-        fltr = "not src host {} ".format(self.honeypotIP)
-        # adding a variable number of management ips
-        for ip in self.managementIPs:
-            fltr += "and not host {} ".format(ip)
-        # adding things from the port list
-        for port in self.portWhitelist:
-            fltr += "and not dst port {} ".format(port)
+        localIPList = []
+        fltr = ""
+        # Get a list of all IP addresses assigned to local NICs
+        # and ensure that this packet is not from any of them
+        for interface in interfaces():
+            for link in ifaddresses(interface).get(AF_INET, ()):
+                if fltr != "":
+                    fltr += "and "
+                localIPList.append(link["addr"])
+                fltr += "not src host {} ".format(link["addr"])
+
+        # Not to or from the database IP
+        if self.db is not None:
+            if fltr != "":
+                fltr += "and "
+            fltr += "not src host {} and not dst host {} ".format(socket.gethostbyname(self.db.db_ip), socket.gethostbyname(self.db.db_ip))
+
+        # Honor the port whitelist for incoming packets
+        for port in self.config.whitelist_ports:
+            if fltr != "":
+                fltr += "and "
+            fltr += "not dst port {} ".format(port)
+        # Honor the ip whitelist for both direction
+        for ip in self.config.whitelist_addrs:
+            if ip not in localIPList: # avoid blocking all incoming packets in the case that our own IP is entered into whitelist
+                if fltr != "":
+                    fltr += "and "
+                fltr += "not src host {} and not dst host {} ".format(ip, ip)
+
+        print("Filter", fltr)
 
         # here's where the packet detection starts
 
-        if self.config == "testing":
+        if self.mode == "testing":
             # this ignores the ssh spam you get when sending
             # packets between two ssh terminals
-            fltr = fltr + " and not (src port ssh or dst port ssh)"
-        elif self.config == "base":
+            if fltr != "":
+                fltr += "and "
+            fltr = fltr + "not (src port ssh or dst port ssh)"
+        elif self.mode == "base":
             # this above filter ignores the ssh spam you get when sending packets
             #  between two ssh terminals - TODO: TAKE THIS OUT IN PROD
-            fltr = fltr + " and not (src port ssh or dst port ssh)"
-        elif self.config == "onlyUDP":
+            if fltr != "":
+                fltr += "and "
+            fltr = fltr + "not (src port ssh or dst port ssh)"
+        elif self.mode == "onlyUDP":
             # this last config option is used in testing
             fltr = "udp"
 
         self.sniffer = AsyncSniffer(filter=fltr, prn=self.save_packet, store=False)
-
         if not self.sniffer:
             raise Exception("Async sniffer not initialized")
 
@@ -98,36 +112,15 @@ class Sniffer:
             raise Exception("Async sniffer not initialized")
         self.sniffer.stop()
 
-    def configUpdate(
-        self,
-        openPorts=None,
-        whitelist=None,
-        portWhitelist=None,
-        honeypotIP=None,
-        managementIPs=None,
-        port_scan_window=None,
-        port_scan_sensitivity=None,
-    ):
+    def configUpdate(self, conf):
         """
         Updates configuration options during runtime
         """
         print("Async sniffer updated")
         self.running = False
-        self.openPorts = [] if openPorts is None else openPorts
-        self.whitelist = [] if whitelist is None else whitelist
-        self.portWhitelist = [] if portWhitelist is None else portWhitelist
-        self.honeypotIP = honeypotIP
-        self.managementIPs = managementIPs
-        self.scan_window = port_scan_window
-        self.scan_sensitivity = port_scan_sensitivity
-
+        self.config = conf
         # updates hash
         self.currentHash = hash(self.config)
-        self.currentHash += hash(tuple(self.openPorts))
-        self.currentHash += hash(tuple(self.whitelist))
-        self.currentHash += hash(honeypotIP)
-        self.currentHash += hash(tuple(managementIPs))
-        self.currentHash += hash(tuple([self.scan_window, self.scan_sensitivity]))
 
         # restart's Sniffer
         try:
@@ -135,6 +128,9 @@ class Sniffer:
         except Scapy_Exception as ex:
             print("Sniffer did not finish setting up before teardown: ", str(ex))
         self.start()
+
+    async def send_msg(self, destPort):
+        await self.channel.send("{ port: " + str(destPort) + ", packet: {} }")
 
     def save_packet(self, packet):
         """
@@ -151,7 +147,8 @@ class Sniffer:
             self.portScanTimeout = currentTime
 
         # how to tell if we need to reset our port scan record
-        if currentTime > self.portScanTimeout + self.scan_window:
+        if currentTime > self.portScanTimeout + self.config.portscan_window:
+            print("resetting timeout time")
             self.portScanTimeout = currentTime
             self.PS_RECORD = dict()
 
@@ -172,60 +169,59 @@ class Sniffer:
         ):
             return
 
-        # Whitelist check
-        if srcIP not in self.whitelist:
-            # Testing config - does not utilize a database
-            # isTest = self.config == "onlyUDP" or self.config == "testing"
+        # Testing config - does not utilize a database
+        # isTest = self.config == "onlyUDP" or self.config == "testing"
 
-            trafficType = (
-                "TCP"
-                if ipLayer.haslayer("TCP")
-                else "UDP"
-                if ipLayer.haslayer("UDP")
-                else "ICMP"
-                if ipLayer.haslayer("ICMP")
-                else "Other"
-            )
+        trafficType = (
+            "TCP"
+            if ipLayer.haslayer("TCP")
+            else "UDP"
+            if ipLayer.haslayer("UDP")
+            else "ICMP"
+            if ipLayer.haslayer("ICMP")
+            else "Other"
+        )
 
-            # Log Entry object we're saving
-            log = LogEntry(
-                srcPort,
-                srcIP,
-                sourceMAC,
-                destPort,
-                dstIP,
-                destMAC,
-                trafficType,
-                ipLayer.len,
-                destPort in self.openPorts,
-            )
+        # Log Entry object we're saving
+        log = LogEntry(
+            srcPort,
+            srcIP,
+            sourceMAC,
+            destPort,
+            dstIP,
+            destMAC,
+            trafficType,
+            ipLayer.len,
+            destPort in self.config.open_ports,
+        )
 
-            # self.RECORD is where we save logs for easy testing
-            if srcIP in self.RECORD.keys():
-                self.RECORD[srcIP].append(log)
-            else:
-                self.RECORD[srcIP] = [log]
+        # self.RECORD is where we save logs for easy testing
+        if srcIP in self.RECORD.keys():
+            self.RECORD[srcIP].append(log)
+        else:
+            self.RECORD[srcIP] = [log]
 
-            # saving the database ID in case of port scan detection
-            if self.config == "base":
-                dbID = self.db.save(log)
-            else:
-                return
+        # saving the database ID in case of port scan detection
+        if self.mode == "base" and self.db is not None:
+            dbID = self.db.saveLogObject(log)
+        else:
+            return
 
-            # self.PS_RECORD is a separate dictionary used for port scan detection
-            if srcIP not in self.PS_RECORD.keys():
-                self.PS_RECORD[srcIP] = dict()
-                self.PS_RECORD[srcIP][log.destPortNumber] = dbID
-            else:
-                self.PS_RECORD[srcIP][log.destPortNumber] = dbID
+        # self.PS_RECORD is a separate dictionary used for port scan detection
+        if srcIP not in self.PS_RECORD.keys():
+            self.PS_RECORD[srcIP] = dict()
+            self.PS_RECORD[srcIP][log.destPortNumber] = dbID
+        else:
+            self.PS_RECORD[srcIP][log.destPortNumber] = dbID
 
-                # Sending out the port scan alert
-                if len(self.PS_RECORD[srcIP]) > self.scan_sensitivity:
-                    self.db.alert(
+            # Sending out the port scan alert
+            if len(self.PS_RECORD[srcIP]) > self.config.portscan_threshold:
+                if self.db is not None:
+                    self.db.saveAlertObject(
                         Alert(
                             variant="alert",
                             message="Port scan detected from IP {}".format(srcIP),
                             references=list(self.PS_RECORD[srcIP].values()),
                         )
                     )
-                    self.PS_RECORD[srcIP] = dict()
+                self.PS_RECORD[srcIP] = dict()

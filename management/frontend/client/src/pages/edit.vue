@@ -7,7 +7,10 @@
             'w-75-l': $route.name != 'overview',
         }"
     >
-        <component-title>Edit</component-title>
+        <component-title>
+            <template v-slot:pageCategory>Manage</template>
+            <template v-slot:pageName>Edit</template>
+        </component-title>
         <hr class="o-20" />
         <p>A gloriusly blank edit page!</p>
     </main>

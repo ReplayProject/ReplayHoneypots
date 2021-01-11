@@ -90,24 +90,22 @@ components of the system are the:
 -   Management System
     -   Data Collection / Export Solution
     -   Frontend Analysis
-    -   Replay Command Line Interface (CLI)
--   Deployment Strategy
+    -   Replay REST API
+-   Role Based Access Control and SAML Authentication
 
 Currently, the project supports **Docker** and **Bare Metal** deployment options,
-although Docker is simpler for managing multiple devices and complex setups.
+although Docker is much simpler for managing multiple devices and complex setups.
 
 To expedite the analysis of honeypot logs, a web-based management frontend was created
 with local authentication using `Node.js`, `Passport.js`, and `Vue.js`. The frontend
-provides a way for users to do basic queries to the log database as well as be alerted
-of potential attacks, problems, and/or configuration changes of deployed honeypots. The
+serves as the management interface for the entire system, controlling the configurations
+of honeypots, users and security permissions, and viewing alerts related to system behavior. The
 user may also export data to an external Security Information and Event Management
 System **(SIEM)** by utilizing the database's API.
 
-Additionally, progress is being made on an automated deployment and configuration tool
-called the ReplayCLI. This is a command line tool that assists in the administration of
-honeypots. This tool assumes that the user has set up SSH keys to connect to the system
-on which they intend to deploy a honeypot. This tool is primarily used to deploy
-honeypots on bare-metal machines.
+In Phase 3 (Fall 2020) the ReplayCLI was deprecated and removed from the Master build. Removing
+the CLI tool was a vast simplification of the system overall, and with a specific project goal to be
+run within docker for production use, did not reduce the effectiveness of the platform.
 
 ### :computer: Built With
 
@@ -197,6 +195,10 @@ Distributed under the GNU GPLv3 License. See `LICENSE` for more information.
 
 Felix Ritscher Montilla -
 [Felix.Ritscher@gmail.com](mailto:Felix.Ritscher@gmail.com?subject=ReplayProject%3A)
+
+Rolf Lewis - [Rolf.Lewis@gmail.com](mailto:rolf.lewis@gmail.com?subject=ReplayProject%3A)
+
+Steven Green - [steven.greens10@gmail.com](mailto:steven.greens10@gmail.com?subject=ReplayProject%3A)
 
 Seth Parrish - [me@sethp.cc](mailto:me@sethp.cc?subject=ReplayProject%3A)
 

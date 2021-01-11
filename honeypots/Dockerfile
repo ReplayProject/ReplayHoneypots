@@ -48,5 +48,7 @@ VOLUME /storage
 
 WORKDIR /usr/src/app/honeypot
 
-ENTRYPOINT ["/opt/bin/wait-for-it.sh", "-s", "-t", "0"]
-CMD ["couchdb:5984", "--", "python3", "-u", "./PortThreadManager.py"]
+# ENTRYPOINT ["/opt/bin/wait-for-it.sh", "-s", "-t", "0"]
+# ENTRYPOINT [ "ls" ]
+CMD ["python3", "-u", "./PortThreadManager.py"]
+# CMD ["sh"]

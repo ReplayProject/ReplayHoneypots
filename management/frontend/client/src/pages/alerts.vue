@@ -6,7 +6,10 @@
             'w-75-l': $route.name != 'overview',
         }"
     >
-        <component-title>Alerts</component-title>
+        <component-title>
+            <template v-slot:pageCategory>Dashboards</template>
+            <template v-slot:pageName>Alerts</template>
+        </component-title>
         <hr class="o-20" />
         <section class="ph2 pt2">
             <p class="ma3 pa2 i tc w-100">
@@ -29,7 +32,7 @@
         <!-- List of alerts -->
         <ul class="list pl0 mt0 measure center">
             <li
-                v-for="(a, idx) in $store.state.alerts"
+                v-for="(a, idx) in $store.state.alertsInfo"
                 :key="idx"
                 class="alert cf items-center lh-copy pa3 ph0-l bb b--black-20"
             >
@@ -71,6 +74,7 @@
 <script>
 import componentTitle from '../components/title'
 import VueJsonPretty from 'vue-json-pretty'
+import api from '../api.js'
 
 export default {
     name: 'alerts',
@@ -92,11 +96,20 @@ export default {
         }
     },
     watch: {
-        numAlerts: function () {
-            this.loadData()
+        numAlerts: async function () {
+            await this.loadData()
         },
     },
     methods: {
+        /**
+         * Checks if the user should have access to this page and sends them back to index if not
+         */
+        checkPageAccessPermissions() {
+            if (this.$store.state.permsData.alerts === 0) {
+                this.$toasted.show('Invalid Page Access Detected. Redirecting.')
+                this.$router.push('/')
+            }
+        },
         /**
          * Redirect clicks on alert-linked logs to the raw json of that log
          */
@@ -107,6 +120,30 @@ export default {
                 window.open(this.dbURI + '/' + data)
             }
         },
+        async loadData() {
+            if (!this.$store.state.userData) {
+                return
+            }
+            this.$Progress.start()
+            // Actually do a query
+            let results = []
+            try {
+                if (this.numAlerts > 0) {
+                    results = await api.fetchAlerts(undefined, this.numAlerts, 0)
+                } else {
+                    results = await api.fetchAlerts(undefined, undefined, 0)
+                }
+            } catch (err) {
+                console.log(err)
+            }
+            this.$store.commit('setAlerts', results.data.docs)
+            this.$store.commit('sortAlertsDesc')
+            this.$Progress.finish()
+        },
+    },
+    beforeMount() {
+        this.checkPageAccessPermissions()
+        this.loadData()
     },
 }
 </script>

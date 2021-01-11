@@ -14,6 +14,15 @@ from Sniffer import Sniffer
 
 WAIT_TIME = 0.1
 
+class TestConfig:
+        def __init__(self, open_ports, whitelist_ports, portscan_window, whitelist_addrs):
+            self.open_ports = open_ports
+            self.whitelist_ports = whitelist_ports
+            self.portscan_window = portscan_window
+            self.whitelist_addrs = whitelist_addrs
+
+testConfig = TestConfig([], [], 300, [])
+testConfig2 = TestConfig([80,443], [777,888,999], 300, ["8.8.8.8","9.9.9.9"])
 
 class TestSniffer:
     """
@@ -26,13 +35,7 @@ class TestSniffer:
         """
         #  Start the sniffer
         s = Sniffer(
-            config="testing",
-            openPorts=[],
-            whitelist=[],
-            honeypotIP="localhost",
-            managementIPs=(),
-            port_scan_window=60,
-            port_scan_sensitivity=100,
+            config=testConfig,
             databaser=None,
         )
         s.start()
@@ -65,13 +68,7 @@ class TestSniffer:
         """
         #  Start the sniffer
         s = Sniffer(
-            config="testing",
-            openPorts=[],
-            whitelist=[],
-            honeypotIP="localhost",
-            managementIPs=(),
-            port_scan_window=60,
-            port_scan_sensitivity=100,
+            config=testConfig,
             databaser=None,
         )
         s.start()
@@ -101,39 +98,20 @@ class TestSniffer:
         host_ip = "192.168.42.51"
         # Start the sniffer
         s = Sniffer(
-            config="onlyUDP",
-            openPorts=[],
-            whitelist=[],
-            portWhitelist=[],
-            honeypotIP=host_ip,
-            managementIPs=("52.87.97.77", "54.80.228.0"),
-            port_scan_window=60,
-            port_scan_sensitivity=100,
+            config=testConfig,
+            databaser=None,
         )
         s.start()
 
-        assert len(s.openPorts) == 0
-        assert len(s.whitelist) == 0
-        assert len(s.portWhitelist) == 0
-        assert s.config == "onlyUDP"
-        assert len(s.managementIPs) == 2
-        assert s.honeypotIP == "192.168.42.51"
+        assert len(s.config.open_ports) == 0
+        assert len(s.config.whitelist_addrs) == 0
+        assert len(s.config.whitelist_ports) == 0
 
-        s.configUpdate(
-            openPorts=[80, 443],
-            whitelist=["8.8.8.8", "9.9.9.9"],
-            portWhitelist=[777, 888, 999],
-            honeypotIP="192.168.42.42",
-            managementIPs="54.80.228.0",
-            port_scan_window=62,
-            port_scan_sensitivity=101,
-        )
+        s.configUpdate(testConfig2)
         # used to flush the Sniffer
         os.system("curl -s www.google.com -o /dev/null")
-        assert len(s.openPorts) == 2
-        assert len(s.whitelist) == 2
-        assert len(s.portWhitelist) == 3
-        assert s.managementIPs == "54.80.228.0"
-        assert s.honeypotIP == "192.168.42.42"
+        assert len(s.config.open_ports) == 2
+        assert len(s.config.whitelist_addrs) == 2
+        assert len(s.config.whitelist_ports) == 3
 
         s.stop()

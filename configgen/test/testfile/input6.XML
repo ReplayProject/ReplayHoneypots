@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.60 scan initiated Tue Sep 15 21:19:36 2020 as: nmap -p 80-2000 -oX input6.XML scanme.nmap.org -->
+<nmaprun scanner="nmap" args="nmap -p 80-2000 -oX input6.XML scanme.nmap.org" start="1600219176" startstr="Tue Sep 15 21:19:36 2020" version="7.60" xmloutputversion="1.04">
+<scaninfo type="connect" protocol="tcp" numservices="1921" services="80-2000"/>
+<verbose level="0"/>
+<debugging level="0"/>
+<host starttime="1600219176" endtime="1600219180"><status state="up" reason="syn-ack" reason_ttl="0"/>
+<address addr="45.33.32.156" addrtype="ipv4"/>
+<hostnames>
+<hostname name="scanme.nmap.org" type="user"/>
+<hostname name="scanme.nmap.org" type="PTR"/>
+</hostnames>
+<ports><extraports state="closed" count="1913">
+<extrareasons reason="conn-refused" count="1913"/>
+</extraports>
+<port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="http" method="table" conf="3"/></port>
+<port protocol="tcp" portid="135"><state state="filtered" reason="no-response" reason_ttl="0"/><service name="msrpc" method="table" conf="3"/></port>
+<port protocol="tcp" portid="137"><state state="filtered" reason="no-response" reason_ttl="0"/><service name="netbios-ns" method="table" conf="3"/></port>
+<port protocol="tcp" portid="138"><state state="filtered" reason="no-response" reason_ttl="0"/><service name="netbios-dgm" method="table" conf="3"/></port>
+<port protocol="tcp" portid="139"><state state="filtered" reason="no-response" reason_ttl="0"/><service name="netbios-ssn" method="table" conf="3"/></port>
+<port protocol="tcp" portid="445"><state state="filtered" reason="no-response" reason_ttl="0"/><service name="microsoft-ds" method="table" conf="3"/></port>
+<port protocol="tcp" portid="515"><state state="filtered" reason="no-response" reason_ttl="0"/><service name="printer" method="table" conf="3"/></port>
+<port protocol="tcp" portid="631"><state state="filtered" reason="no-response" reason_ttl="0"/><service name="ipp" method="table" conf="3"/></port>
+</ports>
+<times srtt="79770" rttvar="2177" to="100000"/>
+</host>
+<runstats><finished time="1600219180" timestr="Tue Sep 15 21:19:40 2020" elapsed="3.14" summary="Nmap done at Tue Sep 15 21:19:40 2020; 1 IP address (1 host up) scanned in 3.14 seconds" exit="success"/><hosts up="1" down="0" total="1"/>
+</runstats>
+</nmaprun>

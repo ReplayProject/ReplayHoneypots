@@ -1,33 +1,8 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import createPersistedState from 'vuex-persistedstate'
 
 Vue.use(Vuex)
-
-// Setup PouchDB Client for talking with the CouchDB database
-
-import PouchVue from 'pouch-vue'
-import PouchDB from 'pouchdb-browser'
-import PouchdbFind from 'pouchdb-find'
-PouchDB.plugin(PouchdbFind)
-PouchDB.plugin(require('pouchdb-live-find'))
-// PouchDB.plugin(require('pouchdb-authentication'));
-// TODO: when we add database authentication and RBAC
-// https://github.com/MDSLKTR/pouch-vue
-Vue.use(PouchVue, {
-    pouch: PouchDB, // optional if `PouchDB` is available on the global object
-    defaultDB: process.env.DB_URL + '/_all_dbs', // this is used as a default connect/disconnect database
-    optionsDB: {
-        // this is used to include a custom fetch() method (see TypeScript example)
-        fetch: function (url, opts) {
-            opts.credentials = 'omit'
-            // omit: Never send or receive cookies.
-            // same-origin: Send user credentials (cookies, basic http auth, etc..) if the URL is on the same origin as the calling script. This is the default value.
-            // include: Always send user credentials (cookies, basic http auth, etc..), even for cross-origin calls.
-            return PouchDB.fetch(url, opts)
-        },
-    },
-    // debug: "*" // optional - See `https://pouchdb.com/api.html#debug_mode` for valid settings (will be a separate Plugin in PouchDB 7.0)
-})
 
 /**
  * Setup the store
@@ -37,26 +12,45 @@ Vue.use(PouchVue, {
  * tracked when changed
  */
 let store = new Vuex.Store({
+    plugins: [
+        createPersistedState({
+            storage: window.sessionStorage,
+        }),
+    ],
     state: {
         hostsInfo: [], // info on the different honeypots we are loading up
-        aggInfo: {}, // aggregate info about the hosts
-        alerts: [], // storage for alerts coming from CouchDB
+        logsInfo: {}, // aggregate info about the hosts
+        alertsInfo: [], // storage for alerts coming from CouchDB
+        configsInfo: [], // storage for configs coming from CouchDB
+        authStatus: {},
     },
     mutations: {
         setHostsInfo(state, hostsInfo) {
             state.hostsInfo = hostsInfo
         },
-        setAggInfo(state, aggInfo) {
-            state.aggInfo = aggInfo
+        setLogInfo(state, logsInfo) {
+            state.logsInfo = logsInfo
         },
-        setAlerts(state, alerts) {
-            state.alerts = alerts
+        setAlerts(state, alertsInfo) {
+            state.alertsInfo = alertsInfo
         },
-        unshiftList(state, doc) {
-            state.alerts.unshift(doc)
+        setConfigs(state, configsInfo) {
+            state.configsInfo = configsInfo
+        },
+        unshiftAlerts(state, doc) {
+            state.alertsInfo.unshift(doc)
         },
         popAlerts(state) {
-            state.alerts.pop()
+            state.alertsInfo.pop()
+        },
+        sortAlertsDesc(state) {
+            state.alertsInfo.sort((a, b) => b.timestamp - a.timestamp)
+        },
+        setUserData(state, userData) {
+            state.userData = userData
+        },
+        setPermsData(state, permsData) {
+            state.permsData = permsData
         },
     },
     actions: {},

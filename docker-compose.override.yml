@@ -3,16 +3,6 @@
 version: '3.8'
 
 services:
-    ### Build & Development Settings ###
-    couchdb:
-        logging:
-            driver: none
-        volumes:
-            # This config is for non ARM
-            - ./config/couch_defaults.ini:/opt/bitnami/couchdb/etc/local.d/cutom-local.ini
-            # This config is for ARM couchdb Image - ARM_DEB
-            # - ./config/couch_defaults.ini:/opt/couchdb/etc/local.d/custom-local.ini
-
     # Service to define how the manager gets built
     replay-manager:
         # Toggle to enable the service
@@ -28,20 +18,18 @@ services:
         # Toggle these commands to start and pause without doing anything
         # Useful when you want to attach yourself manually to test things
         # Use these to edit how the image starts or deviate from baked in url
-        command: ['couchdb:5984', '--', 'tail', '-f', '/dev/null']
-        # command: ["couchdb:5984", "--", "npm", "run", "start-serve" ]
+        # command: ['couchdb:5984', '--', 'tail', '-f', '/dev/null']
+        # command: ["192.168.86.159:5984", "--", "npm", "run", "start-serve" ]
         # command: ["testingcouchdb:5984", "--", "npm", "run", "dev2" ]
 
         # Toggle the following 2 configs, and enable the "/src" & modules volume for what I call "live mode"
         # Like this, your code changes will sync into the container (may have to run npm i)
-        working_dir: /src/management/frontend
+        # working_dir: /src/management/frontend
         # command: ["couchdb:5984", "--", "npm", "run", "dev2" ]
 
-        volumes:
-            # this maps seed data config (configs do not work in compose mode)
-            - ./config/frontend_users_seed.json:/frontend_users_seed.json
+        # volumes:
             # Live mode, source files bind
-            - replay-src:/src
+            # - replay-src:/src
             # - ./management/frontend/node_modules:/src/node_modules # some containers do not like this option
         restart: 'no' # kept like this to show errors when failing
 
@@ -52,14 +40,15 @@ services:
 
         # Toggle this commands to start and pause without doing anything
         # Useful when you want to attach yourself manually to test things
-        command: ['couchdb:5984', '--', 'tail', '-f', '/dev/null']
+        # command: ['couchdb:5984', '--', 'tail', '-f', '/dev/null']
 
         # Port exposed because locally we cannot go into dev mode
         ports:
             - 9998:9998
-            - 1337:1337/udp
-            - 1337:1337
+            #- 1337:1337/udp
+           # - 1337:1337
             - 8085:80
+            - 2222:2222
         build:
             network: 'host'
             context: './honeypots'
@@ -81,10 +70,10 @@ networks:
         name: honey-infra
 
 volumes:
-    # This volume gives access to the source code for the system (runtime binding)
+#     # This volume gives access to the source code for the system (runtime binding)
     replay-src:
         driver: local
         driver_opts:
             type: none
-            device: $PWD
+            device: .
             o: bind

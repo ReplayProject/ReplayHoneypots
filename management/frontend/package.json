@@ -5,14 +5,14 @@
     "description": "A tiny VueJS app bundled using ParcelJS && Pouch Database & Frontend",
     "main": "index.html",
     "scripts": {
-        "build": "parcel build ./client/index.html --no-source-maps --public-url 'http://10.11.12.125:8080' ",
-        "build-watch": "parcel watch ./client/index.html --public-url 'http://10.11.12.125:8080' ",
+        "build": "parcel build ./client/index.html --public-url 'https://sd-vm06.csc.ncsu.edu:8443' ",
+        "build-watch": "parcel watch ./client/index.html --public-url 'https://sd-vm06.csc.ncsu.edu:8443' ",
         "generate-lock": "npm i --package-lock-only",
         "dev": "concurrently --kill-others \"npm run start-watch\" \"npm run build-watch\"",
         "dev2": "concurrently --kill-others \"npm run start-serve\" \"npm run build-watch\"",
         "format": "prettier --list-different --write \"test/**\" \"server/**\" \"client/**\" \"./**.{json, babelrc}\" \"!.cache\" && sort-package-json",
         "start": "NODE_ENV=development npm run build && DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history node -r dotenv/config server/index.js",
-        "start-serve": "DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history node -r dotenv/config server/index.js",
+        "start-serve": "DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history node --trace-warnings -r dotenv/config server/index.js",
         "start-watch": "DEBUG_HIDE_DATE=true DEBUG=sd:*,-sd:history nodemon -r dotenv/config --ignore config.json server/index.js",
         "test": "nyc ava test/specs/*"
     },
@@ -38,6 +38,7 @@
     },
     "dependencies": {
         "body-parser": "^1.19.0",
+        "chromedriver": "^86.0.0",
         "concurrently": "^5.2.0",
         "connect-ensure-login": "^0.1.1",
         "connect-history-api-fallback": "^1.6.0",
@@ -49,12 +50,16 @@
         "express": "^4.17.1",
         "express-session": "^1.17.1",
         "helmet": "^4.0.0",
+        "helmet-csp": "3.1.0",
         "memdown": "^5.1.0",
         "node-gyp": "^7.0.0",
         "nodemon": "^2.0.4",
         "passport": "^0.4.1",
         "passport-local": "^1.0.0",
+        "passport-saml": "1.3.4",
         "pouchdb": "^7.2.2",
+        "pouchdb-find": "^7.2.2",
+        "selenium-webdriver": "^4.0.0-alpha.7",
         "serve-static": "^1.14.1"
     },
     "devDependencies": {
@@ -75,7 +80,6 @@
         "parcel-bundler": "^1.12.4",
         "pouch-vue": "^0.3.5",
         "pouchdb-browser": "^7.2.2",
-        "pouchdb-find": "^7.2.2",
         "pouchdb-live-find": "^0.4.0",
         "require-extension-hooks": "^0.3.3",
         "require-extension-hooks-babel": "^1.0.0",
@@ -98,6 +102,7 @@
         "vue-toasted": "^1.1.28",
         "vuejs-datatable": "^2.0.0-alpha.7",
         "vuex": "^3.4.0",
+        "vuex-persistedstate": "^3.1.0",
         "weekstart": "^1.0.1"
     },
     "engines": {

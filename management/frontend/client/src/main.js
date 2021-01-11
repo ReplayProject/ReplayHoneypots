@@ -56,7 +56,7 @@ Vue.use(Datetime)
 Vue.component('datetime', Datetime)
 
 /**
- * Filter tomake the DB name look prettier
+ * Filter to make the DB name look prettier
  */
 Vue.filter('formatDBName', value => {
     if (!value) return ''
@@ -94,12 +94,22 @@ Vue.prototype.$parseDateWithTime = x => {
     let s = dateType(x)
     return s.slice(0, s.indexOf(':', 9) + 3) + ' ' + s.split(' ')[2]
 }
-// How to connect to the databases we care about
-Vue.prototype.dbURI = process.env.DB_URL + '/' + 'aggregate_logs'
-Vue.prototype.alertsURI = process.env.DB_URL + '/' + 'alerts'
 // How to pick colors for hosts on the sparklines and piechart
 Vue.prototype.$pickColor = (s, extras) => {
-    let colors = ['bg-green', 'bg-red', 'bg-purple', 'bg-blue', 'bg-orange']
+    // Ensure hostname is string (avoids split error)
+    s = String(s)
+    let colors = [
+        'bg-green',
+        'bg-red',
+        'bg-purple',
+        'bg-blue',
+        'bg-orange',
+        'bg-navy',
+        'bg-teal',
+        'bg-olive',
+        'bg-yellow',
+        'bg-maroon'
+    ]
     if (extras) {
         colors.push('bg-gray')
         colors.push('bg-silver')

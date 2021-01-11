@@ -19,10 +19,11 @@
 
 <script>
 import LineChart from './lineChart'
+import api from '../api.js'
 
 export default {
     components: { LineChart },
-    props: ['title', 'chartstyles', 'endtimespan', 'timediff', 'specificity'],
+    props: ['title', 'dataIdentifier', 'chartstyles', 'endtimespan', 'timediff', 'specificity'],
     data() {
         return {
             chartData: null,
@@ -81,27 +82,26 @@ export default {
          * Find the bounds for a couchDB query
          */
         async findTimeBounds() {
-            let selector = { hostname: { $eq: this.title } }
-            let sort = [{ timestamp: 'desc' }]
-            let skip = 0
-            // Get the single most recent log to be the "end time" of our main query
-            let results = await this.$pouch.find(
-                {
-                    selector,
-                    sort,
-                    skip,
-                    fields: ['timestamp'],
-                    limit: 1,
-                },
-                this.dbURI
-            )
+            let fields = ['timestamp']
+            let limit = 1
+            let results = {}
 
-            if (results.docs.length == 0) {
+            let getError = false
+            try {
+                results = await api.getLogs(this.dataIdentifier, undefined, 0, fields, limit)
+            } catch (err) {
+                getError = true
+                console.log(err)
+            }
+
+            if (getError === true || results.data.docs.length == 0) {
                 console.log('No Records found for ' + this.title)
                 return
             }
-            let endtime = new Date(results.docs[0].timestamp * 1000)
+
+            let endtime = new Date(results.data.docs[0].timestamp * 1000)
             let starttime = new Date(endtime.getTime() - this.timediff)
+
             return [starttime, endtime].map(x => x.getTime() / 1000)
         },
         /**
@@ -112,24 +112,22 @@ export default {
             this.$Progress.start()
             const div = (time, power) => Math.floor(time / Math.pow(10, power))
             const keymap = ts => [
-                this.title,
+                this.dataIdentifier,
                 ...[...Array(Number(4)).keys()].map(x => div(ts, x)).reverse(),
             ]
 
-            let results = await this.$pouch.query(
-                `timespans/hosttime`,
-                {
-                    startkey: keymap(bounds[0]),
-                    endkey: keymap(bounds[1]),
-                    reduce: true,
-                    group: true,
-                    // add one becasue of the hostname at the start
-                    group_level: this.specificity + 1,
-                },
-                this.dbURI
-            )
+            let results = {}
+            try {
+                results = await api.getHostsInfoBy(
+                    keymap(bounds[0]),
+                    keymap(bounds[1]),
+                    this.specificity + 1
+                )
+            } catch (err) {
+                console.log(err)
+            }
 
-            if (results.rows.length == 0) {
+            if (!results.data || results.data.rows.length == 0) {
                 this.chartData = {
                     datasets: [],
                 }
@@ -137,21 +135,22 @@ export default {
                 return
             }
             // Count totals
-            this.logsInFrame = results.rows.reduce((a, x) => a + x.value, 0) + ' logs'
+            this.logsInFrame =
+                results.data.rows.reduce((a, x) => a + x.value, 0) + ' logs'
 
             // Apply local filter or just throw it on the page
             // TODO: abstract this date logic from here and the details page
-            let labels = results.rows.map(x => {
+            let labels = results.data.rows.map(x => {
                 // Convery the varying size numbers to the same date range by filling in zeroes
-                let ts = x.key.slice(-1)[0] * Math.pow(10, 7 - this.specificity)
-                let s = new Date(ts)
+                let ts = x.key.slice(-1)[0] * Math.pow(10, 4 - this.specificity)
+                let s = new Date(ts * 1000)
                     .toLocaleString()
                     .replace('/' + new Date().getFullYear(), '')
                 // Use the pretty formatted string
                 return s.slice(0, s.indexOf(':', 9) + 3) + ' ' + s.split(' ')[2]
             })
 
-            let data = results.rows.map(x => x.value)
+            let data = results.data.rows.map(x => x.value)
 
             this.chartData = {
                 labels,
@@ -178,9 +177,9 @@ export default {
                 let bounds = !this.endtimespan
                     ? await this.findTimeBounds()
                     : [
-                          parseDateString(this.timediff),
-                          parseDateString(this.endtimespan),
-                      ]
+                        parseDateString(this.timediff),
+                        parseDateString(this.endtimespan),
+                    ]
                 await this.loadData(bounds)
             } catch (error) {
                 console.log(error)
@@ -188,7 +187,7 @@ export default {
         },
     },
     async mounted() {
-        this.init()
+        await this.init()
     },
 }
 </script>

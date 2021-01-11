@@ -3,54 +3,26 @@ authLog.log = console.log.bind(console)
 
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
+const SamlStrategy = require('passport-saml').Strategy
 
 // Configured user database
 var PouchDB = require('pouchdb')
-var db = new PouchDB(process.env.DB_URL + '/frontend_users')
-let salt = null
+var db = new PouchDB(process.env.DB_URL + '/users')
 
-// Get seed file
-const fs = require('fs')
-const useRootConfig = fs.existsSync(process.env.AUTH_FILE)
-const path = useRootConfig
-    ? process.env.AUTH_FILE
-    : '../../' + process.env.AUTH_FILE_FALLBACK
-
-async function setupDB() {
-    try {
-        let dbinfo = await db.info()
-        // Do we need to seed the database with data
-        if (dbinfo.doc_count == 0) {
-            authLog('New', dbinfo.db_name, 'created, adding default admin user')
-
-            // TODO: real admin accounts admin, notseth
-            let resp = await db.bulkDocs(require(path).documents)
-            authLog(resp)
-        } else {
-            authLog('Using existing', dbinfo.db_name, 'configuration')
-        }
-
-        // load the data into memory
-        salt = (await db.get('salt')).value
-    } catch (error) {
-        authLog(error)
-    }
-}
-
-setupDB()
-
+// Crypto libs
 const crypto = require('crypto')
-const computeHash = x =>
+const computeHash = (x, s) =>
     crypto
         .createHash('sha256')
-        .update(salt + x)
+        .update(s + x)
         .digest('hex')
 
 /**
  * Function to Check local password and stored hash
  */
-function validPassword(attempt, hash) {
-    return computeHash(attempt) === hash
+function validPassword(attempt, hash, salt) {
+    // console.log(computeHash(attempt, salt), hash)
+    return computeHash(attempt, salt) === hash
 }
 
 // Configure Passport authenticated session persistence.
@@ -81,7 +53,6 @@ passport.deserializeUser(async (id, cb) => {
             return cb(new Error('no user found or user-id mismatch'), false, {
                 message: 'User ID mismatch, or some other issue',
             })
-        authLog('deserialize retrieved user', id)
         cb(null, user)
     } catch (error) {
         authLog('deserial', error)
@@ -99,17 +70,81 @@ passport.use(
             passwordField: 'password',
         },
         async (username, password, done) => {
-            authLog('looking for user-' + username)
+            authLog('looking for user ' + username)
+            // Build selector
+            const selectorBuild = {
+                username: username,
+            }
+            const options = {
+                selector: selectorBuild,
+                limit: 1,
+            }
+            // Process user
             let user
             try {
                 // Find user with username
-                user = await db.get('user-' + username)
-                if (!validPassword(password, user.hash))
+                user = await db.find(options)
+                if (user.docs.length === 0)
+                    return done(null, false, { message: 'Incorrect username.' })
+                user = user.docs[0]
+                if (user.enabled === false)
+                    return done(null, false, { message: 'User is disabled.' })
+                if (user.local === false)
+                    return done(null, false, { message: 'Not a local user.' })
+                if (!validPassword(password, user.password, user.salt))
                     return done(null, false, { message: 'Incorrect password.' })
+                // THIS INFORMATION SHOULD NEVER BE LOGGED, REMOVE IT HERE BEFORE PASSING TO DONE
+                delete user.password
+                delete user.salt
+                // Move on
                 return done(null, user)
             } catch (error) {
                 if (!user) return done(null, false, { message: 'Incorrect username.' })
             }
+        }
+    )
+)
+
+passport.use(
+    new SamlStrategy(
+        {
+            path: '/login/callback',
+            entryPoint: process.env.SAML_URL,
+            issuer: 'passport-saml',
+        },
+        async (profile, done) => {
+            authLog('looking for user ' + profile.nameID)
+            // Build selector
+            const selectorBuild = {
+                username: profile.nameID,
+            }
+            const options = {
+                selector: selectorBuild,
+                limit: 1,
+            }
+            // Process user
+            let user
+            try {
+                // Find user with username
+                user = await db.find(options)
+                if (user.docs.length === 0)
+                    return done(null, false, {
+                        message: 'You do not have access to this application.',
+                    })
+                user = user.docs[0]
+                if (user.enabled === false)
+                    return done(null, false, { message: 'User is disabled.' })
+                if (user.local === true)
+                    return done(null, false, { message: 'Not a SAML user.' })
+                // THIS INFORMATION SHOULD NEVER BE LOGGED, REMOVE IT HERE BEFORE PASSING TO DONE
+                delete user.password
+                delete user.salt
+                // Move on
+                return done(null, user)
+            } catch (error) {
+                if (!user) return done(null, false, { message: 'Incorrect username.' })
+            }
+            return done(null, profile)
         }
     )
 )
