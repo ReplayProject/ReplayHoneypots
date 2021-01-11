@@ -70,7 +70,7 @@
         "@vue/component-compiler-utils": "^3.2.0",
         "@vue/test-utils": "^1.0.3",
         "ava": "^3.11.1",
-        "axios": "^0.19.2",
+        "axios": "^0.21.1",
         "babel-polyfill": "^6.26.0",
         "chart.js": "^2.9.3",
         "jsdom": "^16.2.2",
