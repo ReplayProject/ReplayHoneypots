@@ -1,12 +1,12 @@
 Click==7.1.2
-colorama==0.4.3
+colorama==0.4.4
 pexpect==4.8.0
-prompt-toolkit==3.0.6
-pycryptodome==3.9.8
+prompt-toolkit==3.0.14
+pycryptodome==3.9.9
 pyfiglet==0.8.post1
-Pygments==2.6.1
+Pygments==2.7.4
 PyInquirer==1.0.3
-regex==2020.7.14
+regex==2020.11.13
 six==1.15.0
 termcolor==1.1.0
 wcwidth==0.2.5
