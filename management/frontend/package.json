@@ -97,7 +97,7 @@
         "vue-template-compiler": "^2.6.11",
         "vue-toasted": "^1.1.28",
         "vuejs-datatable": "^2.0.0-alpha.7",
-        "vuex": "^3.4.0",
+        "vuex": "^3.6.2",
         "weekstart": "^1.0.1"
     },
     "engines": {
