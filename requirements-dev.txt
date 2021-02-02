@@ -1,4 +1,4 @@
-cloudant==2.13.0
+cloudant==2.14.0
 mock==4.0.2
 pre-commit==2.6.0
 pycryptodome==3.9.8
