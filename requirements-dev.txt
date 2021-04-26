@@ -4,7 +4,7 @@ pre-commit==2.10.0
 pycryptodome==3.9.9
 pytest==6.2.2
 pytest-cov==2.11.1
-pytest-mock==3.5.1
+pytest-mock==3.6.0
 pytest-trio==0.7.0
 requests==2.25.1
 scapy==2.4.4
