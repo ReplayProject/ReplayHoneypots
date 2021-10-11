@@ -1,4 +1,4 @@
-Click==7.1.2
+Click==8.0.3
 colorama==0.4.4
 pexpect==4.8.0
 prompt-toolkit==3.0.14
