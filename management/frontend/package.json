@@ -72,7 +72,7 @@
         "ava": "^3.11.1",
         "axios": "^0.21.1",
         "babel-polyfill": "^6.26.0",
-        "chart.js": "^2.9.3",
+        "chart.js": "^3.6.0",
         "jsdom": "^16.2.2",
         "jsdom-global": "^3.0.2",
         "luxon": "^1.24.1",
