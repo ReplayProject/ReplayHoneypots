@@ -65,7 +65,7 @@
     "devDependencies": {
         "@babel/core": "7.12.10",
         "@babel/plugin-transform-runtime": "^7.11.0",
-        "@babel/runtime": "^7.11.2",
+        "@babel/runtime": "^7.16.3",
         "@saeris/vue-spinners": "^1.0.8",
         "@vue/component-compiler-utils": "^3.2.0",
         "@vue/test-utils": "^1.1.2",
