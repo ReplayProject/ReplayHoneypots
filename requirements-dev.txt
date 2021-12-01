@@ -1,6 +1,6 @@
 cloudant==2.14.0
 mock==4.0.2
-pre-commit==2.10.0
+pre-commit==2.16.0
 pycryptodome==3.9.9
 pytest==6.2.2
 pytest-cov==2.11.1
