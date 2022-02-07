@@ -1,5 +1,5 @@
 cloudant==2.14.0
-pycryptodome==3.9.9
+pycryptodome==3.14.1
 requests==2.25.1
 scapy==2.4.4
 trio==0.18.0
