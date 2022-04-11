@@ -9,4 +9,4 @@ pytest-trio==0.7.0
 requests==2.25.1
 scapy==2.4.4
 trio==0.18.0
-jsondiff==1.2.0
+jsondiff==2.0.0
