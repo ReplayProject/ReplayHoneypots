@@ -73,7 +73,7 @@
         "axios": "^0.21.1",
         "babel-polyfill": "^6.26.0",
         "chart.js": "^2.9.3",
-        "jsdom": "^16.2.2",
+        "jsdom": "^16.5.0",
         "jsdom-global": "^3.0.2",
         "luxon": "^1.24.1",
         "nyc": "^15.1.0",
