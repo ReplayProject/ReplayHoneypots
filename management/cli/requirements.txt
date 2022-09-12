@@ -8,5 +8,5 @@ Pygments==2.7.4
 PyInquirer==1.0.3
 regex==2020.11.13
 six==1.15.0
-termcolor==1.1.0
+termcolor==2.0.1
 wcwidth==0.2.5
