@@ -1,5 +1,5 @@
 Click==7.1.2
-colorama==0.4.4
+colorama==0.4.6
 pexpect==4.8.0
 prompt-toolkit==3.0.14
 pycryptodome==3.9.9
