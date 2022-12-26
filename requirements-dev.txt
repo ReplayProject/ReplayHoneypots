@@ -7,6 +7,6 @@ pytest-cov==2.11.1
 pytest-mock==3.5.1
 pytest-trio==0.7.0
 requests==2.25.1
-scapy==2.4.4
+scapy==2.5.0
 trio==0.18.0
 jsondiff==1.2.0
